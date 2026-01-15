@@ -1,30 +1,8 @@
-# Core Django
 Django==4.2.16
-
-# Production server
 gunicorn==21.2.0
 whitenoise==6.6.0
-
-# Database (PostgreSQL for Supabase)
 psycopg2-binary==2.9.11
 dj-database-url==2.1.0
-
-# Environment variables
 python-dotenv==1.0.0
-
-# Email (optional - for other providers)
-# django-sendgrid-v5==0.2.1
-
-# Cloudinary (optional - for media storage)
 cloudinary==1.36.0
 django-cloudinary-storage==0.3.0
-
-# CORS (if you have a frontend)
-django-cors-headers==4.3.1
-
-# Utilities
-requests==2.31.0
-Pillow==10.2.0
-
-# Buildpacks requirements (for Koyeb buildpacks)
-# No additional requirements needed
