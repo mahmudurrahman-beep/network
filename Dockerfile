@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     curl \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
@@ -26,33 +25,66 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# 🚀 DOCKER-ONLY MIGRATION WORKFLOW (With Persistence)
+# 🚀 KOYEB PRODUCTION DEPLOYMENT COMMAND
 CMD ["sh", "-c", "
-  echo '🚀 Starting application...' && \
+  echo '🚀 Starting Network Social Media App...' && \
+  echo '📦 Django 6.0.1 | Postgres | Cloudinary' && \
+  echo '' && \
   
-  # Step 1: Check if migration files exist
-  echo '📂 Checking for existing migration files...' && \
-  if [ ! -f /app/network/migrations/0001_initial.py ]; then
-    echo '⚠️  No migration files found! Creating initial migrations...' && \
-    echo '🔧 Running makemigrations for network app...' && \
-    python manage.py makemigrations network --noinput && \
-    echo '✅ Created initial migrations!' && \
-    echo '📝 Note: These migration files will be lost if container restarts!' && \
-    echo '📝 For production: Run makemigrations locally and commit to git.'
-  else
-    echo '✅ Migration files found. Skipping makemigrations.' && \
-    echo 'ℹ️  If models changed, run makemigrations locally and redeploy.'
-  fi && \
+  # Database connection test
+  echo '🔗 Testing database connection...' && \
+  python -c \"
+import os, django, time, sys
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project4.settings')
+django.setup()
+from django.db import connection
+for i in range(5):
+    try:
+        connection.ensure_connection()
+        print('✅ Database connected successfully!')
+        break
+    except Exception as e:
+        print(f'Attempt {i+1}/5: Database connection failed - {str(e)}')
+        if i == 4:
+            print('❌ FATAL: Cannot connect to database')
+            sys.exit(1)
+        time.sleep(3)
+  \" && \
   
-  # Step 2: Always run migrate
-  echo '🔧 Applying migrations to database...' && \
+  # ONLY migrate - NEVER makemigrations in production
+  echo '' && \
+  echo '🔧 Applying database migrations...' && \
   python manage.py migrate --noinput && \
   
-  # Step 3: Show migration status
+  # Show migration status
   echo '📊 Migration status:' && \
-  python manage.py showmigrations network 2>/dev/null || echo '⚠️  Could not show migrations' && \
+  python manage.py showmigrations --list | grep -E '\[X\]|\[\s\]' && \
   
-  # Step 4: Start Gunicorn
+  # Check if superuser exists, create if not
+  echo '' && \
+  echo '👑 Checking for superuser...' && \
+  python -c \"
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project4.settings')
+django.setup()
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if User.objects.filter(is_superuser=True).exists():
+    print('✅ Superuser exists')
+else:
+    print('⚠️  No superuser found. Create one via:')
+    print('   koyeb exec -- python manage.py createsuperuser')
+  \" && \
+  
+  # Start Gunicorn
+  echo '' && \
   echo '🚀 Starting Gunicorn server...' && \
-  gunicorn project4.wsgi:application --bind 0.0.0.0:\$PORT --workers 2 --timeout 120 --log-level info
+  echo '📡 App will be available at: https://your-app-name.koyeb.app' && \
+  gunicorn project4.wsgi:application \
+    --bind 0.0.0.0:\$PORT \
+    --workers 3 \
+    --timeout 120 \
+    --log-level info \
+    --access-logfile - \
+    --error-logfile -
 "]
