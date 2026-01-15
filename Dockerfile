@@ -16,28 +16,17 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy app
 COPY . .
 
-# Create user for security
+# Create non-root user
 RUN useradd -m -u 1000 django && chown -R django:django /app
 USER django
 
-# Collect static
+# Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Test database connection before starting
+EXPOSE 8000
+
+# Start command
 CMD ["sh", "-c", "
-  echo 'Testing database connection...' && \
-  python -c \"
-import os, django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project4.settings')
-django.setup()
-from django.db import connection
-connection.ensure_connection()
-print('✅ Database connection successful!')
-\" && \
-  echo 'Running migrations...' && \
   python manage.py migrate --noinput && \
-  echo 'Starting gunicorn...' && \
   gunicorn project4.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 "]
-
-EXPOSE 8000
