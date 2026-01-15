@@ -1,46 +1,43 @@
-# Use official Python slim image
 FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PYTHONPATH=/app \
-    PORT=8000
-
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Copy requirements
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt --no-cache-dir
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy application code
+# Copy app
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
-# Create non-root user
-RUN useradd -m -u 1000 django && \
-    chown -R django:django /app
+# Create user for security
+RUN useradd -m -u 1000 django && chown -R django:django /app
 USER django
 
-# Expose port
-EXPOSE $PORT
+# Collect static
+RUN python manage.py collectstatic --noinput
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:$PORT/health/ || exit 1
+# Test database connection before starting
+CMD ["sh", "-c", "
+  echo 'Testing database connection...' && \
+  python -c \"
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project4.settings')
+django.setup()
+from django.db import connection
+connection.ensure_connection()
+print('✅ Database connection successful!')
+\" && \
+  echo 'Running migrations...' && \
+  python manage.py migrate --noinput && \
+  echo 'Starting gunicorn...' && \
+  gunicorn project4.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+"]
 
-# Run migrations and start gunicorn
-CMD sh -c "python manage.py migrate && gunicorn project4.wsgi:application --bind 0.0.0.0:$PORT"
+EXPOSE 8000
