@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
@@ -25,28 +26,33 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# ✅ FIX: Auto-run migrations before starting (Grok's suggestion)
-# Use sh -c to handle multiple commands
+# 🚀 DOCKER-ONLY MIGRATION WORKFLOW (With Persistence)
 CMD ["sh", "-c", "
-  echo '🚀 Checking database connection...' && \
-  python -c \"
-import os, django, time
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project4.settings')
-django.setup()
-from django.db import connection
-for i in range(3):
-    try:
-        connection.ensure_connection()
-        print('✅ Database connected!')
-        break
-    except Exception as e:
-        print(f'Attempt {i+1}/3: {e}')
-        if i < 2:
-            time.sleep(2)
-\" && \
-  echo '🔧 Running migrations...' && \
+  echo '🚀 Starting application...' && \
+  
+  # Step 1: Check if migration files exist
+  echo '📂 Checking for existing migration files...' && \
+  if [ ! -f /app/network/migrations/0001_initial.py ]; then
+    echo '⚠️  No migration files found! Creating initial migrations...' && \
+    echo '🔧 Running makemigrations for network app...' && \
+    python manage.py makemigrations network --noinput && \
+    echo '✅ Created initial migrations!' && \
+    echo '📝 Note: These migration files will be lost if container restarts!' && \
+    echo '📝 For production: Run makemigrations locally and commit to git.'
+  else
+    echo '✅ Migration files found. Skipping makemigrations.' && \
+    echo 'ℹ️  If models changed, run makemigrations locally and redeploy.'
+  fi && \
+  
+  # Step 2: Always run migrate
+  echo '🔧 Applying migrations to database...' && \
   python manage.py migrate --noinput && \
-  echo '✅ Migrations complete!' && \
-  echo '🚀 Starting Gunicorn...' && \
+  
+  # Step 3: Show migration status
+  echo '📊 Migration status:' && \
+  python manage.py showmigrations network 2>/dev/null || echo '⚠️  Could not show migrations' && \
+  
+  # Step 4: Start Gunicorn
+  echo '🚀 Starting Gunicorn server...' && \
   gunicorn project4.wsgi:application --bind 0.0.0.0:\$PORT --workers 2 --timeout 120 --log-level info
 "]
