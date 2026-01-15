@@ -21,19 +21,37 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse("index"))
-        else:
-            return render(request, "network/login.html", {
-                "message": "Invalid username and/or password."
-            })
-    else:
-        return render(request, "network/login.html")
+        identifier = request.POST.get("identifier", "").strip()  # renamed from email
+        password = request.POST.get("password", "")
 
+        if not identifier or not password:
+            return render(request, "network/login.html", {"message": "Email/Username and password required."})
+
+        # Try email first
+        user = None
+        try:
+            user = User.objects.get(email=identifier)
+        except User.DoesNotExist:
+            # Then try username
+            try:
+                user = User.objects.get(username=identifier)
+            except User.DoesNotExist:
+                pass
+
+        if user:
+            user = authenticate(request, username=user.username, password=password)  # always use username for auth
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponseRedirect(reverse("index"))
+                else:
+                    return render(request, "network/login.html", {"message": "Account not activated."})
+
+        return render(request, "network/login.html", {"message": "Invalid email/username or password."})
+
+    return render(request, "network/login.html")
+    
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
