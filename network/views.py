@@ -58,7 +58,7 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.is_active = False  # Disable until verified
             token = get_random_string(32)
-            user.activation_token = token  # Directly on User (no .profile)
+            user.activation_token = token  # Direct on User
             user.save()
 
             activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
@@ -79,7 +79,7 @@ def register(request):
             return render(request, "network/register.html", {"message": str(e)})
 
     return render(request, "network/register.html")
-
+    
 # New social features (from our plan)
 @login_required
 def new_post(request):
@@ -396,7 +396,7 @@ def following_list(request, username):
 
 def activate(request, token):
     try:
-        user = User.objects.get(activation_token=token)  # Directly on User
+        user = User.objects.get(activation_token=token)  # Direct on User
         user.is_active = True
         user.activation_token = None
         user.save()
