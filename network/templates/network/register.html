@@ -1,0 +1,51 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-body p-5 bg-light">
+                        <h2 class="mb-4 text-center">Register</h2>
+
+                        {% if message %}
+                            <div class="alert alert-danger mt-3">{{ message }}</div>
+                        {% endif %}
+
+                        <form action="{% url 'register' %}" method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" name="username" class="form-control" id="username" placeholder="Username" required autofocus>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" id="email" placeholder="Email Address" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirmation" class="form-label">Confirm Password</label>
+                                <input type="password" name="confirmation" class="form-control" id="confirmation" placeholder="Confirm Password" required>
+                            </div>
+                            
+                            <div class="text-center">
+                                <input class="btn btn-primary btn-lg px-5" type="submit" value="Register">
+                            </div>
+                        </form>
+
+                        <div class="mt-4 text-center">
+                            Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

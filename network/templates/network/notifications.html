@@ -1,0 +1,30 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2>Notifications</h2>
+
+        {% if notifications %}
+            <div class="list-group">
+                {% for notif in notifications %}
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <strong>{{ notif.actor.username }}</strong> {{ notif.verb }}
+                                {% if notif.post %}
+                                    <small>on post: "{{ notif.post.content|truncatewords:8 }}"</small>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h4 class="text-muted">No notifications yet.</h4>
+                <p>Follow users or get likes to see activity here.</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

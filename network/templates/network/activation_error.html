@@ -1,0 +1,9 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2>Activation Error</h2>
+        <p class="alert alert-danger">{{ message }}</p>
+        <a href="{% url 'register' %}" class="btn btn-primary">Register again</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Chat with {{ other_user.username }}</h2>
+            <div>
+                <a href="{% url 'messages_inbox' %}" class="btn btn-outline-secondary me-2">Back</a>
+                <button class="btn btn-outline-secondary delete-conversation" data-other="{{ other_user.username }}">
+                    Hide Conversation
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-box border rounded p-3 mb-3 bg-light" style="height: 400px; overflow-y: auto;">
+            {% for msg in messages %}
+                <div class="mb-3 message-item {% if msg.sender == user %}text-end{% else %}text-start{% endif %}" data-message-id="{{ msg.id }}">
+                    <div class="d-inline-block p-3 rounded {% if msg.sender == user %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width: 70%;">
+                        {{ msg.content|linebreaks }}
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        <span class="time-ago" data-timestamp="{{ msg.timestamp|date:'c' }}">
+                            {{ msg.timestamp|date:"g:i A" }}
+                        </span>
+                        {% if msg.sender == user and msg.is_read %}
+                            <em class="text-primary ms-2">Seen</em>
+                        {% endif %}
+                    </small>
+                    
+                    <!-- Delete button for own messages -->
+                    {% if msg.sender == user %}
+                        <button class="btn btn-sm btn-outline-danger delete-message mt-1" data-message-id="{{ msg.id }}">
+                            Delete
+                        </button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Message Form -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <textarea name="content" class="form-control" rows="2" placeholder="Type your message..." required></textarea>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Client-side time ago update -->
+    <script>
+    function updateTimeAgo() {
+        document.querySelectorAll('.time-ago').forEach(el => {
+            const timestamp = new Date(el.dataset.timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - timestamp) / 1000);
+
+            let text = '';
+            if (diff < 60) text = 'just now';
+            else if (diff < 3600) text = `${Math.floor(diff / 60)} minute${Math.floor(diff / 60) !== 1 ? 's' : ''} ago`;
+            else if (diff < 86400) text = `${Math.floor(diff / 3600)} hour${Math.floor(diff / 3600) !== 1 ? 's' : ''} ago`;
+            else if (diff < 604800) text = `${Math.floor(diff / 86400)} day${Math.floor(diff / 86400) !== 1 ? 's' : ''} ago`;
+            else text = timestamp.toLocaleString();
+
+            el.textContent = text;
+        });
+    }
+
+    updateTimeAgo();
+    setInterval(updateTimeAgo, 60000);
+    </script>
+{% endblock %}

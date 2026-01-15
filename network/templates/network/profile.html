@@ -1,0 +1,70 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="text-center mb-5">
+        <!-- Avatar with Floating + Button (perfect bottom-right, no username hide) -->
+        <div class="position-relative d-inline-block mb-5">
+            {% if profile_user.profile_picture %}
+                <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle shadow-lg" width="140" height="140" alt="{{ profile_user.username }}" style="object-fit: cover; border: 5px solid #fff;">
+            {% else %}
+                <div class="bg-primary text-white rounded-circle shadow-lg d-flex align-items-center justify-content-center mx-auto" style="width:140px; height:140px; font-size:4.5rem;">
+                    {{ profile_user.username|first|upper }}
+                </div>
+            {% endif %}
+
+            {% if user == profile_user %}
+                <!-- + Button – exact bottom-right corner -->
+                <label for="id_profile_picture_quick" class="position-absolute" style="bottom: -10px; right: -10px; width:50px; height:50px; cursor:pointer; z-index: 10;">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width:100%; height:100%; border: 4px solid white;">
+                        <i class="fas fa-plus fa-xl"></i>
+                    </div>
+                </label>
+
+                <!-- Hidden Quick Upload Form -->
+                <form method="post" enctype="multipart/form-data" id="quick-upload-form" action="{% url 'quick_upload_picture' %}" style="display:none;">
+                    {% csrf_token %}
+                    <input type="file" name="profile_picture" id="id_profile_picture_quick" accept="image/*" class="d-none" onchange="this.form.submit();">
+                </form>
+            {% endif %}
+        </div>
+
+        <h3 class="mb-2">{{ profile_user.username }}</h3>
+        {% if profile_user.bio %}
+            <p class="text-muted mb-3">{{ profile_user.bio }}</p>
+        {% endif %}
+        
+        <!-- Updated: Clickable followers/following counts with text included -->
+        <p class="text-center">
+            <strong id="followers-count" data-followers-count>
+                <a href="{% url 'followers_list' profile_user.username %}" class="text-dark text-decoration-none">
+                    {{ profile_user.followers.count }} followers
+                </a>
+            </strong> • 
+            <strong id="following-count">
+                <a href="{% url 'following_list' profile_user.username %}" class="text-dark text-decoration-none">
+                    {{ profile_user.following.count }} following
+                </a>
+            </strong>
+        </p>
+
+        <!-- Buttons Row -->
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            {% if user.is_authenticated and user != profile_user %}
+                <button class="btn {% if is_following %}btn-outline-primary{% else %}btn-primary{% endif %} px-4" id="follow-btn" data-username="{{ profile_user.username }}">
+                    {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                </button>
+                <a href="{% url 'conversation' profile_user.username %}" class="btn btn-outline-primary px-4">
+                    Message
+                </a>
+            {% endif %}
+            {% if user == profile_user %}
+                <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary px-4">
+                    Edit Bio
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h4 class="mb-4">Posts</h4>
+    {% include "network/partials/post_list.html" %}
+{% endblock %}

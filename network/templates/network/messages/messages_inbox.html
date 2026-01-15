@@ -1,0 +1,33 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2>Messages</h2>
+
+        {% if conversations %}
+            <div class="list-group">
+                {% for conv in conversations %}
+                    <a href="{% url 'conversation' conv.user.username %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <strong>{{ conv.user.username }}</strong>
+                                {% if conv.unread_count > 0 %}
+                                    <span class="badge bg-primary rounded-pill ms-2">{{ conv.unread_count }}</span>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">
+                                {{ conv.latest_message.content|truncatewords:10|default:"No messages yet" }}
+                            </small>
+                        </div>
+                        <small class="text-muted">{{ conv.latest_message.timestamp|timesince }} ago</small>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center py-5">
+                <h5>No messages yet</h5>
+                <p>Send a message to someone from their profile to start a conversation.</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

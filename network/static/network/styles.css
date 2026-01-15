@@ -1,0 +1,21 @@
+.post-card { background: white; border: 1px solid #ddd; }
+.thumbs-up.active, .thumbs-down.active { background: #e3f2fd; }
+.badge { font-size: 0.7em; }
+img, video { max-width: 100%; border-radius: 8px; }
+.rounded-circle { object-fit: cover; }
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.card {
+    border-radius: 20px;
+}
+label[for="id_profile_picture"]:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+
+/* Just the necessary CSS for polish improvements */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

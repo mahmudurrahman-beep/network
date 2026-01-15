@@ -1,0 +1,133 @@
+{% for post in page_obj %}
+    <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
+        <div class="d-flex align-items-center mb-3">
+            {% if post.user.profile_picture %}
+                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" alt="{{ post.user.username }}" style="object-fit: cover;">
+            {% else %}
+                <div class="bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:48px; height:48px; font-size:1.2rem;">
+                    {{ post.user.username|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <strong>
+                    <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
+                        {{ post.user.username }}
+                    </a>
+                </strong>
+                <small class="text-muted d-block time-ago" data-timestamp="{{ post.timestamp|date:'c' }}">
+                    {{ post.timestamp|date:"M d, Y • g:i A" }}
+                </small>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="post-content mb-3" data-post-id="{{ post.id }}">
+            <p class="post-text mb-0">{{ post.content|linebreaksbr }}</p>
+        </div>
+
+        <!-- Media -->
+        <div class="mb-3">
+            {% for media in post.media.all %}
+                <div class="mb-2">
+                    {% if media.media_type == 'image' %}
+                        <img src="{{ media.file.url }}" class="img-fluid rounded" alt="Post image" style="max-height: 500px; object-fit: contain;">
+                    {% else %}
+                        <video controls class="w-100 rounded" style="max-height: 500px;">
+                            <source src="{{ media.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            <!-- Like -->
+            <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                    data-post="{{ post.id }}" data-value="1">
+                👍 <span class="like-count" data-post-id="{{ post.id }}">{{ post.thumbs_up.count }}</span>
+            </button>
+
+            <!-- Dislike -->
+            <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}" 
+                    data-post="{{ post.id }}" data-value="-1">
+                👎 <span class="dislike-count" data-post-id="{{ post.id }}">{{ post.thumbs_down.count }}</span>
+            </button>
+
+            <!-- Edit & Delete (own posts only) -->
+            {% if request.user == post.user %}
+                <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
+                <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
+            {% endif %}
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section mt-4">
+            <h6>Comments ({{ post.comments.count }})</h6>
+
+            <!-- Comment Form -->
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-3">
+                    {% csrf_token %}
+                    <textarea name="content" class="form-control" rows="2" placeholder="Write a comment..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Comment</button>
+                </form>
+            {% endif %}
+
+            <!-- List Comments -->
+            {% for comment in post.comments.all %}
+                <div class="d-flex mb-2 align-items-start">
+                    <!-- Commenter avatar -->
+                    {% if comment.user.profile_picture %}
+                        <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32" alt="{{ comment.user.username }}" style="object-fit: cover;">
+                    {% else %}
+                        <img src="/static/network/default-avatar.png" class="rounded-circle me-2" width="32" height="32" alt="{{ comment.user.username }}" style="object-fit: cover;">
+                    {% endif %}
+                    <div>
+                        <strong>
+                            <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
+                                {{ comment.user.username }}
+                            </a>
+                        </strong>
+                        <small class="text-muted ms-2 time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
+                            {{ comment.timestamp|date:"M d, Y • g:i A" }}
+                        </small>
+                        <p class="mb-1">{{ comment.content|linebreaksbr }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% empty %}
+    <p class="text-center text-muted py-5">No posts to show.</p>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+    <nav aria-label="Post pagination">
+        <ul class="pagination justify-content-center mt-4">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

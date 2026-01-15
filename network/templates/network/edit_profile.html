@@ -1,0 +1,42 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-body p-5 bg-light text-center">
+                        <h3 class="mb-4 fw-bold text-primary">Edit Profile</h3>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            <!-- Bio Centered -->
+                            <div class="mb-4">
+                                <label for="id_bio" class="form-label fw-semibold fs-5">Bio</label>
+                                <textarea name="bio" id="id_bio" class="form-control form-control-lg mx-auto" style="max-width: 80%;" rows="4" placeholder="Tell us about yourself... (optional)">{{ user.bio }}</textarea>
+                            </div>
+
+                            <!-- Timezone Selection -->
+                            <div class="mb-4">
+                                <label for="timezone" class="form-label fw-semibold fs-5">Time Zone</label>
+                                <select name="timezone" class="form-control form-control-lg mx-auto" id="timezone" style="max-width: 80%;">
+                                    {% for tz, tz_display in timezone_choices %}
+                                        <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>
+                                            {{ tz_display }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">All timestamps will display in your local time</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
