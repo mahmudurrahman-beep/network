@@ -1,3 +1,4 @@
+# requirements.txt (updated)
 Django==4.2.16
 gunicorn==21.2.0
 whitenoise==6.6.0
@@ -6,3 +7,4 @@ dj-database-url==2.1.0
 python-dotenv==1.0.0
 cloudinary==1.36.0
 django-cloudinary-storage==0.3.0
+pytz==2024.1  
