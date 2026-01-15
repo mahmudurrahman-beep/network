@@ -7,43 +7,18 @@ services:
         http:
           paths:
             - /
-    # Option 1: Using Docker build (recommended - use your Dockerfile)
     build:
       docker:
         dockerfile: Dockerfile
-    
-    # REMOVED healthcheck section - Koyeb will check '/' automatically
-    
+    # No healthcheck - Koyeb will auto-check
     env:
       - name: DJANGO_SETTINGS_MODULE
         value: project4.settings
       - name: PYTHONPATH
         value: /workspace
-      # Email configuration (will be set in Koyeb dashboard)
-      - name: EMAIL_HOST_USER
-        value: ${EMAIL_HOST_USER}
-      - name: EMAIL_HOST_PASSWORD
-        value: ${EMAIL_HOST_PASSWORD}
-      - name: DEFAULT_FROM_EMAIL
-        value: ${EMAIL_HOST_USER}
-      # Database (Supabase)
-      - name: DATABASE_URL
-        value: ${DATABASE_URL}
-      # Security
-      - name: SECRET_KEY
-        value: ${SECRET_KEY}
-      - name: DEBUG
-        value: ${DEBUG}
-      - name: ALLOWED_HOSTS
-        value: ${ALLOWED_HOSTS}
-      - name: CSRF_TRUSTED_ORIGINS
-        value: ${CSRF_TRUSTED_ORIGINS}
-    
     routes:
       - path: /
         port: 8000
-    
-    # Resource limits for free tier
     scaling:
       min: 1
       max: 1
