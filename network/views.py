@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.auth import login
 
+
 # Original auth views (keep these exactly as in distribution)
 def index(request):
     return render(request, "network/index.html")
@@ -55,22 +56,16 @@ def register(request):
 
         try:
             user = User.objects.create_user(username, email, password)
-            user.is_active = False  # Disable login until email verified
+            user.is_active = False  # Disable until verified
+            token = get_random_string(32)
+            user.activation_token = token  # Directly on User (no .profile)
             user.save()
 
-            # Generate activation token
-            token = get_random_string(32)
-            user.profile.activation_token = token  # We'll add this field
-            user.profile.save()
-
-            # Send activation email
-            activation_link = request.build_absolute_uri(
-                reverse('activate', args=[token])
-            )
+            activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
             send_mail(
                 'Activate Your Network Account',
-                f'Click here to activate: {activation_link}',
-                'your-email@gmail.com',
+                f'Click this link to activate: {activation_link}',
+                'your-email@gmail.com',  # Your DEFAULT_FROM_EMAIL
                 [email],
                 fail_silently=False,
             )
@@ -80,6 +75,8 @@ def register(request):
             })
         except IntegrityError:
             return render(request, "network/register.html", {"message": "Username already taken."})
+        except ValueError as e:
+            return render(request, "network/register.html", {"message": str(e)})
 
     return render(request, "network/register.html")
 
@@ -399,10 +396,9 @@ def following_list(request, username):
 
 def activate(request, token):
     try:
-        user = User.objects.get(profile__activation_token=token)
+        user = User.objects.get(activation_token=token)  # Directly on User
         user.is_active = True
-        user.profile.activation_token = None  # Clear token
-        user.profile.save()
+        user.activation_token = None
         user.save()
         login(request, user)
         return HttpResponseRedirect(reverse('index'))
