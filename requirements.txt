@@ -1,10 +1,23 @@
+# Core Django
 Django==4.2.16
+
+# Production Server (Grok's suggestion)
 gunicorn==21.2.0
+
+# Static Files (Our setup)
 whitenoise==6.6.0
+
+# Database (Supabase PostgreSQL)
 psycopg2-binary==2.9.11
 dj-database-url==2.1.0
+
+# Environment Variables
 python-dotenv==1.0.0
+
+# Media Storage (Cloudinary)
 cloudinary==1.36.0
 django-cloudinary-storage==0.3.0
+
+# Required for User model (Our fixes)
 pytz==2024.1
-Pillow==10.2.0  # ← ADD THIS LINE
+Pillow==10.2.0  # For ImageField
