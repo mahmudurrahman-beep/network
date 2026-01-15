@@ -6,7 +6,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
@@ -20,11 +19,14 @@ COPY . .
 RUN useradd -m -u 1000 django && chown -R django:django /app
 USER django
 
-# Collect static files (required for WhiteNoise)
+# Collect static files
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# ✅ SIMPLE, RELIABLE COMMAND (FIXED VERSION)
-CMD python manage.py migrate --noinput && \
-    gunicorn project4.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+# 🚀 ROBUST STARTUP SCRIPT
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["gunicorn", "project4.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
