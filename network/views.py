@@ -342,21 +342,55 @@ def conversation(request, username):
     
     if request.method == "POST":
         content = request.POST.get('content', '').strip()
-        if content:
-            Message.objects.create(sender=request.user, recipient=other_user, content=content)
+        media_file = request.FILES.get('media')
+        
+        if content or media_file:
+            # Create message
+            msg = Message.objects.create(
+                sender=request.user, 
+                recipient=other_user, 
+                content=content or ''
+            )
+            
+            # Handle media upload
+            if media_file:
+                # Determine media type
+                content_type = media_file.content_type
+                if content_type == 'image/gif':
+                    media_type = 'gif'
+                elif content_type.startswith('image/'):
+                    media_type = 'image'
+                elif content_type.startswith('video/'):
+                    media_type = 'video'
+                else:
+                    # Check extension as fallback
+                    ext = os.path.splitext(media_file.name)[1].lower()
+                    if ext == '.gif':
+                        media_type = 'gif'
+                    elif ext in ['.jpg', '.jpeg', '.png', '.bmp', '.webp']:
+                        media_type = 'image'
+                    elif ext in ['.mp4', '.mov', '.avi', '.mkv', '.webm']:
+                        media_type = 'video'
+                    else:
+                        media_type = 'image'  # default
+                
+                # Save media to message
+                msg.media = media_file
+                msg.media_type = media_type
+                msg.save()
             
             # Unhide for YOU (sender) so you see your own message
             request.user.hidden_conversations.remove(other_user)
             
             # Unhide for recipient (so conversation reappears)
             other_user.hidden_conversations.remove(request.user)
-            # REMOVED: Notification creation for messages
+        
         return HttpResponseRedirect(reverse('conversation', args=[username]))
     
     return render(request, "network/messages/conversation.html", {
         'other_user': other_user,
         'messages': messages
-    })
+    })  
 
 
 @csrf_exempt
