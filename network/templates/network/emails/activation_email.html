@@ -109,9 +109,30 @@
 <body>
     <div class="container">
         <a href="https://argon.koyeb.app" class="email-header" style="text-decoration: none;">
-            <img src="{{ protocol }}://{{ domain }}{% static 'network/images/email-banner.png' %}"
+            <!-- ✅ SAFELY ADDED: Hardcoded logo URL (with fallback in comments) -->
+            <img src="https://argon.koyeb.app/static/network/images/email-banner.png" 
                  alt="Argon Network - Click to visit"
-                 class="email-banner">
+                 class="email-banner"
+                 width="600" 
+                 height="150"
+                 style="width:100%; max-width:600px; height:auto;">
+            
+            <!-- 🛡️ Fallback: If logo doesn't load, show text -->
+            <noscript>
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 40px 20px;
+                    text-align: center;
+                    height: 150px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                ">
+                    <h1 style="margin:0; font-size:36px; font-weight:bold;">🌐 ARGON NETWORK</h1>
+                    <p style="margin:10px 0 0 0; font-size:18px;">Social Media Platform</p>
+                </div>
+            </noscript>
         </a>
         
         <div class="content">
