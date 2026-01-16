@@ -13,7 +13,8 @@ import pytz
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.auth import login
-
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 # Original auth views (keep these exactly as in distribution)
 def index(request):
