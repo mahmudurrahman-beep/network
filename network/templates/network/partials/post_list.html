@@ -1,12 +1,18 @@
+{% load static %}
+
 {% for post in page_obj %}
     <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
         <div class="d-flex align-items-center mb-3">
             {% if post.user.profile_picture %}
                 <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" alt="{{ post.user.username }}" style="object-fit: cover;">
             {% else %}
-                <div class="bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:48px; height:48px; font-size:1.2rem;">
-                    {{ post.user.username|first|upper }}
-                </div>
+                <!-- Default Argon Avatar -->
+                <img src="{% static 'network/images/default-avatar.png' %}" 
+                     class="rounded-circle me-2" 
+                     width="48" 
+                     height="48" 
+                     alt="{{ post.user.username }}"
+                     style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             {% endif %}
             <div>
                 <strong>
@@ -14,6 +20,13 @@
                         {{ post.user.username }}
                     </a>
                 </strong>
+                <small class="text-muted ms-2">
+                    {% if post.user.gender == 'M' %}♂
+                    {% elif post.user.gender == 'F' %}♀
+                    {% elif post.user.gender == 'O' %}⚧
+                    {% else %}•
+                    {% endif %}
+                </small>
                 <small class="text-muted d-block time-ago" data-timestamp="{{ post.timestamp|date:'c' }}">
                     {{ post.timestamp|date:"M d, Y • g:i A" }}
                 </small>
@@ -77,23 +90,50 @@
 
             <!-- List Comments -->
             {% for comment in post.comments.all %}
-                <div class="d-flex mb-2 align-items-start">
+                <div class="d-flex mb-2 align-items-start comment-item" data-comment-id="{{ comment.id }}">
                     <!-- Commenter avatar -->
                     {% if comment.user.profile_picture %}
                         <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32" alt="{{ comment.user.username }}" style="object-fit: cover;">
                     {% else %}
-                        <img src="/static/network/default-avatar.png" class="rounded-circle me-2" width="32" height="32" alt="{{ comment.user.username }}" style="object-fit: cover;">
+                        <!-- Default Argon Avatar -->
+                        <img src="{% static 'network/images/default-avatar.png' %}" 
+                             class="rounded-circle me-2" 
+                             width="32" 
+                             height="32" 
+                             alt="{{ comment.user.username }}"
+                             style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     {% endif %}
-                    <div>
+                    <div class="comment-content">
                         <strong>
                             <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
                                 {{ comment.user.username }}
                             </a>
                         </strong>
+                        <small class="text-muted ms-2">
+                            {% if comment.user.gender == 'M' %}♂
+                            {% elif comment.user.gender == 'F' %}♀
+                            {% elif comment.user.gender == 'O' %}⚧
+                            {% else %}•
+                            {% endif %}
+                        </small>
                         <small class="text-muted ms-2 time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
                             {{ comment.timestamp|date:"M d, Y • g:i A" }}
                         </small>
-                        <p class="mb-1">{{ comment.content|linebreaksbr }}</p>
+
+                        <!-- Edit/Delete Buttons – only own comments -->
+                        {% if request.user == comment.user %}
+                            <div class="btn-group btn-group-sm ms-2">
+                                <button class="btn btn-outline-primary edit-comment" data-comment-id="{{ comment.id }}">
+                                    Edit
+                                </button>
+                                <button class="btn btn-outline-danger delete-comment" data-comment-id="{{ comment.id }}">
+                                    Delete
+                                </button>
+                            </div>
+                        {% endif %}
+
+                        <!-- Content (editable area) -->
+                        <p class="mb-1 comment-text">{{ comment.content|linebreaksbr }}</p>
                     </div>
                 </div>
             {% endfor %}
