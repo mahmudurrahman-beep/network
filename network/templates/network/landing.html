@@ -1,0 +1,10 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container mt-5 text-center">
+        <h1 class="display-4 mb-4">Welcome to Argon Network 🌐</h1>
+        <p class="lead mb-5">Connect, share, and discover with friends.</p>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">Join Now</a>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Log In</a>
+    </div>
+{% endblock %}
