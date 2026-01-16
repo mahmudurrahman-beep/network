@@ -3,7 +3,13 @@
 
 {% block body %}
 <style>
-    .landing-hero {
+    body {
+        margin: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Hero Section */
+    .hero-section {
         min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
@@ -13,241 +19,599 @@
         overflow: hidden;
     }
     
-    .landing-hero::before {
+    .hero-section::before {
         content: '';
         position: absolute;
-        width: 500px;
-        height: 500px;
-        background: rgba(255, 255, 255, 0.1);
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
         border-radius: 50%;
-        top: -200px;
+        top: -400px;
         right: -200px;
-        animation: float 20s infinite ease-in-out;
+        animation: float 25s infinite ease-in-out;
     }
     
-    .landing-hero::after {
+    .hero-section::after {
         content: '';
         position: absolute;
-        width: 400px;
-        height: 400px;
-        background: rgba(255, 255, 255, 0.1);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
         border-radius: 50%;
-        bottom: -150px;
-        left: -150px;
-        animation: float 15s infinite ease-in-out reverse;
+        bottom: -300px;
+        left: -100px;
+        animation: float 20s infinite ease-in-out reverse;
     }
     
     @keyframes float {
-        0%, 100% { transform: translateY(0px) translateX(0px); }
-        50% { transform: translateY(-50px) translateX(30px); }
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, -50px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
     }
     
-    .landing-content {
+    .hero-content {
         position: relative;
         z-index: 10;
         text-align: center;
         color: white;
-        max-width: 800px;
-        padding: 0 20px;
+        max-width: 900px;
+        padding: 0 30px;
+        animation: fadeInUp 1s ease-out;
     }
     
-    .landing-title {
-        font-size: 4rem;
-        font-weight: 800;
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .hero-logo {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        animation: scaleIn 0.8s ease-out;
+    }
+    
+    @keyframes scaleIn {
+        from {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .hero-title {
+        font-size: 4.5rem;
+        font-weight: 900;
         margin-bottom: 1.5rem;
-        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        letter-spacing: -2px;
-        animation: slideDown 1s ease-out;
+        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        letter-spacing: -3px;
+        line-height: 1.1;
     }
     
-    .landing-subtitle {
-        font-size: 1.5rem;
+    .hero-subtitle {
+        font-size: 1.6rem;
         margin-bottom: 3rem;
         opacity: 0.95;
-        font-weight: 300;
-        animation: slideUp 1s ease-out 0.2s both;
+        font-weight: 400;
+        line-height: 1.6;
     }
     
-    .landing-buttons {
+    .hero-buttons {
         display: flex;
-        gap: 1.5rem;
+        gap: 2rem;
         justify-content: center;
         flex-wrap: wrap;
-        animation: slideUp 1s ease-out 0.4s both;
+        animation: fadeInUp 1s ease-out 0.3s both;
     }
     
     .btn-hero {
-        padding: 18px 48px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 50px;
+        padding: 20px 55px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-radius: 60px;
         text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
         letter-spacing: 0.5px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
     }
     
-    .btn-hero-primary {
+    .btn-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-hero:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-hero {
         background: white;
         color: #667eea;
     }
     
-    .btn-hero-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+    .btn-primary-hero:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
         color: #667eea;
     }
     
-    .btn-hero-secondary {
+    .btn-secondary-hero {
         background: transparent;
         color: white;
-        border: 2px solid white;
+        border: 3px solid white;
     }
     
-    .btn-hero-secondary:hover {
+    .btn-secondary-hero:hover {
         background: white;
         color: #667eea;
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
     }
     
-    .features {
-        padding: 100px 20px;
-        background: #f8f9fa;
+    /* Features Section */
+    .features-section {
+        padding: 120px 30px;
+        background: #f8f9fc;
+        position: relative;
+    }
+    
+    .features-header {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto 80px;
+    }
+    
+    .features-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        letter-spacing: -1px;
+    }
+    
+    .features-description {
+        font-size: 1.2rem;
+        color: #6c757d;
+        line-height: 1.8;
     }
     
     .features-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 40px;
-        max-width: 1200px;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 50px;
+        max-width: 1400px;
         margin: 0 auto;
     }
     
     .feature-card {
         background: white;
-        padding: 40px 30px;
-        border-radius: 16px;
+        padding: 50px 40px;
+        border-radius: 24px;
         text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
     }
     
     .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        transform: translateY(-15px);
+        box-shadow: 0 20px 50px rgba(102, 126, 234, 0.25);
     }
     
     .feature-icon {
-        font-size: 3rem;
-        margin-bottom: 20px;
+        font-size: 4rem;
+        margin-bottom: 25px;
+        display: inline-block;
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .feature-card:hover .feature-icon {
+        animation: none;
+        transform: scale(1.15) rotate(5deg);
     }
     
     .feature-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: 700;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
         color: #2c3e50;
     }
     
     .feature-description {
         color: #6c757d;
-        line-height: 1.6;
+        line-height: 1.7;
+        font-size: 1.05rem;
     }
     
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Stats Section */
+    .stats-section {
+        padding: 100px 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
     }
     
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 60px;
+        max-width: 1200px;
+        margin: 0 auto;
     }
     
+    .stat-item {
+        animation: fadeInUp 1s ease-out both;
+    }
+    
+    .stat-number {
+        font-size: 4rem;
+        font-weight: 900;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-label {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        padding: 120px 30px;
+        background: white;
+        text-align: center;
+    }
+    
+    .cta-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .cta-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 25px;
+        letter-spacing: -2px;
+    }
+    
+    .cta-subtitle {
+        font-size: 1.3rem;
+        color: #6c757d;
+        margin-bottom: 50px;
+        line-height: 1.7;
+    }
+    
+    /* Responsive */
     @media (max-width: 768px) {
-        .landing-title {
-            font-size: 2.5rem;
+        .hero-title {
+            font-size: 2.8rem;
         }
-        .landing-subtitle {
+        .hero-subtitle {
             font-size: 1.2rem;
         }
         .btn-hero {
-            padding: 15px 35px;
+            padding: 16px 40px;
             font-size: 1rem;
+        }
+        .features-title {
+            font-size: 2.2rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+        }
+        .cta-title {
+            font-size: 2.2rem;
         }
     }
 </style>
 
-<div class="landing-hero">
-    <div class="landing-content">
-        <h1 class="landing-title">Welcome to Argon Network 🌐</h1>
-        <p class="landing-subtitle">Connect, share, and discover with friends in a modern social experience</p>
-        <div class="landing-buttons">
-            <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Join Now ✨</a>
-            <a href="{% url 'login' %}" class="btn-hero btn-hero-secondary">Log In</a>
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-logo">🌐</div>
+        <h1 class="hero-title">Argon Network</h1>
+        <p class="hero-subtitle">The next generation social platform. Connect authentically, share meaningfully, discover endlessly.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'register' %}" class="btn-hero btn-primary-hero">Get Started Free ✨</a>
+            <a href="{% url 'login' %}" class="btn-hero btn-secondary-hero">Sign In</a>
         </div>
     </div>
 </div>
 
-<div class="features">
-    <div class="container">
-        <h2 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700; color: #2c3e50;">Why Choose Argon?</h2>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">💬</div>
-                <h3 class="feature-title">Connect & Chat</h3>
-                <p class="feature-description">Real-time messaging with friends. Share your thoughts and stay connected.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">📸</div>
-                <h3 class="feature-title">Share Moments</h3>
-                <p class="feature-description">Post photos, updates, and stories. Let your creativity shine.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">🔔</div>
-                <h3 class="feature-title">Stay Updated</h3>
-                <p class="feature-description">Get instant notifications about likes, comments, and new followers.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3 class="feature-title">Privacy First</h3>
-                <p class="feature-description">Your data is secure. Control who sees your content.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">👥</div>
-                <h3 class="feature-title">Discover People</h3>
-                <p class="feature-description">Find and connect with interesting people from around the world.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3 class="feature-title">Lightning Fast</h3>
-                <p class="feature-description">Smooth, responsive experience on all devices.</p>
-            </div>
+<div class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-item" style="animation-delay: 0.1s;">
+            <div class="stat-number">1000+</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item" style="animation-delay: 0.2s;">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Posts Shared</div>
+        </div>
+        <div class="stat-item" style="animation-delay: 0.3s;">
+            <div class="stat-number">100K+</div>
+            <div class="stat-label">Connections Made</div>
+        </div>
+        <div class="stat-item" style="animation-delay: 0.4s;">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Always Online</div>
         </div>
     </div>
 </div>
 
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 20px; text-align: center; color: white;">
-    <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">Ready to Get Started?</h2>
-    <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9;">Join thousands of users already on Argon Network</p>
-    <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Create Your Account 🚀</a>
+<div class="features-section">
+    <div class="features-header">
+        <h2 class="features-title">Everything You Need</h2>
+        <p class="features-description">Powerful features designed for modern social networking</p>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3 class="feature-title">Real-Time Messaging</h3>
+            <p class="feature-description">Private conversations with read receipts, media sharing, and message management</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <h3 class="feature-title">Rich Media Posts</h3>
+            <p class="feature-description">Share images, videos, and GIFs. Express yourself with full multimedia support</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🔔</div>
+            <h3 class="feature-title">Smart Notifications</h3>
+            <p class="feature-description">Stay updated with separate badges for messages and activity. Never miss important updates</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">👤</div>
+            <h3 class="feature-title">Rich Profiles</h3>
+            <p class="feature-description">Custom avatars, bios, gender display, and timezone support for global connections</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <h3 class="feature-title">Discover People</h3>
+            <p class="feature-description">Find interesting people worldwide. Build your network organically</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3 class="feature-title">Privacy & Security</h3>
+            <p class="feature-description">Email verification, secure passwords, and content moderation to keep you safe</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3 class="feature-title">Comments & Reactions</h3>
+            <p class="feature-description">Engage with posts through comments, likes, and reactions. Start conversations</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <h3 class="feature-title">Follow System</h3>
+            <p class="feature-description">Follow users you love. See their content in your personalized feed</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3 class="feature-title">Lightning Fast</h3>
+            <p class="feature-description">Optimized performance on all devices. Smooth, responsive experience everywhere</p>
+        </div>
+    </div>
 </div>
+
+<div class="cta-section">
+    <div class="cta-content">
+        <h2 class="cta-title">Ready to Join?</h2>
+        <p class="cta-subtitle">Join thousands of users already connecting on Argon Network. It's free, secure, and takes less than a minute.</p>
+        <a href="{% url 'register' %}" class="btn-hero btn-primary-hero">Create Your Account Now 🚀</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- ============================================= -->
+<!-- FILE 2: index.html (Enhanced Redirect Page) -->
+<!-- Save as: network/templates/network/index.html -->
+
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+<style>
+    .redirect-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .redirect-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 1000px;
+        height: 1000px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 4s infinite ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { 
+            transform: translate(-50%, -50%) scale(1); 
+            opacity: 0.3; 
+        }
+        50% { 
+            transform: translate(-50%, -50%) scale(1.2); 
+            opacity: 0.5; 
+        }
+    }
+    
+    .redirect-card {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        color: white;
+        padding: 70px 50px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        max-width: 550px;
+        animation: fadeInScale 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .redirect-icon {
+        font-size: 5rem;
+        margin-bottom: 25px;
+        animation: wave 2s infinite ease-in-out;
+    }
+    
+    @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(20deg); }
+        75% { transform: rotate(-20deg); }
+    }
+    
+    .redirect-title {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 20px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        letter-spacing: -1px;
+    }
+    
+    .redirect-message {
+        font-size: 1.3rem;
+        margin-bottom: 35px;
+        opacity: 0.95;
+        line-height: 1.6;
+    }
+    
+    .spinner-ring {
+        width: 70px;
+        height: 70px;
+        border: 5px solid rgba(255, 255, 255, 0.25);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 35px auto;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .redirect-btn {
+        display: inline-block;
+        padding: 18px 50px;
+        background: white;
+        color: #667eea;
+        text-decoration: none;
+        border-radius: 60px;
+        font-weight: 700;
+        font-size: 1.15rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 25px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    
+    .redirect-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+        color: #667eea;
+    }
+    
+    @media (max-width: 768px) {
+        .redirect-card {
+            padding: 50px 30px;
+            margin: 20px;
+        }
+        .redirect-title {
+            font-size: 2.2rem;
+        }
+        .redirect-message {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<div class="redirect-wrapper">
+    <div class="redirect-card">
+        <div class="redirect-icon">👋</div>
+        <h1 class="redirect-title">Welcome Back!</h1>
+        <p class="redirect-message">Taking you to your personalized feed...</p>
+        <div class="spinner-ring"></div>
+        <a href="{% url 'all_posts' %}" class="redirect-btn">Go to Feed Now 🚀</a>
+    </div>
+</div>
+
+<script>
+    // Auto-redirect after 2.5 seconds
+    setTimeout(function() {
+        window.location.href = "{% url 'all_posts' %}";
+    }, 2500);
+</script>
 {% endblock %}
