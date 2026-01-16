@@ -1,4 +1,5 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
     <div class="container mt-5">
@@ -13,44 +14,345 @@
             </div>
         </div>
 
-        <!-- Chat Area -->
-        <div class="chat-box border rounded p-3 mb-3 bg-light" style="height: 400px; overflow-y: auto;">
-            {% for msg in messages %}
-                <div class="mb-3 message-item {% if msg.sender == user %}text-end{% else %}text-start{% endif %}" data-message-id="{{ msg.id }}">
-                    <div class="d-inline-block p-3 rounded {% if msg.sender == user %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width: 70%;">
-                        {{ msg.content|linebreaks }}
-                    </div>
-                    <small class="text-muted d-block mt-1">
-                        <span class="time-ago" data-timestamp="{{ msg.timestamp|date:'c' }}">
-                            {{ msg.timestamp|date:"g:i A" }}
-                        </span>
-                        {% if msg.sender == user and msg.is_read %}
-                            <em class="text-primary ms-2">Seen</em>
+        <!-- Chat Area - UPDATED WITH FLEX-COLUMN-REVERSE -->
+        <div class="chat-box border rounded p-3 mb-3 bg-light d-flex flex-column-reverse" style="height: 400px; overflow-y: auto;">
+            {% for msg in messages reversed %}
+                <div class="mb-3 message-item d-flex {% if msg.sender == user %}align-self-end{% else %}align-self-start{% endif %}">
+                    {% if msg.sender != user %}
+                        <!-- Other user avatar -->
+                        {% if msg.sender.profile_picture %}
+                            <img src="{{ msg.sender.profile_picture.url }}" 
+                                 class="rounded-circle me-2 align-self-end" 
+                                 width="32" 
+                                 height="32" 
+                                 style="object-fit: cover;"
+                                 alt="{{ msg.sender.username }}">
+                        {% else %}
+                            <!-- Text-based fallback avatar -->
+                            <div class="bg-secondary text-white rounded-circle me-2 d-flex align-items-center justify-content-center align-self-end" style="width:32px; height:32px; font-size:0.8rem;">
+                                {{ msg.sender.username|first|upper }}
+                            </div>
                         {% endif %}
-                    </small>
-                    
-                    <!-- Delete button for own messages -->
+                    {% endif %}
+
+                    <!-- Message Bubble - IMPROVED READABILITY -->
+                    <div class="{% if msg.sender == user %}user-message-bubble{% else %}other-message-bubble{% endif %} rounded-3 px-3 py-2 position-relative" 
+                         style="max-width: 70%;">
+                        
+                        <!-- Bubble tail - IMPROVED VISIBILITY -->
+                        <div class="message-tail" 
+                             style="position: absolute; bottom: 0; 
+                                    {% if msg.sender == user %}right: -10px;{% else %}left: -10px;{% endif %}">
+                        </div>
+
+                        <!-- Message Content -->
+                        <div class="message-content">
+                            {{ msg.content|linebreaksbr }}
+                        </div>
+                        
+                        <!-- Media Display -->
+                        {% if msg.media %}
+                            <div class="mt-2">
+                                {% if msg.media_type == 'image' or msg.media_type == 'gif' %}
+                                    <img src="{{ msg.media.url }}" 
+                                         class="img-fluid rounded" 
+                                         style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                                         alt="Shared image">
+                                {% elif msg.media_type == 'video' %}
+                                    <video controls class="w-100 rounded" style="max-height: 300px;">
+                                        <source src="{{ msg.media.url }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Timestamp and Status - IMPROVED VISIBILITY -->
+                        <small class="d-block mt-1 text-end message-timestamp">
+                            <span class="time-ago" data-timestamp="{{ msg.timestamp|date:'c' }}">
+                                {{ msg.timestamp|date:"g:i A" }}
+                            </span>
+                            {% if msg.sender == user and msg.is_read %}
+                                <em class="ms-2 seen-indicator">✓ Seen</em>
+                            {% endif %}
+                        </small>
+                        
+                        <!-- Delete button for own messages -->
+                        {% if msg.sender == user %}
+                            <div class="text-end mt-2">
+                                <button class="btn btn-sm btn-outline-danger delete-message" 
+                                        data-message-id="{{ msg.id }}">
+                                    Delete
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+
                     {% if msg.sender == user %}
-                        <button class="btn btn-sm btn-outline-danger delete-message mt-1" data-message-id="{{ msg.id }}">
-                            Delete
-                        </button>
+                        <!-- Own avatar -->
+                        {% if msg.sender.profile_picture %}
+                            <img src="{{ msg.sender.profile_picture.url }}" 
+                                 class="rounded-circle ms-2 align-self-end" 
+                                 width="32" 
+                                 height="32" 
+                                 style="object-fit: cover;"
+                                 alt="{{ msg.sender.username }}">
+                        {% else %}
+                            <!-- Text-based fallback avatar -->
+                            <div class="bg-primary text-white rounded-circle ms-2 d-flex align-items-center justify-content-center align-self-end" style="width:32px; height:32px; font-size:0.8rem;">
+                                {{ msg.sender.username|first|upper }}
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}
         </div>
 
-        <!-- Message Form -->
-        <form method="post">
+        <!-- Message Form with Media Upload -->
+        <form method="post" enctype="multipart/form-data" class="mt-3">
             {% csrf_token %}
-            <div class="input-group">
-                <textarea name="content" class="form-control" rows="2" placeholder="Type your message..." required></textarea>
-                <button type="submit" class="btn btn-primary">Send</button>
+            
+            <!-- Simple Emoji Picker -->
+            <div class="mb-2">
+                <small>Quick emoji: </small>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmoji('😊')">😊</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmoji('😂')">😂</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmoji('❤️')">❤️</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmoji('👍')">👍</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmoji('🎉')">🎉</button>
+            </div>
+            
+            <!-- RESPONSIVE FORM LAYOUT -->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-2 align-items-stretch">
+                <!-- File Input - Custom Attach Button -->
+                <div class="flex-shrink-0 d-flex align-items-center">
+                    <label class="btn btn-outline-secondary me-2 mb-0" for="message-media-input">
+                        <i class="bi bi-paperclip"></i> Attach
+                    </label>
+                    <input type="file" 
+                           name="media" 
+                           class="form-control d-none" 
+                           accept="image/*,video/*,.gif" 
+                           id="message-media-input"
+                           aria-label="Upload media">
+                    <small id="file-name" class="text-muted" style="min-width: 120px;"></small>
+                </div>
+                
+                <!-- Textarea - Takes remaining space -->
+                <div class="flex-grow-1">
+                    <textarea name="content" 
+                              class="form-control h-100" 
+                              rows="2" 
+                              placeholder="Type your message..." 
+                              id="message-content"
+                              required></textarea>
+                </div>
+                
+                <!-- Send Button -->
+                <div class="flex-shrink-0 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 h-100 py-2">Send</button>
+                </div>
+            </div>
+            
+            <!-- Media preview -->
+            <div id="media-preview" class="mt-2" style="display: none;">
+                <div class="d-flex align-items-center">
+                    <img id="preview-image" class="img-thumbnail me-2" style="max-height: 80px; max-width: 120px; display: none;">
+                    <div id="preview-video" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-play me-2"></i>
+                            <small>Video selected</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="clear-preview" style="display: none;">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Client-side time ago update -->
+    <style>
+    /* Custom styles for better chat UI */
+    .chat-box::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .chat-box::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .chat-box::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    
+    .chat-box::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* IMPROVED MESSAGE BUBBLES FOR BETTER READABILITY */
+    .user-message-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .other-message-bubble {
+        background: white;
+        border: 1px solid #e0e0e0;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    /* Improved bubble tails */
+    .message-tail {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 0 0 10px;
+    }
+    
+    .user-message-bubble .message-tail {
+        border-color: transparent transparent transparent #764ba2;
+        right: -10px;
+    }
+    
+    .other-message-bubble .message-tail {
+        border-color: transparent #e0e0e0 transparent transparent;
+        left: -10px;
+    }
+    
+    /* Message content with better contrast */
+    .message-content {
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+    
+    .user-message-bubble .message-content {
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+    
+    .other-message-bubble .message-content {
+        color: #2c3e50;
+    }
+    
+    /* Improved timestamps */
+    .message-timestamp {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+    
+    .user-message-bubble .message-timestamp {
+        color: rgba(255, 255, 255, 0.85);
+    }
+    
+    .other-message-bubble .message-timestamp {
+        color: #666;
+    }
+    
+    /* Seen indicator */
+    .seen-indicator {
+        opacity: 0.7;
+    }
+    
+    /* Responsive chat height */
+    @media (max-width: 768px) {
+        .chat-box {
+            height: 300px !important;
+        }
+        
+        .message-item .rounded-3 {
+            max-width: 85% !important;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .chat-box {
+            height: 450px !important;
+        }
+    }
+    
+    /* Form styling */
+    #message-content {
+        resize: none;
+        min-height: 45px;
+        max-height: 120px;
+    }
+    
+    #file-name {
+        font-size: 0.875rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    
+    /* Hide the actual file input, use custom label */
+    #message-media-input {
+        display: none;
+    }
+    
+    /* Mobile adjustments */
+    @media (max-width: 767.98px) {
+        .d-flex.flex-md-row {
+            flex-direction: column !important;
+        }
+        
+        .flex-shrink-0 {
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        #file-name {
+            max-width: 200px;
+        }
+        
+        .flex-grow-1 {
+            margin-bottom: 8px;
+        }
+        
+        .flex-shrink-0.d-flex.align-items-end {
+            height: 45px;
+        }
+    }
+    
+    /* Desktop adjustments */
+    @media (min-width: 768px) {
+        .flex-shrink-0.d-flex.align-items-center {
+            width: 180px;
+        }
+        
+        .flex-grow-1 {
+            min-width: 200px;
+        }
+        
+        .flex-shrink-0.d-flex.align-items-end {
+            width: 100px;
+        }
+    }
+    
+    /* Delete button styling */
+    .user-message-bubble .delete-message {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+    
+    .user-message-bubble .delete-message:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .other-message-bubble .delete-message {
+        background-color: #f8f9fa;
+    }
+    </style>
+
     <script>
+    // Time ago update function
     function updateTimeAgo() {
         document.querySelectorAll('.time-ago').forEach(el => {
             const timestamp = new Date(el.dataset.timestamp);
@@ -68,7 +370,125 @@
         });
     }
 
-    updateTimeAgo();
-    setInterval(updateTimeAgo, 60000);
+    // Emoji picker function
+    function addEmoji(emoji) {
+        const textarea = document.querySelector('#message-content');
+        textarea.value += emoji;
+        textarea.focus();
+    }
+
+    // File input handling with custom label
+    document.getElementById('message-media-input').addEventListener('change', function(e) {
+        const fileNameSpan = document.getElementById('file-name');
+        const previewDiv = document.getElementById('media-preview');
+        const previewImg = document.getElementById('preview-image');
+        const previewVideo = document.getElementById('preview-video');
+        const clearBtn = document.getElementById('clear-preview');
+        
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const fileType = file.type;
+            
+            // Update file name display
+            fileNameSpan.textContent = file.name;
+            fileNameSpan.className = 'text-primary';
+            
+            // Handle preview
+            if (fileType.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewVideo.style.display = 'none';
+                    previewDiv.style.display = 'block';
+                    clearBtn.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else if (fileType.startsWith('video/')) {
+                previewImg.style.display = 'none';
+                previewVideo.style.display = 'block';
+                previewDiv.style.display = 'block';
+                clearBtn.style.display = 'block';
+            }
+        } else {
+            fileNameSpan.textContent = '';
+            previewDiv.style.display = 'none';
+        }
+    });
+
+    // Clear preview button
+    document.getElementById('clear-preview').addEventListener('click', function() {
+        const fileInput = document.getElementById('message-media-input');
+        const fileNameSpan = document.getElementById('file-name');
+        const previewDiv = document.getElementById('media-preview');
+        const clearBtn = document.getElementById('clear-preview');
+        
+        fileInput.value = '';
+        fileNameSpan.textContent = '';
+        fileNameSpan.className = 'text-muted';
+        previewDiv.style.display = 'none';
+        clearBtn.style.display = 'none';
+    });
+
+    // Auto-scroll to bottom of chat
+    function scrollToBottom() {
+        const chatBox = document.querySelector('.chat-box');
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    // Auto-resize textarea
+    function autoResizeTextarea() {
+        const textarea = document.getElementById('message-content');
+        if (textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 120);
+            textarea.style.height = newHeight + 'px';
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTimeAgo();
+        scrollToBottom();
+        setInterval(updateTimeAgo, 60000);
+        
+        // Set hover titles for timestamps
+        document.querySelectorAll('.time-ago').forEach(el => {
+            const timestamp = new Date(el.dataset.timestamp);
+            el.parentElement.title = timestamp.toLocaleString();
+        });
+        
+        // Auto-scroll observer for new messages
+        const chatBox = document.querySelector('.chat-box');
+        if (chatBox) {
+            // Scroll to bottom on initial load
+            setTimeout(() => {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 100);
+            
+            // Observe for new messages
+            const observer = new MutationObserver(() => {
+                setTimeout(() => {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 50);
+            });
+            
+            observer.observe(chatBox, { childList: true, subtree: true });
+        }
+        
+        // Focus on message input
+        const messageInput = document.getElementById('message-content');
+        if (messageInput) {
+            messageInput.focus();
+            
+            // Auto-resize on input
+            messageInput.addEventListener('input', autoResizeTextarea);
+        }
+        
+        // Initial textarea resize
+        autoResizeTextarea();
+    });
     </script>
 {% endblock %}
