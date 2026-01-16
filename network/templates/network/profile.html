@@ -1,4 +1,5 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
     <div class="text-center mb-5">
@@ -7,9 +8,13 @@
             {% if profile_user.profile_picture %}
                 <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle shadow-lg" width="140" height="140" alt="{{ profile_user.username }}" style="object-fit: cover; border: 5px solid #fff;">
             {% else %}
-                <div class="bg-primary text-white rounded-circle shadow-lg d-flex align-items-center justify-content-center mx-auto" style="width:140px; height:140px; font-size:4.5rem;">
-                    {{ profile_user.username|first|upper }}
-                </div>
+                <!-- Default Argon Avatar -->
+                <img src="{% static 'network/images/default-avatar.png' %}" 
+                     class="rounded-circle shadow-lg" 
+                     width="140" 
+                     height="140" 
+                     alt="{{ profile_user.username }}"
+                     style="object-fit: cover; border: 5px solid #fff; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             {% endif %}
 
             {% if user == profile_user %}
@@ -32,6 +37,15 @@
         {% if profile_user.bio %}
             <p class="text-muted mb-3">{{ profile_user.bio }}</p>
         {% endif %}
+        
+        <!-- Gender Display -->
+        <p class="text-muted mb-3">
+            {% if profile_user.gender == 'M' %}♂ Male
+            {% elif profile_user.gender == 'F' %}♀ Female
+            {% elif profile_user.gender == 'O' %}⚧ Other
+            {% else %}• Prefer not to say
+            {% endif %}
+        </p>
         
         <!-- Updated: Clickable followers/following counts with text included -->
         <p class="text-center">
