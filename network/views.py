@@ -1,20 +1,24 @@
-from django.db.models import Q  
+import os
+import json
+import pytz
+
+from django.db import IntegrityError
+from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
-import json
+
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
-import pytz
-from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
-from django.contrib.auth import login
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+
 
 def index(request):
     if request.user.is_authenticated:
