@@ -378,3 +378,121 @@ document.querySelectorAll('.time-ago').forEach(el => {
 
     el.textContent = text;
 });
+
+// Hover timestamp
+document.querySelectorAll('.message-item').forEach(item => {
+    const timeEl = item.querySelector('.time-ago');
+    const fullTime = new Date(timeEl.dataset.timestamp).toLocaleString();
+    timeEl.title = fullTime;  // Hover shows full date/time
+});
+
+// Delete Comment (async, instant removal)
+document.querySelectorAll('.delete-comment').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (!confirm('Delete this comment?')) return;
+
+        const commentId = btn.dataset.commentId;
+        const commentItem = btn.closest('.comment-item');
+
+        fetch(`/delete-comment/${commentId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.message) {
+                commentItem.remove();  // Instant removal
+            }
+        })
+        .catch(err => {
+            console.error('Delete comment failed:', err);
+            alert('Failed to delete');
+        });
+    });
+});
+
+// Edit Comment (inline, prepopulated textarea)
+document.querySelectorAll('.edit-comment').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const commentId = btn.dataset.commentId;
+        const commentItem = btn.closest('.comment-item');
+        const contentDiv = commentItem.querySelector('.comment-content');
+        const commentText = contentDiv.querySelector('.comment-text');
+
+        if (!commentText) return;
+
+        // Grab original text (prepopulate)
+        const originalText = commentText.innerText.trim();
+
+        // Create textarea (prepopulated)
+        const textarea = document.createElement('textarea');
+        textarea.className = 'form-control mb-2';
+        textarea.value = originalText;
+        textarea.rows = 3;
+
+        // Buttons
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn btn-primary btn-sm me-2';
+        saveBtn.textContent = 'Save';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-outline-secondary btn-sm';
+        cancelBtn.textContent = 'Cancel';
+
+        // Replace content with edit UI
+        const originalHTML = contentDiv.innerHTML;
+        contentDiv.innerHTML = '';
+        contentDiv.appendChild(textarea);
+        contentDiv.appendChild(saveBtn);
+        contentDiv.appendChild(cancelBtn);
+
+        // Hide buttons while editing
+        btn.style.display = 'none';
+
+        // Save handler
+        saveBtn.onclick = () => {
+            const newContent = textarea.value.trim();
+            if (!newContent) return alert('Comment cannot be empty');
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            fetch(`/edit-comment/${commentId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ content: newContent })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.message) {
+                    // Update text
+                    const newText = document.createElement('p');
+                    newText.className = 'mb-1 comment-text';
+                    newText.innerHTML = newContent.replace(/\n/g, '<br>');
+                    contentDiv.innerHTML = '';
+                    contentDiv.appendChild(newText);
+
+                    // Restore buttons
+                    btn.style.display = 'inline-block';
+                }
+            })
+            .catch(err => {
+                alert('Failed to save');
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
+            });
+        };
+
+        // Cancel – restore original
+        cancelBtn.onclick = () => {
+            contentDiv.innerHTML = originalHTML;
+            btn.style.display = 'inline-block';
+        };
+    });
+}); 
+
