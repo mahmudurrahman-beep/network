@@ -3,13 +3,7 @@
 
 {% block body %}
 <style>
-    body {
-        margin: 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    
-    /* Hero Section */
-    .hero-section {
+    .landing-hero {
         min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
@@ -19,50 +13,152 @@
         overflow: hidden;
     }
     
-    .hero-section::before {
+    .landing-hero::before {
         content: '';
         position: absolute;
-        width: 800px;
-        height: 800px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
-        top: -400px;
+        top: -200px;
         right: -200px;
-        animation: float 25s infinite ease-in-out;
+        animation: float 20s infinite ease-in-out;
     }
     
-    .hero-section::after {
+    .landing-hero::after {
         content: '';
         position: absolute;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
-        bottom: -300px;
-        left: -100px;
-        animation: float 20s infinite ease-in-out reverse;
+        bottom: -150px;
+        left: -150px;
+        animation: float 15s infinite ease-in-out reverse;
     }
     
     @keyframes float {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        33% { transform: translate(30px, -50px) rotate(120deg); }
-        66% { transform: translate(-20px, 20px) rotate(240deg); }
+        0%, 100% { transform: translateY(0px) translateX(0px); }
+        50% { transform: translateY(-50px) translateX(30px); }
     }
     
-    .hero-content {
+    .landing-content {
         position: relative;
         z-index: 10;
         text-align: center;
         color: white;
-        max-width: 900px;
-        padding: 0 30px;
-        animation: fadeInUp 1s ease-out;
+        max-width: 800px;
+        padding: 0 20px;
     }
     
-    @keyframes fadeInUp {
+    .landing-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        letter-spacing: -2px;
+        animation: slideDown 1s ease-out;
+    }
+    
+    .landing-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 3rem;
+        opacity: 0.95;
+        font-weight: 300;
+        animation: slideUp 1s ease-out 0.2s both;
+    }
+    
+    .landing-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: slideUp 1s ease-out 0.4s both;
+    }
+    
+    .btn-hero {
+        padding: 18px 48px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-hero-primary {
+        background: white;
+        color: #667eea;
+    }
+    
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+        color: #667eea;
+    }
+    
+    .btn-hero-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+    
+    .btn-hero-secondary:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+    }
+    
+    .features {
+        padding: 100px 20px;
+        background: #f8f9fa;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .feature-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+    
+    .feature-description {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+    
+    @keyframes slideDown {
         from {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(-50px);
         }
         to {
             opacity: 1;
@@ -70,385 +166,88 @@
         }
     }
     
-    .hero-logo {
-        font-size: 5rem;
-        margin-bottom: 1rem;
-        animation: scaleIn 0.8s ease-out;
-    }
-    
-    @keyframes scaleIn {
+    @keyframes slideUp {
         from {
-            transform: scale(0.5);
             opacity: 0;
+            transform: translateY(50px);
         }
         to {
-            transform: scale(1);
             opacity: 1;
+            transform: translateY(0);
         }
     }
     
-    .hero-title {
-        font-size: 4.5rem;
-        font-weight: 900;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-        letter-spacing: -3px;
-        line-height: 1.1;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.6rem;
-        margin-bottom: 3rem;
-        opacity: 0.95;
-        font-weight: 400;
-        line-height: 1.6;
-    }
-    
-    .hero-buttons {
-        display: flex;
-        gap: 2rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        animation: fadeInUp 1s ease-out 0.3s both;
-    }
-    
-    .btn-hero {
-        padding: 20px 55px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        border-radius: 60px;
-        text-decoration: none;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .btn-hero::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
-    }
-    
-    .btn-hero:hover::before {
-        left: 100%;
-    }
-    
-    .btn-primary-hero {
-        background: white;
-        color: #667eea;
-    }
-    
-    .btn-primary-hero:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
-        color: #667eea;
-    }
-    
-    .btn-secondary-hero {
-        background: transparent;
-        color: white;
-        border: 3px solid white;
-    }
-    
-    .btn-secondary-hero:hover {
-        background: white;
-        color: #667eea;
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
-    }
-    
-    /* Features Section */
-    .features-section {
-        padding: 120px 30px;
-        background: #f8f9fc;
-        position: relative;
-    }
-    
-    .features-header {
-        text-align: center;
-        max-width: 700px;
-        margin: 0 auto 80px;
-    }
-    
-    .features-title {
-        font-size: 3rem;
-        font-weight: 800;
-        color: #2c3e50;
-        margin-bottom: 20px;
-        letter-spacing: -1px;
-    }
-    
-    .features-description {
-        font-size: 1.2rem;
-        color: #6c757d;
-        line-height: 1.8;
-    }
-    
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 50px;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-    
-    .feature-card {
-        background: white;
-        padding: 50px 40px;
-        border-radius: 24px;
-        text-align: center;
-        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        transform: scaleX(0);
-        transition: transform 0.4s ease;
-    }
-    
-    .feature-card:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-15px);
-        box-shadow: 0 20px 50px rgba(102, 126, 234, 0.25);
-    }
-    
-    .feature-icon {
-        font-size: 4rem;
-        margin-bottom: 25px;
-        display: inline-block;
-        animation: bounce 2s infinite;
-    }
-    
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    .feature-card:hover .feature-icon {
-        animation: none;
-        transform: scale(1.15) rotate(5deg);
-    }
-    
-    .feature-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-bottom: 18px;
-        color: #2c3e50;
-    }
-    
-    .feature-description {
-        color: #6c757d;
-        line-height: 1.7;
-        font-size: 1.05rem;
-    }
-    
-    /* Stats Section */
-    .stats-section {
-        padding: 100px 30px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        text-align: center;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 60px;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    
-    .stat-item {
-        animation: fadeInUp 1s ease-out both;
-    }
-    
-    .stat-number {
-        font-size: 4rem;
-        font-weight: 900;
-        margin-bottom: 10px;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-    
-    .stat-label {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    /* CTA Section */
-    .cta-section {
-        padding: 120px 30px;
-        background: white;
-        text-align: center;
-    }
-    
-    .cta-content {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
-    .cta-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: #2c3e50;
-        margin-bottom: 25px;
-        letter-spacing: -2px;
-    }
-    
-    .cta-subtitle {
-        font-size: 1.3rem;
-        color: #6c757d;
-        margin-bottom: 50px;
-        line-height: 1.7;
-    }
-    
-    /* Responsive */
     @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.8rem;
+        .landing-title {
+            font-size: 2.5rem;
         }
-        .hero-subtitle {
+        .landing-subtitle {
             font-size: 1.2rem;
         }
         .btn-hero {
-            padding: 16px 40px;
+            padding: 15px 35px;
             font-size: 1rem;
-        }
-        .features-title {
-            font-size: 2.2rem;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-        }
-        .cta-title {
-            font-size: 2.2rem;
         }
     }
 </style>
 
-<div class="hero-section">
-    <div class="hero-content">
-        <div class="hero-logo">🌐</div>
-        <h1 class="hero-title">Argon Network</h1>
-        <p class="hero-subtitle">The next generation social platform. Connect authentically, share meaningfully, discover endlessly.</p>
-        <div class="hero-buttons">
-            <a href="{% url 'register' %}" class="btn-hero btn-primary-hero">Get Started Free ✨</a>
-            <a href="{% url 'login' %}" class="btn-hero btn-secondary-hero">Sign In</a>
+<div class="landing-hero">
+    <div class="landing-content">
+        <h1 class="landing-title">Welcome to Argon Network 🌐</h1>
+        <p class="landing-subtitle">Connect, share, and discover with friends in a modern social experience</p>
+        <div class="landing-buttons">
+            <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Join Now ✨</a>
+            <a href="{% url 'login' %}" class="btn-hero btn-hero-secondary">Log In</a>
         </div>
     </div>
 </div>
 
-<div class="stats-section">
-    <div class="stats-grid">
-        <div class="stat-item" style="animation-delay: 0.1s;">
-            <div class="stat-number">1000+</div>
-            <div class="stat-label">Active Users</div>
-        </div>
-        <div class="stat-item" style="animation-delay: 0.2s;">
-            <div class="stat-number">50K+</div>
-            <div class="stat-label">Posts Shared</div>
-        </div>
-        <div class="stat-item" style="animation-delay: 0.3s;">
-            <div class="stat-number">100K+</div>
-            <div class="stat-label">Connections Made</div>
-        </div>
-        <div class="stat-item" style="animation-delay: 0.4s;">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">Always Online</div>
-        </div>
-    </div>
-</div>
-
-<div class="features-section">
-    <div class="features-header">
-        <h2 class="features-title">Everything You Need</h2>
-        <p class="features-description">Powerful features designed for modern social networking</p>
-    </div>
-    
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">💬</div>
-            <h3 class="feature-title">Real-Time Messaging</h3>
-            <p class="feature-description">Private conversations with read receipts, media sharing, and message management</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">📸</div>
-            <h3 class="feature-title">Rich Media Posts</h3>
-            <p class="feature-description">Share images, videos, and GIFs. Express yourself with full multimedia support</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">🔔</div>
-            <h3 class="feature-title">Smart Notifications</h3>
-            <p class="feature-description">Stay updated with separate badges for messages and activity. Never miss important updates</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">👤</div>
-            <h3 class="feature-title">Rich Profiles</h3>
-            <p class="feature-description">Custom avatars, bios, gender display, and timezone support for global connections</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">🌍</div>
-            <h3 class="feature-title">Discover People</h3>
-            <p class="feature-description">Find interesting people worldwide. Build your network organically</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3 class="feature-title">Privacy & Security</h3>
-            <p class="feature-description">Email verification, secure passwords, and content moderation to keep you safe</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">💬</div>
-            <h3 class="feature-title">Comments & Reactions</h3>
-            <p class="feature-description">Engage with posts through comments, likes, and reactions. Start conversations</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">👥</div>
-            <h3 class="feature-title">Follow System</h3>
-            <p class="feature-description">Follow users you love. See their content in your personalized feed</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3 class="feature-title">Lightning Fast</h3>
-            <p class="feature-description">Optimized performance on all devices. Smooth, responsive experience everywhere</p>
+<div class="features">
+    <div class="container">
+        <h2 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700; color: #2c3e50;">Why Choose Argon?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Connect & Chat</h3>
+                <p class="feature-description">Real-time messaging with friends. Share your thoughts and stay connected.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📸</div>
+                <h3 class="feature-title">Share Moments</h3>
+                <p class="feature-description">Post photos, updates, and stories. Let your creativity shine.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3 class="feature-title">Stay Updated</h3>
+                <p class="feature-description">Get instant notifications about likes, comments, and new followers.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">Privacy First</h3>
+                <p class="feature-description">Your data is secure. Control who sees your content.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3 class="feature-title">Discover People</h3>
+                <p class="feature-description">Find and connect with interesting people from around the world.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Lightning Fast</h3>
+                <p class="feature-description">Smooth, responsive experience on all devices.</p>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="cta-section">
-    <div class="cta-content">
-        <h2 class="cta-title">Ready to Join?</h2>
-        <p class="cta-subtitle">Join thousands of users already connecting on Argon Network. It's free, secure, and takes less than a minute.</p>
-        <a href="{% url 'register' %}" class="btn-hero btn-primary-hero">Create Your Account Now 🚀</a>
-    </div>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 20px; text-align: center; color: white;">
+    <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">Ready to Get Started?</h2>
+    <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9;">Be part of a growing community of creators and connectors</p>
+    <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Create Your Account 🚀</a>
 </div>
 {% endblock %}
-
