@@ -391,7 +391,7 @@ def conversation(request, username):
     return render(request, "network/messages/conversation.html", {
         'other_user': other_user,
         'messages': messages
-    })  
+    }) 
 
 
 @csrf_exempt
