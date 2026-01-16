@@ -63,6 +63,7 @@ def register(request):
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
 
+        # Validation
         if not username:
             return render(request, "network/register.html", {"message": "Username is required."})
         if not email:
@@ -73,29 +74,55 @@ def register(request):
             return render(request, "network/register.html", {"message": "Passwords must match."})
 
         try:
+            # Create inactive user
             user = User.objects.create_user(username, email, password)
             user.is_active = False  # Disable until verified
+
+            # Generate activation token
             token = get_random_string(32)
-            user.activation_token = token  # Direct on User
+            user.activation_token = token  # Direct on User model
             user.save()
 
+            # Build activation link
             activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
+
+            # Email context for template
+            context = {
+                'username': username,
+                'activation_link': activation_link,
+                'email': email,
+                'protocol': 'https' if request.is_secure() else 'http',
+                'domain': request.get_host(),
+            }
+
+            # Render HTML email
+            html_message = render_to_string('network/emails/activation_email.html', context)
+
+            # Create plain text fallback
+            plain_message = strip_tags(html_message)
+
+            # Send email
             send_mail(
                 'Activate Your Network Account',
-                f'Click this link to activate: {activation_link}',
-                'your-email@gmail.com',  # Your DEFAULT_FROM_EMAIL
+                plain_message,
+                DEFAULT_FROM_EMAIL,
                 [email],
+                html_message=html_message,
                 fail_silently=False,
             )
 
+            # Success
             return render(request, "network/register.html", {
                 "message": "Registration successful! Check your email to activate your account."
             })
+
         except IntegrityError:
             return render(request, "network/register.html", {"message": "Username already taken."})
+
         except ValueError as e:
             return render(request, "network/register.html", {"message": str(e)})
 
+    # GET request - show form
     return render(request, "network/register.html")
     
 # New social features (from our plan)
