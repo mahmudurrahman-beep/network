@@ -285,6 +285,7 @@ def edit_profile(request):
         user = request.user
         user.bio = request.POST.get('bio', '')
         user.timezone = request.POST.get('timezone', 'UTC')
+        user.gender = request.POST.get('gender', '')  # Add this line
         user.save()
         return redirect('profile', username=user.username)
     
