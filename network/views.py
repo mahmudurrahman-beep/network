@@ -16,9 +16,11 @@ from django.contrib.auth import login
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-# Original auth views (keep these exactly as in distribution)
 def index(request):
-    return render(request, "network/index.html")
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('all_posts'))  
+    else:
+        return render(request, "network/landing.html")  
 
 def login_view(request):
     if request.method == "POST":
