@@ -7,137 +7,154 @@
     <title>Activate Your Account</title>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #1a1a1a;
             margin: 0;
             padding: 0;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 40px auto;
             background: white;
-            border-radius: 10px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
-       
-        /* HEADER: Entire top section is the logo/banner */
         .email-header {
             width: 100%;
-            height: 150px; /* Match logo height */
+            height: 150px;
             overflow: hidden;
+            display: block;
         }
         .email-banner {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures logo fills entire header */
+            object-fit: cover;
             display: block;
         }
-       
         .content {
-            padding: 40px 30px;
+            padding: 48px 40px;
         }
-       
         .btn {
             display: inline-block;
-            background: linear-gradient(to right, #4CAF50, #45a049);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 16px 40px;
+            padding: 18px 48px;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 17px;
-            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
         }
-       
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+        }
         .footer {
             text-align: center;
             margin-top: 40px;
-            color: #777;
-            font-size: 12px;
-            padding: 25px;
-            border-top: 1px solid #eee;
-            background: #fafafa;
+            color: #6b7280;
+            font-size: 13px;
+            padding: 32px 40px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
         }
-       
         .code-box {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 20px;
+            border-radius: 12px;
             word-break: break-all;
-            font-family: 'Courier New', monospace;
-            margin: 25px 0;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            margin: 30px 0;
             font-size: 14px;
-            border-left: 4px solid #4CAF50;
+            border-left: 5px solid #667eea;
+            color: #374151;
+            font-weight: 500;
         }
-       
         .greeting {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 24px;
+            color: #111827;
+            margin-bottom: 28px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
-       
         .message {
-            color: #34495e;
+            color: #374151;
             margin-bottom: 20px;
             font-size: 16px;
-            line-height: 1.7;
+            line-height: 1.8;
+        }
+        .brand {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        .warning {
+            color: #dc2626;
+            font-weight: 600;
+            margin: 30px 0;
+            padding: 16px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ENTIRE HEADER IS THE BANNER LOGO -->
-        <div class="email-header">
+        <a href="https://argon.koyeb.app" class="email-header" style="text-decoration: none;">
             <img src="{{ protocol }}://{{ domain }}{% static 'network/images/email-banner.png' %}"
-                 alt="Network Social Platform - Welcome to our community!"
+                 alt="Argon Network - Click to visit"
                  class="email-banner">
-        </div>
-       
+        </a>
+        
         <div class="content">
             <h2 class="greeting">Hi {{ username }}! 👋</h2>
-           
+            
             <p class="message">
-                Thank you for joining <strong style="color: #2c3e50;">Network Social</strong> -
-                your new social media platform where you can connect, share, and engage with friends.
+                Thank you for joining <span class="brand">Argon Network</span> - your new social media platform where you can connect, share, and engage with friends.
             </p>
-           
+            
             <p class="message">
                 To get started, please verify your email address by clicking the button below:
             </p>
-           
-            <div style="text-align: center; margin: 40px 0;">
-                <a href="{{ activation_link }}" class="btn">✅ Activate My Account</a>
+            
+            <div style="text-align: center; margin: 48px 0;">
+                <a href="{{ activation_link }}" class="btn">✨ Activate My Account</a>
             </div>
-           
+            
             <p class="message">
                 Or copy and paste this link into your browser:
             </p>
-           
+            
             <div class="code-box">{{ activation_link }}</div>
-           
-            <p style="color: #e74c3c; font-weight: bold; margin: 25px 0;">
+            
+            <div class="warning">
                 ⚠️ This activation link expires in 24 hours.
-            </p>
-           
+            </div>
+            
             <p class="message">
                 If you didn't create an account with us, please ignore this email.
             </p>
-           
-            <p style="margin-top: 30px; font-style: italic; color: #7f8c8d;">
-                Welcome aboard!<br>
-                <strong style="color: #2c3e50;">The Network Team</strong>
+            
+            <p style="margin-top: 36px; font-style: italic; color: #6b7280; font-size: 15px;">
+                Welcome aboard! 🚀<br>
+                <strong style="color: #111827;">The Argon Network Team</strong>
             </p>
         </div>
-       
+        
         <div class="footer">
-            <p>© 2026 Network Social. All rights reserved.</p>
-            <p>This email was sent to {{ email }}.</p>
-            <p style="margin-top: 10px;">
+            <p style="margin-bottom: 8px; font-weight: 600; color: #374151;">© 2026 Argon Network. All rights reserved.</p>
+            <p style="margin: 8px 0;">This email was sent to {{ email }}.</p>
+            <p style="margin-top: 16px;">
                 Questions? Contact us at
-                <a href="mailto:support@network.com" style="color: #3498db;">support@network.com</a>
+                <a href="mailto:mahmudurrahman23yahoo@gmail.com" style="color: #667eea; text-decoration: none; font-weight: 600;">mahmudurrahman23yahoo@gmail.com</a>
             </p>
         </div>
     </div>
