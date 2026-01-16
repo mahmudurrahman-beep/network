@@ -3,6 +3,12 @@ from django.db import models
 import pytz
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.all_timezones]
+GENDER_CHOICES = [
+    ('M', 'Male'),
+    ('F', 'Female'),
+    ('O', 'Other'),
+    ('N', 'Prefer not to say'),
+]
 
 class User(AbstractUser):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
@@ -10,7 +16,8 @@ class User(AbstractUser):
     hidden_conversations = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='hidden_by')  
     timezone = models.CharField(max_length=100, choices=TIMEZONE_CHOICES, default='UTC')
     activation_token = models.CharField(max_length=32, blank=True, null=True)
-    
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
+
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField()
@@ -54,6 +61,8 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    media = models.FileField(upload_to='message_media/', blank=True, null=True)
+    media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF')], blank=True)
 
     class Meta:
         ordering = ['-timestamp']
