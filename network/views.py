@@ -457,4 +457,29 @@ def activate(request, token):
     except User.DoesNotExist:
         return render(request, "network/activation_error.html", {
             "message": "Invalid or expired activation link."
-        })
+        })   
+
+@csrf_exempt
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, user=request.user)  # Only own
+    if request.method == "POST":
+        comment.delete()
+        return JsonResponse({"message": "Comment deleted"})
+    return JsonResponse({"error": "POST required"}, status=400)
+
+@csrf_exempt
+@login_required
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, user=request.user)  # Only own
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        new_content = data.get('content', '').strip()
+        if new_content:
+            comment.content = new_content
+            comment.save()
+            return JsonResponse({"message": "Comment updated", "content": new_content})
+        return JsonResponse({"error": "Content cannot be empty"}, status=400)
+
+    return JsonResponse({"error": "PUT required"}, status=400)
