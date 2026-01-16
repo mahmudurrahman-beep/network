@@ -3,7 +3,7 @@
 
 {% block body %}
 <style>
-    .redirect-wrapper {
+    .redirect-container {
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -13,91 +13,71 @@
         overflow: hidden;
     }
     
-    .redirect-wrapper::before {
+    .redirect-container::before {
         content: '';
         position: absolute;
-        width: 1000px;
-        height: 1000px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        width: 600px;
+        height: 600px;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
-        top: 50%;
+        top: -300px;
         left: 50%;
-        transform: translate(-50%, -50%);
-        animation: pulse 4s infinite ease-in-out;
+        transform: translateX(-50%);
+        animation: pulse 3s infinite ease-in-out;
     }
     
     @keyframes pulse {
-        0%, 100% { 
-            transform: translate(-50%, -50%) scale(1); 
-            opacity: 0.3; 
-        }
-        50% { 
-            transform: translate(-50%, -50%) scale(1.2); 
-            opacity: 0.5; 
-        }
+        0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.3; }
+        50% { transform: translateX(-50%) scale(1.1); opacity: 0.5; }
     }
     
-    .redirect-card {
+    .redirect-content {
         position: relative;
         z-index: 10;
         text-align: center;
         color: white;
-        padding: 70px 50px;
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(20px);
-        border-radius: 30px;
-        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        max-width: 550px;
-        animation: fadeInScale 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 60px 40px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 500px;
+        animation: fadeIn 0.6s ease-out;
     }
     
-    @keyframes fadeInScale {
+    @keyframes fadeIn {
         from {
             opacity: 0;
-            transform: scale(0.9) translateY(30px);
+            transform: translateY(30px);
         }
         to {
             opacity: 1;
-            transform: scale(1) translateY(0);
+            transform: translateY(0);
         }
     }
     
-    .redirect-icon {
-        font-size: 5rem;
-        margin-bottom: 25px;
-        animation: wave 2s infinite ease-in-out;
-    }
-    
-    @keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(20deg); }
-        75% { transform: rotate(-20deg); }
-    }
-    
     .redirect-title {
-        font-size: 3rem;
-        font-weight: 900;
+        font-size: 2.5rem;
+        font-weight: 800;
         margin-bottom: 20px;
-        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-        letter-spacing: -1px;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
     .redirect-message {
-        font-size: 1.3rem;
-        margin-bottom: 35px;
+        font-size: 1.2rem;
+        margin-bottom: 30px;
         opacity: 0.95;
-        line-height: 1.6;
     }
     
-    .spinner-ring {
-        width: 70px;
-        height: 70px;
-        border: 5px solid rgba(255, 255, 255, 0.25);
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
         border-top-color: white;
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin: 35px auto;
+        margin: 30px auto;
     }
     
     @keyframes spin {
@@ -106,54 +86,38 @@
     
     .redirect-btn {
         display: inline-block;
-        padding: 18px 50px;
+        padding: 16px 40px;
         background: white;
         color: #667eea;
         text-decoration: none;
-        border-radius: 60px;
-        font-weight: 700;
-        font-size: 1.15rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-top: 25px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        margin-top: 20px;
     }
     
     .redirect-btn:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
         color: #667eea;
-    }
-    
-    @media (max-width: 768px) {
-        .redirect-card {
-            padding: 50px 30px;
-            margin: 20px;
-        }
-        .redirect-title {
-            font-size: 2.2rem;
-        }
-        .redirect-message {
-            font-size: 1.1rem;
-        }
     }
 </style>
 
-<div class="redirect-wrapper">
-    <div class="redirect-card">
-        <div class="redirect-icon">👋</div>
-        <h1 class="redirect-title">Welcome Back!</h1>
-        <p class="redirect-message">Taking you to your personalized feed...</p>
-        <div class="spinner-ring"></div>
-        <a href="{% url 'all_posts' %}" class="redirect-btn">Go to Feed Now 🚀</a>
+<div class="redirect-container">
+    <div class="redirect-content">
+        <h1 class="redirect-title">Welcome Back! 👋</h1>
+        <p class="redirect-message">Redirecting you to your feed...</p>
+        <div class="spinner"></div>
+        <a href="{% url 'all_posts' %}" class="redirect-btn">Go to Feed 🚀</a>
     </div>
 </div>
 
 <script>
-    // Auto-redirect after 2.5 seconds
+    // Auto-redirect after 2 seconds
     setTimeout(function() {
         window.location.href = "{% url 'all_posts' %}";
-    }, 2500);
+    }, 2000);
 </script>
 {% endblock %}
