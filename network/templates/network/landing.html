@@ -1,10 +1,253 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    <div class="container mt-5 text-center">
-        <h1 class="display-4 mb-4">Welcome to Argon Network 🌐</h1>
-        <p class="lead mb-5">Connect, share, and discover with friends.</p>
-        <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">Join Now</a>
-        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Log In</a>
+<style>
+    .landing-hero {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .landing-hero::before {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        top: -200px;
+        right: -200px;
+        animation: float 20s infinite ease-in-out;
+    }
+    
+    .landing-hero::after {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        bottom: -150px;
+        left: -150px;
+        animation: float 15s infinite ease-in-out reverse;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) translateX(0px); }
+        50% { transform: translateY(-50px) translateX(30px); }
+    }
+    
+    .landing-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 0 20px;
+    }
+    
+    .landing-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        letter-spacing: -2px;
+        animation: slideDown 1s ease-out;
+    }
+    
+    .landing-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 3rem;
+        opacity: 0.95;
+        font-weight: 300;
+        animation: slideUp 1s ease-out 0.2s both;
+    }
+    
+    .landing-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: slideUp 1s ease-out 0.4s both;
+    }
+    
+    .btn-hero {
+        padding: 18px 48px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-hero-primary {
+        background: white;
+        color: #667eea;
+    }
+    
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+        color: #667eea;
+    }
+    
+    .btn-hero-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+    
+    .btn-hero-secondary:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+    }
+    
+    .features {
+        padding: 100px 20px;
+        background: #f8f9fa;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .feature-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+    
+    .feature-description {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .landing-title {
+            font-size: 2.5rem;
+        }
+        .landing-subtitle {
+            font-size: 1.2rem;
+        }
+        .btn-hero {
+            padding: 15px 35px;
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<div class="landing-hero">
+    <div class="landing-content">
+        <h1 class="landing-title">Welcome to Argon Network 🌐</h1>
+        <p class="landing-subtitle">Connect, share, and discover with friends in a modern social experience</p>
+        <div class="landing-buttons">
+            <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Join Now ✨</a>
+            <a href="{% url 'login' %}" class="btn-hero btn-hero-secondary">Log In</a>
+        </div>
     </div>
+</div>
+
+<div class="features">
+    <div class="container">
+        <h2 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700; color: #2c3e50;">Why Choose Argon?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Connect & Chat</h3>
+                <p class="feature-description">Real-time messaging with friends. Share your thoughts and stay connected.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📸</div>
+                <h3 class="feature-title">Share Moments</h3>
+                <p class="feature-description">Post photos, updates, and stories. Let your creativity shine.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3 class="feature-title">Stay Updated</h3>
+                <p class="feature-description">Get instant notifications about likes, comments, and new followers.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">Privacy First</h3>
+                <p class="feature-description">Your data is secure. Control who sees your content.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3 class="feature-title">Discover People</h3>
+                <p class="feature-description">Find and connect with interesting people from around the world.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Lightning Fast</h3>
+                <p class="feature-description">Smooth, responsive experience on all devices.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 20px; text-align: center; color: white;">
+    <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">Ready to Get Started?</h2>
+    <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9;">Join thousands of users already on Argon Network</p>
+    <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Create Your Account 🚀</a>
+</div>
 {% endblock %}
