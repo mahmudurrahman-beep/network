@@ -31,34 +31,35 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-        identifier = request.POST.get("identifier", "").strip()  # renamed from email
+        identifier = request.POST.get("identifier", "").strip()
         password = request.POST.get("password", "")
 
-        if not identifier or not password:
-            return render(request, "network/login.html", {"message": "Email/Username and password required."})
-
-        # Try email first
+        # Try to find user by username or email
         user = None
         try:
-            user = User.objects.get(email=identifier)
+            # First try as username
+            user = User.objects.get(username=identifier)
         except User.DoesNotExist:
-            # Then try username
             try:
-                user = User.objects.get(username=identifier)
+                # Then try as email (but allow only one match)
+                users = User.objects.filter(email=identifier)
+                if users.count() == 1:
+                    user = users.first()
+                elif users.count() > 1:
+                    messages.error(request, "Multiple accounts found with this email. Please use username instead.")
+                    return render(request, "network/login.html")
             except User.DoesNotExist:
                 pass
 
         if user:
-            user = authenticate(request, username=user.username, password=password)  # always use username for auth
-
+            user = authenticate(request, username=user.username, password=password)
             if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return HttpResponseRedirect(reverse("index"))
-                else:
-                    return render(request, "network/login.html", {"message": "Account not activated."})
-
-        return render(request, "network/login.html", {"message": "Invalid email/username or password."})
+                login(request, user)
+                return redirect('posts')  # or 'index'
+            else:
+                messages.error(request, "Invalid password.")
+        else:
+            messages.error(request, "No account found with that username or email.")
 
     return render(request, "network/login.html")
     
