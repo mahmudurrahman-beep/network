@@ -72,6 +72,7 @@ def register(request):
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
 
+        # Validation
         if not username:
             return render(request, "network/register.html", {
                 "message": "Username is required.",
@@ -94,26 +95,56 @@ def register(request):
             })
 
         try:
-            # Create user (local dev: auto-activate)
+            # Create inactive user
             user = User.objects.create_user(username, email, password)
-            user.is_active = True  # For local testing – remove in prod for verification
+            user.is_active = False  # Require activation (production)
+            # Generate token
+            token = get_random_string(32)
+            user.activation_token = token  # Assume you have this field in User model
             user.save()
 
-            # Auto-login for local dev
-            login(request, user)
+            # Build activation link
+            activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
+
+            # Email context
+            context = {
+                'username': username,
+                'activation_link': activation_link,
+                'email': email,
+                'protocol': 'https' if request.is_secure() else 'http',
+                'domain': request.get_host(),
+            }
+
+            # Render HTML email
+            html_message = render_to_string('network/emails/activation_email.html', context)
+            plain_message = strip_tags(html_message)
+
+            # Send email
+            send_mail(
+                'Activate Your Argon Network Account',
+                plain_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+
+            # Success message (green)
             return render(request, "network/register.html", {
-                "message": "Registration successful! Welcome to Argon Network.",
-                "message_type": "success"  # Green alert
+                "message": "Registration successful! Check your email to activate your account.",
+                "message_type": "success"
             })
-            
+
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username or email already taken.",
                 "message_type": "danger"
             })
-        except ValueError as e:
+        except Exception as e:
+            # Log error in production
+            print(f"Registration error: {e}")
             return render(request, "network/register.html", {
-                "message": str(e),
+                "message": "An error occurred. Please try again.",
                 "message_type": "danger"
             })
 
