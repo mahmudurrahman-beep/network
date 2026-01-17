@@ -8,9 +8,9 @@
                     <div class="card-body p-5 bg-light text-center">
                         <h3 class="mb-4 fw-bold text-primary">Edit Profile</h3>
 
-                        <!-- ERROR/SUCCESS MESSAGE (this was missing) -->
+                        <!-- Message display – red for "already taken", green for future success -->
                         {% if message %}
-                            <div class="alert {% if 'taken' in message|lower %}alert-danger{% else %}alert-success{% endif %} mt-3">
+                            <div class="alert alert-{{ message_type|default:'danger' }} mt-3" role="alert">
                                 {{ message }}
                             </div>
                         {% endif %}
@@ -55,7 +55,7 @@
                                 </select>
                             </div>
 
-                            <!-- Submit Button -->
+                            <!-- Submit -->
                             <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
                                 Save Changes
                             </button>
