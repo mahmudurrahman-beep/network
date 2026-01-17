@@ -285,11 +285,30 @@ def mark_notifications_read(request):
 def edit_profile(request):
     if request.method == "POST":
         user = request.user
+
+        new_username = request.POST.get('username', '').strip()
+        if new_username and new_username != user.username:
+            if User.objects.filter(username__iexact=new_username).exists():
+                timezone_choices = [(tz, tz) for tz in pytz.all_timezones]
+                return render(request, "network/edit_profile.html", {
+                    "message": "Username already taken.",
+                    "timezone_choices": timezone_choices,
+                })
+            user.username = new_username
+
         user.bio = request.POST.get('bio', '')
         user.timezone = request.POST.get('timezone', 'UTC')
-        user.gender = request.POST.get('gender', '')  # Add this line
+        user.gender = request.POST.get('gender', '')
+
         user.save()
+
         return redirect('profile', username=user.username)
+
+    timezone_choices = [(tz, tz) for tz in pytz.all_timezones]
+    return render(request, "network/edit_profile.html", {
+        'timezone_choices': timezone_choices
+    })
+
     
     # Timezone choices for template
     timezone_choices = [(tz, tz) for tz in pytz.all_timezones]
