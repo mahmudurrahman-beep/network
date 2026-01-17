@@ -99,29 +99,31 @@ def register(request):
         try:
             # Create inactive user
             user = User.objects.create_user(username, email, password)
-            user.is_active = False  # Require activation (production)
-            # Generate token
+            user.is_active = False
             token = get_random_string(32)
-            user.activation_token = token  # Assume you have this field in User model
+            user.activation_token = token
             user.save()
 
             # Build activation link
             activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
 
-            # Email context
+            # Email context with ALL required fields for spam compliance
             context = {
                 'username': username,
                 'activation_link': activation_link,
                 'email': email,
                 'protocol': 'https' if request.is_secure() else 'http',
                 'domain': request.get_host(),
+                'unsubscribe_link': request.build_absolute_uri(reverse('index')),
+                'support_email': 'mahmudurrahman23yahoo@gmail.com',
+                'current_year': datetime.now().year,
             }
 
             # Render HTML email
             html_message = render_to_string('network/emails/activation_email.html', context)
             plain_message = strip_tags(html_message)
 
-            # Send email
+            # Send email with Gmail-optimized headers
             send_mail(
                 'Activate Your Argon Network Account',
                 plain_message,
@@ -129,9 +131,17 @@ def register(request):
                 [email],
                 html_message=html_message,
                 fail_silently=False,
+                headers={
+                    'X-Priority': '1',
+                    'X-Mailer': 'Django',
+                    'Precedence': 'bulk',
+                    'List-Unsubscribe': f'<mailto:mahmudurrahman23yahoo@gmail.com?subject=unsubscribe>',
+                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                    'X-Entity-Ref-ID': str(user.id),
+                }
             )
 
-            # Success message (green)
+            # Success message
             return render(request, "network/register.html", {
                 "message": "Registration successful! Check your email to activate your account.",
                 "message_type": "success"
@@ -143,7 +153,6 @@ def register(request):
                 "message_type": "danger"
             })
         except Exception as e:
-            # Log error in production
             print(f"Registration error: {e}")
             return render(request, "network/register.html", {
                 "message": "An error occurred. Please try again.",
