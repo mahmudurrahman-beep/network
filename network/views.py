@@ -146,7 +146,7 @@ def register(request):
 
             # Success message
             return render(request, "network/register.html", {
-                "message": "Registration successful! Check your email to activate your account.",
+                "message": "Registration successful! Check your email (or spam folder) to activate your account.",
                 "message_type": "success"
             })
 
