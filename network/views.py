@@ -58,7 +58,7 @@ def login_view(request):
             user = authenticate(request, username=user.username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('posts')  # or 'index'
+                return redirect('all_posts')  # or 'index'
             else:
                 messages.error(request, "Invalid password.")
         else:
