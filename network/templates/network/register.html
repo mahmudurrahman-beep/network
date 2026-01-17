@@ -1,54 +1,92 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                    <div class="card-body p-5 bg-light">
-                        <h2 class="mb-4 text-center">Register</h2>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85" 
+                 style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
+                <div class="card-body p-5 p-md-5 text-center">
+                    <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
+                        Join Argon Network
+                    </h2>
+                    
+                    <p class="text-muted mb-4 lead fs-6">
+                        Create your account and start connecting today.
+                    </p>
 
-                        <!-- Message display – now supports success (green) and error (red) -->
-                        {% if message %}
-                            <div class="alert alert-{{ message_type|default:'danger' }} mt-3" role="alert">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-
-                        <form action="{% url 'register' %}" method="post">
-                            {% csrf_token %}
-                            
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" name="username" class="form-control" id="username" placeholder="Username" required autofocus>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" name="email" class="form-control" id="email" placeholder="Email Address" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="confirmation" class="form-label">Confirm Password</label>
-                                <input type="password" name="confirmation" class="form-control" id="confirmation" placeholder="Confirm Password" required>
-                            </div>
-                            
-                            <div class="text-center">
-                                <input class="btn btn-primary btn-lg px-5" type="submit" value="Register">
-                            </div>
-                        </form>
-
-                        <div class="mt-4 text-center">
-                            Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+                    {% if message %}
+                        <div class="alert alert-{{ message_type|default:'danger' }} shadow-sm mb-4" role="alert">
+                            {{ message }}
                         </div>
+                    {% endif %}
+
+                    <form action="{% url 'register' %}" method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                                   id="username" placeholder="Username" required autofocus>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                                   id="email" placeholder="Email Address" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                                   id="password" placeholder="Password" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                                   id="confirmation" placeholder="Confirm Password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
+                            Register Now
+                        </button>
+                    </form>
+
+                    <div class="mt-4 text-muted">
+                        Already have an account? 
+                        <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">
+                            Log in here
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+    .card {
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 70px rgba(102, 126, 234, 0.25) !important;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    .alert {
+        border-radius: 12px;
+    }
+    @media (max-width: 576px) {
+        .card-body { padding: 2.5rem 1.5rem !important; }
+    }
+</style>
 {% endblock %}
