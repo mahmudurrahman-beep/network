@@ -19,6 +19,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import EmailMultiAlternatives  
 
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
 
@@ -76,7 +77,7 @@ def register(request):
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
 
-        # Validation
+        # Validation (keep same)
         if not username:
             return render(request, "network/register.html", {
                 "message": "Username is required.",
@@ -109,7 +110,7 @@ def register(request):
             # Build activation link
             activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
 
-            # Email context with ALL required fields for spam compliance
+            # Email context
             context = {
                 'username': username,
                 'activation_link': activation_link,
@@ -125,14 +126,12 @@ def register(request):
             html_message = render_to_string('network/emails/activation_email.html', context)
             plain_message = strip_tags(html_message)
 
-            # Send email with Gmail-optimized headers
-            send_mail(
-                'Activate Your Argon Network Account',
-                plain_message,
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                html_message=html_message,
-                fail_silently=False,
+            # FIXED: Use EmailMultiAlternatives instead of send_mail
+            email_msg = EmailMultiAlternatives(
+                subject='Activate Your Argon Network Account',
+                body=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
                 headers={
                     'X-Priority': '1',
                     'X-Mailer': 'Django',
@@ -142,6 +141,8 @@ def register(request):
                     'X-Entity-Ref-ID': str(user.id),
                 }
             )
+            email_msg.attach_alternative(html_message, "text/html")
+            email_msg.send(fail_silently=False)
 
             # Success message
             return render(request, "network/register.html", {
