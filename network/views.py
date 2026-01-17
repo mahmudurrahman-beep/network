@@ -518,7 +518,7 @@ def following_list(request, username):
         'list_type': 'Following'
     })
 
- def activate(request, token):
+def activate(request, token):
     try:
         user = User.objects.get(activation_token=token, is_active=False)
         user.is_active = True
