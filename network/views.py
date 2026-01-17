@@ -22,6 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
 
+from datetime import datetime
+
 
 def index(request):
     if request.user.is_authenticated:
