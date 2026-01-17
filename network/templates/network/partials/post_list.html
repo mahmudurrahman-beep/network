@@ -109,13 +109,7 @@
                                 {{ comment.user.username }}
                             </a>
                         </strong>
-                        <small class="text-muted ms-2">
-                            {% if comment.user.gender == 'M' %}♂
-                            {% elif comment.user.gender == 'F' %}♀
-                            {% elif comment.user.gender == 'O' %}⚧
-                            {% else %}•
-                            {% endif %}
-                        </small>
+                        <!-- REMOVED GENDER ICON FROM COMMENTS -->
                         <small class="text-muted ms-2 time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
                             {{ comment.timestamp|date:"M d, Y • g:i A" }}
                         </small>
