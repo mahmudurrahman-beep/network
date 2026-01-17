@@ -104,12 +104,38 @@
             border-radius: 8px;
             border-left: 4px solid #dc2626;
         }
+        .unsubscribe-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            background: #f9fafb;
+            padding: 20px 40px;
+        }
+        .unsubscribe-links {
+            margin-bottom: 12px;
+        }
+        .unsubscribe-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+        .unsubscribe-links a:hover {
+            text-decoration: underline;
+        }
+        .auto-message {
+            font-size: 11px;
+            line-height: 1.5;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="https://argon.koyeb.app" class="email-header" style="text-decoration: none;">
-            <!-- ✅ SAFELY ADDED: Hardcoded logo URL (with fallback in comments) -->
             <img src="https://argon.koyeb.app/static/network/images/email-banner.png" 
                  alt="Argon Network - Click to visit"
                  class="email-banner"
@@ -117,7 +143,6 @@
                  height="150"
                  style="width:100%; max-width:600px; height:auto;">
             
-            <!-- 🛡️ Fallback: If logo doesn't load, show text -->
             <noscript>
                 <div style="
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -170,13 +195,19 @@
             </p>
         </div>
         
-        <div class="footer">
-            <p style="margin-bottom: 8px; font-weight: 600; color: #374151;">© 2026 Argon Network. All rights reserved.</p>
-            <p style="margin: 8px 0;">This email was sent to {{ email }}.</p>
-            <p style="margin-top: 16px;">
-                Questions? Contact us at
-                <a href="mailto:mahmudurrahman23yahoo@gmail.com" style="color: #667eea; text-decoration: none; font-weight: 600;">mahmudurrahman23yahoo@gmail.com</a>
-            </p>
+        <!-- UNSUBSCRIBE SECTION ADDED -->
+        <div class="unsubscribe-footer">
+            <div class="unsubscribe-links">
+                <a href="{{ unsubscribe_link }}">Unsubscribe</a> | 
+                <a href="mailto:{{ support_email }}">Contact Support</a>
+            </div>
+            <div class="auto-message">
+                This message was sent to {{ email }} because you registered on Argon Network.<br>
+                If you didn't create this account, please ignore this email.
+            </div>
+            <div class="auto-message" style="margin-top: 12px;">
+                © {{ current_year }} Argon Network | This is an automated message, please do not reply.
+            </div>
         </div>
     </div>
 </body>
