@@ -518,18 +518,18 @@ def following_list(request, username):
         'list_type': 'Following'
     })
 
-def activate(request, token):
+ def activate(request, token):
     try:
-        user = User.objects.get(activation_token=token)  # Direct on User
+        user = User.objects.get(activation_token=token, is_active=False)
         user.is_active = True
-        user.activation_token = None
+        user.activation_token = ''  # Clear token
         user.save()
         login(request, user)
-        return HttpResponseRedirect(reverse('index'))
+        messages.success(request, "Account activated successfully! Welcome to Argon Network.")
+        return redirect('index')  # or 'all_posts'
     except User.DoesNotExist:
-        return render(request, "network/activation_error.html", {
-            "message": "Invalid or expired activation link."
-        })   
+        messages.error(request, "Invalid or expired activation link.")
+        return render(request, "network/activation_error.html")  # Create simple error template
 
 @csrf_exempt
 @login_required
