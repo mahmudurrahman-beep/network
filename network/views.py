@@ -1,7 +1,9 @@
 import os
 import json
 import pytz
+import requests
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
