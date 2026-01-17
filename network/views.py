@@ -72,66 +72,51 @@ def register(request):
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
 
-        # Validation
         if not username:
-            return render(request, "network/register.html", {"message": "Username is required."})
-        if not email:
-            return render(request, "network/register.html", {"message": "Email is required."})
-        if not password:
-            return render(request, "network/register.html", {"message": "Password is required."})
-        if password != confirmation:
-            return render(request, "network/register.html", {"message": "Passwords must match."})
-
-        try:
-            # Create inactive user
-            user = User.objects.create_user(username, email, password)
-            user.is_active = False  # Disable until verified
-
-            # Generate activation token
-            token = get_random_string(32)
-            user.activation_token = token  # Direct on User model
-            user.save()
-
-            # Build activation link
-            activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
-
-            # Email context for template
-            context = {
-                'username': username,
-                'activation_link': activation_link,
-                'email': email,
-                'protocol': 'https' if request.is_secure() else 'http',
-                'domain': request.get_host(),
-            }
-
-            # Render HTML email
-            html_message = render_to_string('network/emails/activation_email.html', context)
-
-            # Create plain text fallback
-            plain_message = strip_tags(html_message)
-
-            # Send email
-            send_mail(
-                'Activate Your Network Account',
-                plain_message,
-                DEFAULT_FROM_EMAIL,
-                [email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-
-            # Success
             return render(request, "network/register.html", {
-                "message": "Registration successful! Check your email to activate your account."
+                "message": "Username is required.",
+                "message_type": "danger"
+            })
+        if not email:
+            return render(request, "network/register.html", {
+                "message": "Email is required.",
+                "message_type": "danger"
+            })
+        if not password:
+            return render(request, "network/register.html", {
+                "message": "Password is required.",
+                "message_type": "danger"
+            })
+        if password != confirmation:
+            return render(request, "network/register.html", {
+                "message": "Passwords must match.",
+                "message_type": "danger"
             })
 
+        try:
+            # Create user (local dev: auto-activate)
+            user = User.objects.create_user(username, email, password)
+            user.is_active = True  # For local testing – remove in prod for verification
+            user.save()
+
+            # Auto-login for local dev
+            login(request, user)
+            return render(request, "network/register.html", {
+                "message": "Registration successful! Welcome to Argon Network.",
+                "message_type": "success"  # Green alert
+            })
+            
         except IntegrityError:
-            return render(request, "network/register.html", {"message": "Username already taken."})
-
+            return render(request, "network/register.html", {
+                "message": "Username or email already taken.",
+                "message_type": "danger"
+            })
         except ValueError as e:
-            return render(request, "network/register.html", {"message": str(e)})
+            return render(request, "network/register.html", {
+                "message": str(e),
+                "message_type": "danger"
+            })
 
-    # GET request - show form
     return render(request, "network/register.html")
     
 # New social features (from our plan)
