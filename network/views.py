@@ -3,6 +3,7 @@ import json
 import pytz
 import requests
 
+from django.contrib import messages
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
@@ -522,14 +523,14 @@ def activate(request, token):
     try:
         user = User.objects.get(activation_token=token, is_active=False)
         user.is_active = True
-        user.activation_token = ''  # Clear token
+        user.activation_token = ''  # Clear token after use
         user.save()
         login(request, user)
         messages.success(request, "Account activated successfully! Welcome to Argon Network.")
-        return redirect('index')  # or 'all_posts'
+        return redirect('index')  # or 'all_posts' or 'profile'
     except User.DoesNotExist:
         messages.error(request, "Invalid or expired activation link.")
-        return render(request, "network/activation_error.html")  # Create simple error template
+        return render(request, "network/activation_error.html")
 
 @csrf_exempt
 @login_required
