@@ -6,6 +6,7 @@ Production-ready for Koyeb + Supabase + Cloudinary
 import os
 import dj_database_url
 from pathlib import Path
+from datetime import datetime
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -157,7 +158,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5MB
 
 # ==================== EMAIL CONFIGURATION ====================
-from datetime import datetime
+
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
