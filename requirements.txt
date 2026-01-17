@@ -21,3 +21,4 @@ django-cloudinary-storage==0.3.0
 # Required for User model (Our fixes)
 pytz==2024.1
 Pillow==10.2.0  # For ImageField
+requests>=2.25.1
