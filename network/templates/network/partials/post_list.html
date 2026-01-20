@@ -172,13 +172,15 @@
 <script>
 console.log('🚀 POST LIST LOADED');
 
+// CSRF helper (already in main.js, but safe to have here too)
 function getCSRF() {
     return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 }
 
-// GIF/STICKER PICKER
+// Media types per post/reply
 const mediaTypes = {};
 
+// Initialize media types
 document.querySelectorAll('.gif-picker-comment-section').forEach(section => {
     const id = section.dataset.postId || section.dataset.replyTo;
     if (id) mediaTypes[id] = 'gifs';
@@ -198,7 +200,7 @@ document.querySelectorAll('.comment-media-type').forEach(btn => {
     });
 });
 
-// Media search
+// Media search with FALLBACK
 function searchMedia(id, isReply = false) {
     const selector = isReply ? `[data-reply-to="${id}"]` : `[data-post-id="${id}"]`;
     const input = document.querySelector(`.comment-media-search${selector}`);
@@ -241,8 +243,20 @@ function searchMedia(id, isReply = false) {
                     img.style.cursor = 'pointer';
                     img.style.borderRadius = '4px';
                     img.className = 'border';
+                    
+                    // FALLBACK: Show placeholder if image fails to load
+                    img.onerror = function() {
+                        this.src = 'https://via.placeholder.com/80x80?text=Failed';
+                        this.alt = 'Failed to load ' + type;
+                        this.style.opacity = '0.7';
+                        this.style.background = '#f8f9fa';
+                    };
+                    
                     img.onclick = () => {
                         const tag = type === 'gifs' ? 'GIF' : 'STICKER';
+                        if (textarea.value.trim() === '' || textarea.value === 'Write a comment...') {
+                            textarea.value = '';
+                        }
                         textarea.value += `\n[${tag}:${url}]\n`;
                         textarea.focus();
                         results.style.display = 'none';
@@ -261,6 +275,7 @@ function searchMedia(id, isReply = false) {
         });
 }
 
+// Bind browse/search buttons
 document.querySelectorAll('.browse-media-comment').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.postId || this.dataset.replyTo;
@@ -285,13 +300,14 @@ document.querySelectorAll('.comment-media-search').forEach(input => {
     });
 });
 
-// Process media tags
+// Parse media tags in ALL comments (run once on load)
 document.querySelectorAll('.comment-text').forEach(el => {
     let html = el.innerHTML;
-    html = html.replace(/\[GIF:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:200px;"></div>');
-    html = html.replace(/\[STICKER:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:150px;"></div>');
+    // Replace [GIF:url] and [STICKER:url] with images
+    html = html.replace(/\[GIF:(.*?)\]/gi, '<div class="my-2"><img src="$1" class="img-fluid rounded gif-sticker" style="max-width:200px;"></div>');
+    html = html.replace(/\[STICKER:(.*?)\]/gi, '<div class="my-2"><img src="$1" class="img-fluid rounded gif-sticker" style="max-width:150px; background:transparent;"></div>');
     el.innerHTML = html;
 });
 
-console.log('✅ GIF picker ready');
+console.log('✅ GIF picker & parser ready for all posts');
 </script>
