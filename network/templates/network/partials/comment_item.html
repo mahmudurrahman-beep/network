@@ -45,8 +45,10 @@
                 </div>
             </div>
             
-            <!-- Original comment text -->
-            <div class="comment-text mb-2">{{ comment.content|linebreaksbr }}</div>
+            <!-- new parsing comment text -->
+            <div class="comment-text mb-2">
+                {{ comment.content|parse_media|safe }}
+            </div>
             
             <!-- Edit form (hidden by default) -->
             <div class="edit-form mt-3 d-none" data-comment-id="{{ comment.id }}">
