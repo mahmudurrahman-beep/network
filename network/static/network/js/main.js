@@ -327,54 +327,6 @@ document.querySelectorAll('.message-item').forEach(function(item) {
     }
 });
 
-// COMMENT FUNCTIONALITY - Reply Form Toggle and Delete (kept as-is)
-document.addEventListener('click', function(e) {
-    // Reply button click
-    var replyBtn = e.target.closest('.reply-btn');
-    if (replyBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        var commentId = replyBtn.dataset.commentId;
-        console.log('Reply button clicked for comment:', commentId);
-        
-        var commentContainer = replyBtn.closest('.comment-item, .reply-item, .comment-content, .reply-content');
-        var form = commentContainer ? commentContainer.querySelector('.reply-form[data-parent-id="' + commentId + '"]') : null;
-        
-        console.log('Form found:', form);
-        
-        if (form) {
-            var isHidden = form.classList.contains('d-none');
-            form.classList.toggle('d-none');
-            
-            if (isHidden) {
-                var textarea = form.querySelector('textarea');
-                if (textarea) {
-                    setTimeout(function() {
-                        textarea.focus();
-                        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }, 100);
-                }
-            }
-        } else {
-            console.error('Reply form not found for comment:', commentId);
-        }
-        return;
-    }
-    
-    // Cancel reply button
-    if (e.target.matches('.cancel-reply') || e.target.closest('.cancel-reply')) {
-        var form = e.target.closest('.reply-form');
-        if (form) form.classList.add('d-none');
-    }
-    
-    // Delete comment (already fixed earlier – kept as-is)
-    if (e.target.matches('.delete-comment') || e.target.closest('.delete-comment')) {
-        // Your existing delete logic here (or keep the pessimistic version from before)
-        // ... paste your current delete logic if needed ...
-    }
-});
-
 // Edit Comment (kept as-is)
 document.querySelectorAll('.edit-comment').forEach(function(btn) {
     btn.addEventListener('click', function () {
