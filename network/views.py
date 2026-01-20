@@ -25,6 +25,9 @@ from django.template.loader import render_to_string
 
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
 
+
+
+
 def index(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('all_posts'))
@@ -71,42 +74,78 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
+# Set up logger (logs to Koyeb console)
+logger = logging.getLogger(__name__)
+
 def register(request):
     if request.method == "POST":
+        # Safely get and clean form data
         username = request.POST.get("username", "").strip()
-        email = request.POST.get("email", "").strip()
+        email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
-        # Validation (keep same)
+
+        # Validation
+        errors = []
+
         if not username:
-            return render(request, "network/register.html", {
-                "message": "Username is required.",
-                "message_type": "danger"
-            })
+            errors.append("Username is required.")
+        elif len(username) < 3:
+            errors.append("Username must be at least 3 characters.")
+        elif len(username) > 30:
+            errors.append("Username cannot exceed 30 characters.")
+        elif not username.replace('_', '').isalnum():
+            errors.append("Username can only contain letters, numbers, and underscores.")
+
         if not email:
-            return render(request, "network/register.html", {
-                "message": "Email is required.",
-                "message_type": "danger"
-            })
+            errors.append("Email is required.")
+        elif '@' not in email or '.' not in email.split('@')[-1]:
+            errors.append("Please enter a valid email address.")
+
         if not password:
-            return render(request, "network/register.html", {
-                "message": "Password is required.",
-                "message_type": "danger"
-            })
+            errors.append("Password is required.")
+        elif len(password) < 8:
+            errors.append("Password must be at least 8 characters.")
+
         if password != confirmation:
-            return render(request, "network/register.html", {
-                "message": "Passwords must match.",
-                "message_type": "danger"
-            })
+            errors.append("Passwords do not match.")
+
+        # Return early if validation errors
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, "network/register.html")
+
         try:
+            # Check duplicates before creation
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already taken.")
+                return render(request, "network/register.html")
+
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already registered.")
+                return render(request, "network/register.html")
+
             # Create inactive user
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
             user.is_active = False
-            token = get_random_string(32)
-            user.activation_token = token
+
+            # Generate and save activation token (using your existing field)
+            user.activation_token = get_random_string(32)
             user.save()
+
             # Build activation link
-            activation_link = request.build_absolute_uri(reverse('activate', args=[token]))
+            try:
+                activation_link = request.build_absolute_uri(
+                    reverse('activate', kwargs={'token': user.activation_token})
+                )
+            except Exception:
+                activation_link = f"{request.scheme}://{request.get_host()}/activate/{user.activation_token}/"
+
             # Email context
             context = {
                 'username': username,
@@ -115,45 +154,76 @@ def register(request):
                 'protocol': 'https' if request.is_secure() else 'http',
                 'domain': request.get_host(),
                 'unsubscribe_link': request.build_absolute_uri(reverse('index')),
-                'support_email': 'mahmudurrahman23yahoo@gmail.com',
+                'support_email': settings.DEFAULT_FROM_EMAIL or 'support@argonnetwork.com',
                 'current_year': datetime.now().year,
+                'site_name': 'Argon Network',
             }
+
             # Render HTML email
-            html_message = render_to_string('network/emails/activation_email.html', context)
-            plain_message = strip_tags(html_message)
-            # FIXED: Use EmailMultiAlternatives instead of send_mail
-            email_msg = EmailMultiAlternatives(
-                subject='Activate Your Argon Network Account',
-                body=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[email],
-                headers={
-                    'X-Priority': '1',
-                    'X-Mailer': 'Django',
-                    'Precedence': 'bulk',
-                    'List-Unsubscribe': f'<mailto:mahmudurrahman23yahoo@gmail.com?subject=unsubscribe>',
-                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-                    'X-Entity-Ref-ID': str(user.id),
-                }
-            )
-            email_msg.attach_alternative(html_message, "text/html")
-            email_msg.send(fail_silently=False)
-            # Success message
-            return render(request, "network/register.html", {
-                "message": "Registration successful! Check your email (or spam folder) to activate your account.",
-                "message_type": "success"
-            })
-        except IntegrityError:
-            return render(request, "network/register.html", {
-                "message": "Username or email already taken.",
-                "message_type": "danger"
-            })
+            try:
+                html_message = render_to_string('network/emails/activation_email.html', context)
+                plain_message = strip_tags(html_message)
+            except Exception as template_error:
+                logger.warning(f"Template render failed, using fallback: {template_error}")
+                html_message = f"""
+                <h2>Welcome to Argon Network, {username}!</h2>
+                <p>Click below to activate:</p>
+                <p><a href="{activation_link}">Activate Account</a></p>
+                <p>Or copy: {activation_link}</p>
+                """
+                plain_message = f"Welcome! Activate: {activation_link}"
+
+            # Send email
+            try:
+                email_msg = EmailMultiAlternatives(
+                    subject=f'Activate Your Argon Network Account - {username}',
+                    body=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[email],
+                    reply_to=[settings.DEFAULT_FROM_EMAIL],
+                    headers={
+                        'X-Priority': '1',
+                        'X-Mailer': 'Django',
+                        'Precedence': 'bulk',
+                        'List-Unsubscribe': f'<mailto:{settings.DEFAULT_FROM_EMAIL}?subject=unsubscribe>',
+                        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                        'X-Entity-Ref-ID': str(user.id),
+                    }
+                )
+                email_msg.attach_alternative(html_message, "text/html")
+                email_msg.send(fail_silently=False)
+
+                logger.info(f"Registration success for {email}. Activation email sent.")
+                messages.success(
+                    request,
+                    "Registration successful! Check your email (including spam) for activation link."
+                )
+                return render(request, "network/register.html")
+
+            except Exception as email_error:
+                # Cleanup user if email fails
+                user.delete()
+                logger.error(f"Email send failed for {email}: {str(email_error)}")
+                messages.error(
+                    request,
+                    "Failed to send activation email. Please try again later."
+                )
+                return render(request, "network/register.html")
+
+        except IntegrityError as e:
+            logger.warning(f"IntegrityError during registration: {str(e)}")
+            messages.error(request, "Username or email already taken.")
+            return render(request, "network/register.html")
+
         except Exception as e:
-            print(f"Registration error: {e}")
-            return render(request, "network/register.html", {
-                "message": "An error occurred. Please try again.",
-                "message_type": "danger"
-            })
+            logger.error(f"Unexpected registration error for {email}: {str(e)}", exc_info=True)
+            messages.error(
+                request,
+                "An unexpected error occurred. Please try again later."
+            )
+            return render(request, "network/register.html")
+
+    # GET request - empty form
     return render(request, "network/register.html")
 
 def activate(request, token):
