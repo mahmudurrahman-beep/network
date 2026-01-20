@@ -1,21 +1,235 @@
-.post-card { background: white; border: 1px solid #ddd; }
-.thumbs-up.active, .thumbs-down.active { background: #e3f2fd; }
-.badge { font-size: 0.7em; }
-img, video { max-width: 100%; border-radius: 8px; }
-.rounded-circle { object-fit: cover; }
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.card {
-    border-radius: 20px;
-}
-label[for="id_profile_picture"]:hover {
-    transform: scale(1.1);
-    transition: transform 0.2s;
+/* === GLOBAL RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Just the necessary CSS for polish improvements */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: #f8f9fa;
+  color: #212529;
+  line-height: 1.6;
+}
+
+/* === COLORS & UTILITIES === */
+:root {
+  --primary: #667eea;
+  --primary-dark: #5a67d8;
+  --secondary: #764ba2;
+  --light-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-muted: #6c757d;
+  --radius: 12px;
+  --transition: all 0.2s ease-in-out;
+}
+
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4, h5 {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* === BUTTONS === */
+.btn {
+  transition: var(--transition);
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === CARDS & CONTAINERS === */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* === NAVBAR === */
+.navbar {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+}
+
+.navbar a {
+  color: #fff;
+}
+
+.navbar a:hover {
+  color: #e2e8f0;
+}
+
+/* === POST CARDS === */
+.post-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.post-text {
+  white-space: pre-line;
+}
+
+.thumbs-up.active,
+.thumbs-down.active {
+  background: #e3f2fd;
+}
+
+.badge {
+  font-size: 0.7em;
+}
+
+/* === COMMENTS & REPLIES === */
+.comment-item {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reply-item {
+  margin-left: 2rem;
+  background: #f1f5f9;
+}
+
+.comment-text img,
+.comment-text video {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+/* === MEDIA PICKER === */
+.gif-picker-comment-section {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  background: #fdfdfd;
+  transition: var(--transition);
+}
+
+.gif-picker-comment-section.active {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  border-color: var(--primary);
+}
+
+.comment-media-results img {
+  width: 100px;
+  height: auto;
+  margin: 0.25rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+.comment-media-results img:hover {
+  transform: scale(1.05);
+}
+
+/* === AVATARS & MEDIA === */
+img, video {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.rounded-circle {
+  object-fit: cover;
+}
+
+/* === FEEDBACK & ALERTS === */
+.media-success-feedback {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+  max-width: 320px;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* === FORMS === */
+textarea {
+  resize: vertical;
+  border-radius: 6px;
+}
+
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* === MISC === */
+label[for="id_profile_picture"]:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s;
+}
+
+.comment-gif img,
+.comment-sticker img {
+  max-width: 200px;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.max-depth-warning {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }

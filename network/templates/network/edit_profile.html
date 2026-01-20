@@ -7,34 +7,32 @@
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                     <div class="card-body p-5 bg-light text-center">
                         <h3 class="mb-4 fw-bold text-primary">Edit Profile</h3>
-
-                        <!-- Message display – red for "already taken", green for future success -->
+                        
+                        <!-- Error Message Display -->
                         {% if message %}
-                            <div class="alert alert-{{ message_type|default:'danger' }} mt-3" role="alert">
-                                {{ message }}
-                            </div>
+                          <div class="alert alert-danger">{{ message }}</div>
                         {% endif %}
 
                         <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
 
-                            <!-- Username Field -->
+                            <!-- Username Field - ADDED -->
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" name="username" class="form-control" id="username" value="{{ user.username }}" required>
                                 <small class="text-muted">You can change your username (must be unique)</small>
                             </div>
 
-                            <!-- Bio -->
+                            <!-- Bio Centered -->
                             <div class="mb-3">
-                                <label for="bio" class="form-label">Bio</label>
-                                <textarea name="bio" id="bio" class="form-control" rows="4" placeholder="Tell us about yourself... (optional)">{{ user.bio }}</textarea>
+                                <label for="id_bio" class="form-label">Bio</label>
+                                <textarea name="bio" id="id_bio" class="form-control" rows="4" placeholder="Tell us about yourself... (optional)">{{ user.bio }}</textarea>
                             </div>
 
-                            <!-- Timezone -->
+                            <!-- Timezone Selection -->
                             <div class="mb-3">
                                 <label for="timezone" class="form-label">Time Zone</label>
-                                <select name="timezone" class="form-select" id="timezone">
+                                <select name="timezone" class="form-control" id="timezone">
                                     {% for tz, tz_display in timezone_choices %}
                                         <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>
                                             {{ tz_display }}
@@ -44,10 +42,10 @@
                                 <small class="text-muted">All timestamps will display in your local time</small>
                             </div>
 
-                            <!-- Gender -->
+                            <!-- Gender Selection -->
                             <div class="mb-3">
                                 <label for="gender" class="form-label">Gender</label>
-                                <select name="gender" class="form-select" id="gender">
+                                <select name="gender" class="form-control" id="gender">
                                     <option value="">Prefer not to say</option>
                                     <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
                                     <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
@@ -55,7 +53,6 @@
                                 </select>
                             </div>
 
-                            <!-- Submit -->
                             <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
                                 Save Changes
                             </button>

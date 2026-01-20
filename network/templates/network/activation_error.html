@@ -1,10 +1,9 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div class="container mt-5 text-center">
-        <h2>Activation Failed</h2>
-        <p class="lead">The activation link is invalid or has expired.</p>
-        <a href="{% url 'register' %}" class="btn btn-primary">Register Again</a>
-        <a href="{% url 'login' %}" class="btn btn-secondary ms-2">Log In</a>
+    <div class="container mt-5">
+        <h2>Activation Error</h2>
+        <p class="alert alert-danger">{{ message }}</p>
+        <a href="{% url 'register' %}" class="btn btn-primary">Register again</a>
     </div>
 {% endblock %}

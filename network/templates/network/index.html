@@ -3,121 +3,209 @@
 
 {% block body %}
 <style>
-    .redirect-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .redirect-container::before {
-        content: '';
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        top: -300px;
-        left: 50%;
-        transform: translateX(-50%);
-        animation: pulse 3s infinite ease-in-out;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.3; }
-        50% { transform: translateX(-50%) scale(1.1); opacity: 0.5; }
-    }
-    
-    .redirect-content {
-        position: relative;
-        z-index: 10;
-        text-align: center;
-        color: white;
-        padding: 60px 40px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        max-width: 500px;
-        animation: fadeIn 0.6s ease-out;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .redirect-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 20px;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .redirect-message {
-        font-size: 1.2rem;
-        margin-bottom: 30px;
-        opacity: 0.95;
-    }
-    
-    .spinner {
-        width: 60px;
-        height: 60px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 30px auto;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .redirect-btn {
-        display: inline-block;
-        padding: 16px 40px;
-        background: white;
-        color: #667eea;
-        text-decoration: none;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease;
-        margin-top: 20px;
-    }
-    
-    .redirect-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
-        color: #667eea;
-    }
+  :root{
+    --accent-1: #2563eb;
+    --accent-2: #06b6d4;
+    --muted-light: rgba(255,255,255,0.92);
+    --muted: rgba(255,255,255,0.78);
+    --card-radius: 18px;
+    --max-width: 980px;
+    --footer-bg: #0b1220;
+  }
+
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071428 0%, #081428 40%, #0b1220 100%);color:var(--muted-light);-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;height:auto;display:block}
+
+  /* Container */
+  .redirect-container{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    padding:48px 20px;
+  }
+
+  /* subtle animated blobs */
+  .blob {
+    position:absolute;
+    filter: blur(72px) saturate(120%);
+    opacity:0.55;
+    mix-blend-mode: screen;
+    transform-origin:center;
+    animation: floaty 20s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .blob.b1{width:700px;height:700px;background:linear-gradient(45deg,rgba(6,182,212,0.18),rgba(37,99,235,0.18));top:-240px;left:-220px;}
+  .blob.b2{width:520px;height:520px;background:linear-gradient(45deg,rgba(37,99,235,0.16),rgba(6,182,212,0.14));bottom:-200px;right:-180px;animation-duration:26s;animation-direction:reverse;}
+
+  @keyframes floaty{
+    0%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(36px,-28px) scale(1.03)}
+    66%{transform:translate(-28px,36px) scale(0.99)}
+    100%{transform:translate(0,0) scale(1)}
+  }
+
+  /* Card (dark glass) */
+  .redirect-content{
+    position:relative;
+    z-index:10;
+    width:min(var(--max-width),94%);
+    text-align:center;
+    color:var(--muted-light);
+    padding:40px 32px;
+    border-radius:20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 20px 60px rgba(2,6,23,0.6);
+    backdrop-filter: blur(8px) saturate(120%);
+    overflow:hidden;
+    animation: fadeInUp 700ms ease-out both;
+  }
+
+  .redirect-content::before{
+    content:'';
+    position:absolute;inset:0;border-radius:inherit;
+    background: linear-gradient(180deg, rgba(4,6,12,0.6), rgba(6,8,16,0.45));
+    z-index:0;
+    pointer-events:none;
+  }
+
+  @keyframes fadeInUp{
+    from{opacity:0; transform:translateY(18px)}
+    to{opacity:1; transform:translateY(0)}
+  }
+
+  /* Title animation (drop) */
+  .redirect-title{
+    position:relative;
+    z-index:2;
+    font-size: clamp(1.8rem, 4.2vw, 2.6rem);
+    font-weight:900;
+    margin:0 0 10px 0;
+    color:#fff;
+    animation: titleDrop 900ms cubic-bezier(.2,.9,.3,1) both;
+  }
+  @keyframes titleDrop{
+    0%{opacity:0; transform:translateY(-120px) scale(0.98)}
+    60%{opacity:1; transform:translateY(12px) scale(1.02)}
+    100%{opacity:1; transform:translateY(0) scale(1)}
+  }
+
+  .redirect-message{
+    position:relative;
+    z-index:2;
+    color:var(--muted);
+    font-size:1rem;
+    margin:10px 0 22px 0;
+    opacity:0;
+    transform:translateY(12px);
+    animation: subtitleUp 700ms ease-out 420ms both;
+  }
+  @keyframes subtitleUp{ to{opacity:1; transform:translateY(0)} }
+
+  /* Spinner (refined to match theme) */
+  .spinner{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    border:5px solid rgba(255,255,255,0.08);
+    border-top-color:var(--accent-2);
+    animation: spin 1s linear infinite;
+    margin:26px auto;
+    position:relative;
+    z-index:2;
+    box-shadow: 0 8px 30px rgba(6,182,212,0.06);
+  }
+  @keyframes spin{ to{ transform: rotate(360deg) } }
+
+  /* Primary button (matches landing) */
+  .redirect-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:12px 26px;
+    border-radius:999px;
+    background: linear-gradient(90deg,#ffffff,#f3f7ff);
+    color:var(--accent-1);
+    font-weight:800;
+    text-decoration:none;
+    box-shadow: 0 12px 36px rgba(56,189,248,0.10);
+    transition: transform .18s ease, box-shadow .18s ease;
+    z-index:2;
+  }
+  .redirect-btn:hover{ transform:translateY(-6px); box-shadow: 0 28px 80px rgba(56,189,248,0.14); }
+
+  /* small footer inside page (optional) */
+  .redirect-footer{
+    margin-top:18px;
+    color:rgba(255,255,255,0.7);
+    font-size:0.9rem;
+    z-index:2;
+  }
+
+  /* responsive */
+  @media (max-width:980px){
+    .redirect-content{padding:28px}
+    .redirect-title{font-size:1.6rem}
+  }
+  @media (max-width:520px){
+    .redirect-content{padding:20px}
+    .spinner{width:52px;height:52px;border-width:4px}
+    .redirect-btn{padding:10px 18px;font-size:0.95rem}
+  }
+
+  /* accessibility focus */
+  :focus{outline:3px solid rgba(56,189,248,0.12);outline-offset:3px}
 </style>
 
-<div class="redirect-container">
-    <div class="redirect-content">
-        <h1 class="redirect-title">Welcome Back! 👋</h1>
-        <p class="redirect-message">Redirecting you to your feed...</p>
-        <div class="spinner"></div>
-        <a href="{% url 'all_posts' %}" class="redirect-btn">Go to Feed 🚀</a>
+<div class="redirect-container" id="hero">
+  <div class="blob b1" aria-hidden="true"></div>
+  <div class="blob b2" aria-hidden="true"></div>
+
+  <div class="redirect-content" role="region" aria-label="Redirect to feed">
+    <h1 class="redirect-title">Welcome Back 👋</h1>
+    <p class="redirect-message">Taking you to your feed — hang tight for a moment.</p>
+
+    <div class="spinner" aria-hidden="true"></div>
+
+    <a href="{% url 'all_posts' %}" class="redirect-btn" role="button">Go to Feed</a>
+
+    <div class="redirect-footer">
+      <a href="mailto:mahmudurrahman23yahoo@gmail.com" style="color:rgba(255,255,255,0.9);font-weight:600;">Contact</a>
+      <div style="margin-top:6px;font-size:0.85rem;color:rgba(255,255,255,0.6)">© {{ now.year }} Argon Network</div>
     </div>
+  </div>
 </div>
 
 <script>
-    // Auto-redirect after 2 seconds
-    setTimeout(function() {
-        window.location.href = "{% url 'all_posts' %}";
-    }, 2000);
+  // subtle parallax for blobs to match landing behavior
+  (function(){
+    const hero = document.getElementById('hero');
+    const blobs = hero ? hero.querySelectorAll('.blob') : [];
+    if(!hero || blobs.length===0) return;
+
+    hero.addEventListener('mousemove', e=>{
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      blobs.forEach((b, i)=>{
+        const depth = (i+1) * 8;
+        b.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+      });
+    });
+
+    hero.addEventListener('mouseleave', ()=>{
+      blobs.forEach(b=> b.style.transform = '');
+    });
+  })();
+
+  // Auto-redirect after 2 seconds
+  setTimeout(function(){
+    window.location.href = "{% url 'all_posts' %}";
+  }, 2000);
 </script>
 {% endblock %}

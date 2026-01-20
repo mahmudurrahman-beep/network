@@ -1,84 +1,46 @@
 {% extends "network/layout.html" %}
-{% load static %}
 
 {% block body %}
-<div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85" 
-                 style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
-                <div class="card-body p-5 p-md-5 text-center">
-                    <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
-                        Welcome Back
-                    </h2>
-                    
-                    <p class="text-muted mb-4 lead fs-6">
-                        Log in to continue your Argon Network experience.
-                    </p>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-body p-5 bg-light">
+                        <h2 class="mb-4 text-center">Login</h2>
 
-                    {% if message %}
-                        <div class="alert alert-danger shadow-sm mb-4" role="alert">
-                            {{ message }}
-                        </div>
-                    {% endif %}
+                        {% if message %}
+                            <div class="alert alert-danger mt-3">{{ message }}</div>
+                        {% endif %}
 
-                    <form action="{% url 'login' %}" method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <input type="text" name="identifier" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
-                                   id="identifier" placeholder="Username or Email" required autofocus>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
-                                   id="password" placeholder="Password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
-                            Log In
-                        </button>
-                    </form>
+                        <form action="{% url 'login' %}" method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="identifier" class="form-label">Username or Email</label>
+                                <input type="text" name="identifier" class="form-control" id="identifier" placeholder="Username or Email" required autofocus>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                            </div>
+                            
+                            <div class="text-center">
+                                <input class="btn btn-primary btn-lg px-5" type="submit" value="Login">
+                            </div>
+                        </form>
 
-                    <div class="mt-4">
-                        <a href="{% url 'password_reset' %}" class="text-primary fw-medium text-decoration-none d-block mb-2">
-                            Forgot password?
-                        </a>
-                        <a href="{% url 'register' %}" class="text-primary fw-medium text-decoration-none">
-                            Don't have an account? Register here
-                        </a>
+                        <!-- FORGOT PASSWORD LINK ADDED HERE -->
+                        <div class="text-center mt-3">
+                            <a href="{% url 'password_reset' %}">Forgot password?</a>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<style>
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-    .card {
-        transition: all 0.3s ease;
-    }
-    .card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 70px rgba(102, 126, 234, 0.25) !important;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-    }
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    }
-    .alert {
-        border-radius: 12px;
-    }
-    @media (max-width: 576px) {
-        .card-body { padding: 2.5rem 1.5rem !important; }
-    }
-</style>
 {% endblock %}

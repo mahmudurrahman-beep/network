@@ -13,7 +13,7 @@ GENDER_CHOICES = [
 class User(AbstractUser):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    hidden_conversations = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='hidden_by')  
+    hidden_conversations = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='hidden_by')
     timezone = models.CharField(max_length=100, choices=TIMEZONE_CHOICES, default='UTC')
     activation_token = models.CharField(max_length=32, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
@@ -24,10 +24,8 @@ class Post(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     thumbs_up = models.ManyToManyField(User, related_name='upvoted_posts', blank=True)
     thumbs_down = models.ManyToManyField(User, related_name='downvoted_posts', blank=True)
-
     class Meta:
         ordering = ['-timestamp']
-
     def __str__(self):
         return f"{self.user} - {self.content[:50]}"
 
@@ -39,21 +37,18 @@ class PostMedia(models.Model):
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
     followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
-
     class Meta:
         unique_together = ('follower', 'followed')
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    verb = models.CharField(max_length=50)  # e.g., "liked", "followed"
+    verb = models.CharField(max_length=50) # e.g., "liked", "followed"
     post = models.ForeignKey(Post, on_delete=models.SET_NULL, null=True, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         ordering = ['-created_at']
-
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -62,21 +57,21 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     media = models.FileField(upload_to='message_media/', blank=True, null=True)
-    media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF')], blank=True)
-
+    media_url = models.URLField(max_length=500, null=True, blank=True)  # Added for external GIFs/Stickers
+    media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF'), ('sticker', 'Sticker')], blank=True)
     class Meta:
         ordering = ['-timestamp']
-
     def __str__(self):
-        return f"{self.sender} to {self.recipient}: {self.content[:30]}" 
-    
+        return f"{self.sender} to {self.recipient}: {self.content[:30]}"
+
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')  # Added from local for nesting
     timestamp = models.DateTimeField(auto_now_add=True)
     media = models.FileField(upload_to='comment_media/', blank=True, null=True)
-    media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF')], blank=True)
-
+    media_url = models.URLField(max_length=500, null=True, blank=True)  # Added from local for GIFs
+    media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF'), ('sticker', 'Sticker')], blank=True)
     class Meta:
         ordering = ['-timestamp']

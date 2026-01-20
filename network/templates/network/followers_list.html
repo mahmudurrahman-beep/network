@@ -1,11 +1,12 @@
 {% extends "network/layout.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block body %}
     <div class="container mt-5">
         <h2>{{ list_type }} of <a href="{% url 'profile' profile_user.username %}">{{ profile_user.username }}</a></h2>
         <a href="{% url 'profile' profile_user.username %}" class="btn btn-outline-secondary mb-3">← Back to Profile</a>
-
+        
         {% if users %}
             <div class="row">
                 {% for user in users %}
@@ -16,26 +17,33 @@
                                     <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="100" height="100" style="object-fit: cover;">
                                 {% else %}
                                     <!-- Default Argon Avatar -->
-                                    <img src="{% static 'network/images/default-avatar.png' %}" 
-                                         class="rounded-circle mb-3" 
-                                         width="100" 
-                                         height="100" 
+                                    <img src="{% static 'network/images/default-avatar.png' %}"
+                                         class="rounded-circle mb-3"
+                                         width="100"
+                                         height="100"
                                          alt="{{ user.username }}"
                                          style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                                 {% endif %}
+                                
                                 <h5>
                                     <a href="{% url 'profile' user.username %}" class="text-dark text-decoration-none">
                                         {{ user.username }}
                                     </a>
                                 </h5>
                                 <p class="text-muted">{{ user.bio|default:"No bio" }}</p>
-                                
-                                <!-- Follow/Unfollow button for logged-in users (optional) -->
+                               
+                                <!-- Follow/Unfollow button for logged-in users -->
                                 {% if request.user.is_authenticated and request.user != user %}
-                                    {% with is_following=request.user.following.filter.followed=user %}
-                                    <button class="btn btn-sm {% if is_following %}btn-outline-primary{% else %}btn-primary{% endif %} follow-btn" data-username="{{ user.username }}">
-                                        {% if is_following %}Unfollow{% else %}Follow{% endif %}
-                                    </button>
+                                    {% with key=user.id|stringformat:"s" %}
+                                        {% if is_following_dict|get_item:key %}
+                                            <button class="btn btn-sm btn-outline-primary follow-btn" data-username="{{ user.username }}">
+                                                Unfollow
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-primary follow-btn" data-username="{{ user.username }}">
+                                                Follow
+                                            </button>
+                                        {% endif %}
                                     {% endwith %}
                                 {% endif %}
                             </div>
@@ -47,4 +55,66 @@
             <p class="text-center text-muted py-5">No {{ list_type|lower }} yet.</p>
         {% endif %}
     </div>
+
+    <script>
+        // JavaScript for follow/unfollow functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all follow buttons
+            document.querySelectorAll('.follow-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const username = this.dataset.username;
+                    const isUnfollow = this.textContent.trim() === 'Unfollow';
+                    const url = isUnfollow 
+                        ? `/api/unfollow/${username}/`
+                        : `/api/follow/${username}/`;
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Toggle button text and style
+                            if (isUnfollow) {
+                                this.textContent = 'Follow';
+                                this.classList.remove('btn-outline-primary');
+                                this.classList.add('btn-primary');
+                            } else {
+                                this.textContent = 'Unfollow';
+                                this.classList.remove('btn-primary');
+                                this.classList.add('btn-outline-primary');
+                            }
+                        } else {
+                            alert('Error: ' + (data.error || 'Something went wrong'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Network error. Please try again.');
+                    });
+                });
+            });
+
+            // Function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
 {% endblock %}

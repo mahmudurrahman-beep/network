@@ -8,7 +8,7 @@ function getCsrfToken() {
     return token.value;
 }
 
-// 1. Follow / Unfollow + LIVE follower count update
+// Follow / Unfollow + LIVE follower count update
 const followBtn = document.getElementById('follow-btn');
 if (followBtn) {
     followBtn.addEventListener('click', () => {
@@ -33,24 +33,25 @@ if (followBtn) {
             return response.json();
         })
         .then(data => {
-            // Update button
             followBtn.textContent = data.action === 'followed' ? 'Unfollow' : 'Follow';
             followBtn.classList.toggle('btn-primary', data.action === 'followed');
             followBtn.classList.toggle('btn-outline-primary', data.action !== 'followed');
 
-            // LIVE update followers count (required part)
             const followersEl = document.querySelector('[data-followers-count]');
             if (followersEl) {
-                followersEl.textContent = data.followers;
+                const followersLink = followersEl.querySelector('a');
+                if (followersLink) {
+                    followersLink.textContent = `${data.followers} followers`;
+                }
             }
 
-            // Optional: update following count too (if you added data-following-count)
-            const followingEl = document.querySelector('[data-following-count]');
+            const followingEl = document.querySelector('#following-count');
             if (followingEl && data.following !== undefined) {
-                followingEl.textContent = data.following;
+                const followingLink = followingEl.querySelector('a');
+                if (followingLink) {
+                    followingLink.textContent = `${data.following} following`;
+                }
             }
-
-            console.log('Follow success. New followers:', data.followers);
         })
         .catch(error => {
             console.error('Follow failed:', error);
@@ -59,43 +60,27 @@ if (followBtn) {
     });
 }
 
-// Edit Post – 100% reliable prepopulation + debug
+// Edit Post
 document.querySelectorAll('.edit-post').forEach(btn => {
     btn.addEventListener('click', function () {
-        console.log('[EDIT] 1. Button clicked. Post ID:', btn.dataset.post);
-
         const postId = btn.dataset.post;
         const postCard = btn.closest('.post-card');
-        if (!postCard) return console.error('[EDIT] 2. No .post-card');
+        if (!postCard) return;
 
         const contentDiv = postCard.querySelector('.post-content');
-        if (!contentDiv) return console.error('[EDIT] 3. No .post-content');
+        if (!contentDiv) return;
 
         const postText = contentDiv.querySelector('.post-text');
-        if (!postText) return console.error('[EDIT] 4. No .post-text');
+        if (!postText) return;
 
-        // Step 5: Grab original text BEFORE changing anything
         const originalText = postText.innerText.trim();
-        console.log('[EDIT] 5. Original text for textarea:', originalText || '(empty - check template)');
-
-        // Backup original HTML for cancel
         const originalHTML = contentDiv.innerHTML;
-        console.log('[EDIT] 6. Original HTML backup:', originalHTML);
 
-        // Create textarea and SET VALUE FIRST
         const textarea = document.createElement('textarea');
         textarea.className = 'form-control mb-2';
-        textarea.value = originalText; // Prepopulate here
+        textarea.value = originalText;
         textarea.rows = 5;
 
-        // NO placeholder when we have content
-        if (originalText) {
-            textarea.placeholder = ''; // clear if content exists
-        } else {
-            textarea.placeholder = 'Edit your post...';
-        }
-
-        // Save & Cancel buttons
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn btn-primary btn-sm me-2';
         saveBtn.textContent = 'Save';
@@ -104,7 +89,6 @@ document.querySelectorAll('.edit-post').forEach(btn => {
         cancelBtn.className = 'btn btn-outline-secondary btn-sm';
         cancelBtn.textContent = 'Cancel';
 
-        // Clear contentDiv AFTER grabbing everything
         contentDiv.innerHTML = '';
         contentDiv.appendChild(textarea);
         contentDiv.appendChild(saveBtn);
@@ -112,19 +96,14 @@ document.querySelectorAll('.edit-post').forEach(btn => {
 
         btn.style.display = 'none';
 
-        // Force focus + small delay to ensure browser renders value
         setTimeout(() => {
             textarea.focus();
-            textarea.setSelectionRange(0, 0); // cursor at start
-            console.log('[EDIT] 7. Textarea value after render:', textarea.value);
+            textarea.setSelectionRange(0, 0);
         }, 50);
 
-        // Save handler
         saveBtn.onclick = () => {
             const newContent = textarea.value.trim();
             if (!newContent) return alert('Post cannot be empty');
-
-            console.log('[EDIT] 8. Saving new content:', newContent);
 
             saveBtn.disabled = true;
             saveBtn.textContent = 'Saving...';
@@ -138,15 +117,12 @@ document.querySelectorAll('.edit-post').forEach(btn => {
                 body: JSON.stringify({ content: newContent })
             })
             .then(response => {
-                console.log('[EDIT] 9. Save status:', response.status);
                 if (!response.ok) {
                     return response.text().then(text => { throw new Error(text); });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('[EDIT] 10. Success:', data);
-
                 const newText = document.createElement('p');
                 newText.className = 'post-text mb-0';
                 newText.innerHTML = newContent.replace(/\n/g, '<br>');
@@ -156,23 +132,20 @@ document.querySelectorAll('.edit-post').forEach(btn => {
                 btn.style.display = 'inline-block';
             })
             .catch(error => {
-                console.error('[EDIT] 11. Failed:', error);
                 alert(`Failed to save: ${error.message}`);
                 saveBtn.disabled = false;
                 saveBtn.textContent = 'Save';
             });
         };
 
-        // Cancel – restore original HTML
         cancelBtn.onclick = () => {
             contentDiv.innerHTML = originalHTML;
             btn.style.display = 'inline-block';
-            console.log('[EDIT] 12. Canceled – restored original');
         };
     });
 });
 
-// 3. Like / Unlike (thumbs toggle + live count)
+// Like / Unlike
 document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
     btn.addEventListener('click', () => {
         const postId = btn.dataset.post;
@@ -211,7 +184,7 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
     });
 });
 
-// New Post Submission (async + nice feedback)
+// New Post Submission
 const newPostForm = document.getElementById('new-post-form');
 if (newPostForm) {
     newPostForm.addEventListener('submit', function (e) {
@@ -226,7 +199,7 @@ if (newPostForm) {
             messageDiv.textContent = 'Posting...';
         }
 
-        fetch('/new-post', {
+        fetch('/new-post/', {
             method: 'POST',
             body: formData,
             headers: {
@@ -248,8 +221,6 @@ if (newPostForm) {
                     messageDiv.textContent = 'Posted successfully!';
                 }
                 newPostForm.reset();
-
-                // Optional: auto-refresh to show new post
                 setTimeout(() => location.reload(), 1500);
             }
         })
@@ -264,7 +235,7 @@ if (newPostForm) {
     });
 }
 
-// Delete Post (async, no reload)
+// Delete Post
 document.querySelectorAll('.delete-post').forEach(btn => {
     btn.addEventListener('click', function () {
         if (!confirm('Are you sure you want to delete this post?')) {
@@ -290,7 +261,7 @@ document.querySelectorAll('.delete-post').forEach(btn => {
         })
         .then(data => {
             if (data.message) {
-                postCard.remove(); // Remove post from page instantly
+                postCard.remove();
                 alert('Post deleted successfully');
             } else {
                 alert('Failed to delete post');
@@ -318,14 +289,14 @@ document.querySelectorAll('.delete-message').forEach(btn => {
         .then(r => r.json())
         .then(data => {
             if (data.message) {
-                messageItem.remove(); // instant removal
+                messageItem.remove();
             }
         })
         .catch(err => console.error('Delete message failed:', err));
     });
 });
 
-// Hide/Delete Conversation – "Delete for me only"
+// Hide/Delete Conversation
 document.querySelectorAll('.delete-conversation').forEach(btn => {
     btn.addEventListener('click', () => {
         if (!confirm('Clear this conversation for you? (The other user will still see their messages)')) {
@@ -335,7 +306,6 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
         const username = btn.dataset.other;
         const csrfToken = getCsrfToken();
 
-        // Optional: show loading state
         btn.disabled = true;
         const originalText = btn.textContent;
         btn.textContent = 'Clearing...';
@@ -353,7 +323,7 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
         })
         .then(data => {
             alert(data.message || 'Conversation cleared for you!');
-            window.location.href = '/messages/';  // go back to inbox
+            window.location.href = '/messages/';
         })
         .catch(error => {
             console.error('Clear conversation failed:', error);
@@ -364,11 +334,11 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
     });
 });
 
-// Client-side "time ago" in user's local time
+// Time ago display
 document.querySelectorAll('.time-ago').forEach(el => {
     const timestamp = new Date(el.dataset.timestamp);
     const now = new Date();
-    const diff = Math.floor((now - timestamp) / 1000); // seconds
+    const diff = Math.floor((now - timestamp) / 1000);
 
     let text = '';
     if (diff < 60) text = 'just now';
@@ -382,83 +352,180 @@ document.querySelectorAll('.time-ago').forEach(el => {
 // Hover timestamp
 document.querySelectorAll('.message-item').forEach(item => {
     const timeEl = item.querySelector('.time-ago');
-    const fullTime = new Date(timeEl.dataset.timestamp).toLocaleString();
-    timeEl.title = fullTime;  // Hover shows full date/time
+    if (timeEl) {
+        const fullTime = new Date(timeEl.dataset.timestamp).toLocaleString();
+        timeEl.title = fullTime;
+    }
 });
 
-// Delete Comment (async, instant removal)
-document.querySelectorAll('.delete-comment').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (!confirm('Delete this comment?')) return;
+// COMMENT FUNCTIONALITY - Reply Form Toggle and Delete
+document.addEventListener('click', function(e) {
+    // Reply button click - check multiple ways
+    const replyBtn = e.target.closest('.reply-btn');
+    if (replyBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const commentId = replyBtn.dataset.commentId;
+        console.log('Reply button clicked for comment:', commentId);
+        
+        // Find the form in the same comment container
+        const commentContainer = replyBtn.closest('.comment-item, .reply-item, .comment-content, .reply-content');
+        const form = commentContainer ? commentContainer.querySelector(`.reply-form[data-parent-id="${commentId}"]`) : null;
+        
+        console.log('Form found:', form);
+        
+        if (form) {
+            const isHidden = form.classList.contains('d-none');
+            form.classList.toggle('d-none');
+            
+            if (isHidden) {
+                const textarea = form.querySelector('textarea');
+                if (textarea) {
+                    setTimeout(() => {
+                        textarea.focus();
+                        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 100);
+                }
+            }
+        } else {
+            console.error('Reply form not found for comment:', commentId);
+        }
+        return;
+    }
 
+    // Cancel reply button
+    if (e.target.matches('.cancel-reply') || e.target.closest('.cancel-reply')) {
+        const form = e.target.closest('.reply-form');
+        if (form) form.classList.add('d-none');
+    }
+
+    // Delete comment
+    if (e.target.matches('.delete-comment') || e.target.closest('.delete-comment')) {
+        if (!confirm('Delete this comment?')) return;
+        
+        const btn = e.target.matches('.delete-comment') ? e.target : e.target.closest('.delete-comment');
         const commentId = btn.dataset.commentId;
-        const commentItem = btn.closest('.comment-item');
+        const commentItem = btn.closest('.comment-item, .reply-item');
+
+        if (!commentItem) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
         fetch(`/delete-comment/${commentId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCsrfToken()
-            }
+                'X-CSRFToken': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
         })
-        .then(r => r.json())
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
         .then(data => {
-            if (data.message) {
-                commentItem.remove();  // Instant removal
+            if (data.status === 'success') {
+                commentItem.style.transition = 'opacity 0.3s ease, height 0.3s ease';
+                commentItem.style.opacity = '0';
+                commentItem.style.height = '0';
+                commentItem.style.overflow = 'hidden';
+                
+                setTimeout(() => {
+                    commentItem.remove();
+                    
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                    alert.style.zIndex = '9999';
+                    alert.innerHTML = '<i class="bi bi-check-circle me-2"></i>Comment deleted successfully';
+                    document.body.appendChild(alert);
+                    
+                    setTimeout(() => alert.remove(), 3000);
+                }, 300);
+            } else {
+                throw new Error(data.message || 'Delete failed');
             }
         })
-        .catch(err => {
-            console.error('Delete comment failed:', err);
-            alert('Failed to delete');
+        .catch(error => {
+            console.error('Delete comment failed:', error);
+            alert('Failed to delete comment: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = 'Delete';
         });
+    }
+});
+
+// Delete Comment/Reply – Pessimistic: only remove if server confirms success
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.delete-comment');
+    if (!btn || btn.disabled) return;  // Ignore if disabled or not button
+
+    if (!confirm('Delete this comment?')) return;
+
+    const commentId = btn.dataset.commentId;
+    const commentItem = btn.closest('.comment-item');
+    if (!commentItem) return;
+
+    // Lock button to prevent any double action
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Deleting...';
+
+    fetch(`/delete-comment/${commentId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json().then(data => ({ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (ok && (data.status === 'success' || data.message)) {
+            // Server confirmed: fade + remove
+            commentItem.style.transition = 'opacity 0.5s ease, transform 0.3s ease';
+            commentItem.style.opacity = '0';
+            commentItem.style.transform = 'translateY(-10px)';
+            setTimeout(() => commentItem.remove(), 500);
+            console.log('Deleted successfully');
+            // No success alert — clean UI
+        } else {
+            throw new Error(data.message || data.error || 'Delete rejected');
+        }
+    })
+    .catch(err => {
+        console.error('Delete failed:', err);
+        // Revert button on any failure
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+        alert('Failed to delete: ' + err.message);
+        // Comment stays visible
     });
 });
 
-// Edit Comment (inline, prepopulated textarea)
+
+// Edit Comment (prepopulated)
 document.querySelectorAll('.edit-comment').forEach(btn => {
     btn.addEventListener('click', () => {
         const commentId = btn.dataset.commentId;
         const commentItem = btn.closest('.comment-item');
-        const contentDiv = commentItem.querySelector('.comment-content');
-        const commentText = contentDiv.querySelector('.comment-text');
-
-        if (!commentText) return;
-
-        // Grab original text (prepopulate)
-        const originalText = commentText.innerText.trim();
-
-        // Create textarea (prepopulated)
-        const textarea = document.createElement('textarea');
-        textarea.className = 'form-control mb-2';
+        const textDiv = commentItem.querySelector('.comment-text');
+        const originalText = textDiv.innerText.trim();
+        const textarea = commentItem.querySelector('.edit-textarea');
+        const form = commentItem.querySelector('.edit-form');
+        const saveBtn = commentItem.querySelector('.save-edit');
+        const cancelBtn = commentItem.querySelector('.cancel-edit');
+        
+        form.classList.remove('d-none');
         textarea.value = originalText;
-        textarea.rows = 3;
-
-        // Buttons
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'btn btn-primary btn-sm me-2';
-        saveBtn.textContent = 'Save';
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn btn-outline-secondary btn-sm';
-        cancelBtn.textContent = 'Cancel';
-
-        // Replace content with edit UI
-        const originalHTML = contentDiv.innerHTML;
-        contentDiv.innerHTML = '';
-        contentDiv.appendChild(textarea);
-        contentDiv.appendChild(saveBtn);
-        contentDiv.appendChild(cancelBtn);
-
-        // Hide buttons while editing
+        textarea.focus();
+        textDiv.style.display = 'none';
         btn.style.display = 'none';
-
-        // Save handler
+        
         saveBtn.onclick = () => {
             const newContent = textarea.value.trim();
             if (!newContent) return alert('Comment cannot be empty');
-
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
-
             fetch(`/edit-comment/${commentId}/`, {
                 method: 'PUT',
                 headers: {
@@ -470,29 +537,20 @@ document.querySelectorAll('.edit-comment').forEach(btn => {
             .then(r => r.json())
             .then(data => {
                 if (data.message) {
-                    // Update text
-                    const newText = document.createElement('p');
-                    newText.className = 'mb-1 comment-text';
-                    newText.innerHTML = newContent.replace(/\n/g, '<br>');
-                    contentDiv.innerHTML = '';
-                    contentDiv.appendChild(newText);
-
-                    // Restore buttons
+                    textDiv.innerHTML = newContent.replace(/\n/g, '<br>');
+                    textDiv.style.display = 'block';
+                    form.classList.add('d-none');
                     btn.style.display = 'inline-block';
+                    alert('Comment updated successfully');
                 }
             })
-            .catch(err => {
-                alert('Failed to save');
-                saveBtn.disabled = false;
-                saveBtn.textContent = 'Save';
-            });
+            .catch(err => alert('Failed to update: ' + err.message));
         };
-
-        // Cancel – restore original
+        
         cancelBtn.onclick = () => {
-            contentDiv.innerHTML = originalHTML;
+            textDiv.style.display = 'block';
+            form.classList.add('d-none');
             btn.style.display = 'inline-block';
         };
     });
-}); 
-
+});

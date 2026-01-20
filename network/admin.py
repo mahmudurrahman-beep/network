@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
 
 # Register all models for superuser
@@ -12,31 +13,31 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('user', 'content', 'timestamp')
     search_fields = ('content',)
     list_filter = ('user', 'timestamp')
-    actions = ['delete_selected']  # bulk delete
+    actions = ['delete_selected'] # bulk delete
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post', 'user', 'content', 'timestamp', 'media_preview')
+    list_display = ('post', 'user', 'content', 'timestamp', 'parent', 'media_preview')  # Added parent
     search_fields = ('content',)
     list_filter = ('post', 'user', 'timestamp')
     readonly_fields = ('timestamp',)
-
     def media_preview(self, obj):
         if obj.media:
             if obj.media_type == 'image' or obj.media_type == 'gif':
                 return format_html('<img src="{}" width="100" />', obj.media.url)
             elif obj.media_type == 'video':
                 return format_html('<video width="100" controls><source src="{}" type="video/mp4"></video>', obj.media.url)
+        elif obj.media_url:
+            return format_html('<img src="{}" width="100" alt="External media" />', obj.media_url)  # Added for media_url
         return "No media"
     media_preview.short_description = 'Media Preview'
 
-    
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('sender', 'recipient', 'content', 'timestamp', 'is_read')
     search_fields = ('content',)
     list_filter = ('sender', 'recipient', 'is_read')
-    actions = ['delete_selected']  # superuser can delete any chat
+    actions = ['delete_selected'] # superuser can delete any chat
 
 @admin.register(PostMedia)
 class PostMediaAdmin(admin.ModelAdmin):
