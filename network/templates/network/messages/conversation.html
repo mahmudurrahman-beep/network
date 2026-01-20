@@ -105,6 +105,22 @@
     opacity: 0.8;
 }
 
+/* GIF/Sticker Image Styling */
+.media-gif {
+    max-width: 300px !important;
+    border-radius: 12px;
+    margin-top: 8px;
+    display: block;
+}
+
+.media-sticker {
+    max-width: 150px !important;
+    background: transparent !important;
+    border-radius: 12px;
+    margin-top: 8px;
+    display: block;
+}
+
 /* Chat Input Area - MODERN DESIGN */
 .chat-input-area {
     background: white;
@@ -271,6 +287,14 @@
         font-size: 18px;
         padding: 6px 10px;
     }
+    
+    .media-gif {
+        max-width: 250px !important;
+    }
+    
+    .media-sticker {
+        max-width: 120px !important;
+    }
 }
 </style>
 
@@ -301,19 +325,48 @@
         {% for msg in messages reversed %}
             <div class="message-item {% if msg.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
                 <div class="{% if msg.sender == user %}user-message-bubble{% else %}other-message-bubble{% endif %}">
-                    <!-- Message Content -->
+                    <!-- Message Content with GIF/Sticker Parsing -->
                     <div class="message-content">
-                        {{ msg.content|linebreaksbr }}
+                        {% if '[GIF:' in msg.content or '[STICKER:' in msg.content %}
+                            <!-- Display text content safely -->
+                            {{ msg.content|safe|linebreaksbr|urlize }}
+                            
+                            <!-- Extract and display GIFs -->
+                            {% if '[GIF:' in msg.content %}
+                                {% with gif_content=msg.content|slice:"5:" %}
+                                    {% with gif_url=gif_content|slice:":-1" %}
+                                        {% if gif_url %}
+                                            <img src="{{ gif_url }}" class="media-gif img-fluid rounded" alt="GIF" loading="lazy">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endif %}
+                            
+                            <!-- Extract and display Stickers -->
+                            {% if '[STICKER:' in msg.content %}
+                                {% with sticker_content=msg.content|slice:"9:" %}
+                                    {% with sticker_url=sticker_content|slice:":-1" %}
+                                        {% if sticker_url %}
+                                            <img src="{{ sticker_url }}" class="media-sticker img-fluid rounded" alt="Sticker" loading="lazy" style="background: transparent;">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endif %}
+                        {% else %}
+                            <!-- Regular text message -->
+                            {{ msg.content|linebreaksbr|urlize }}
+                        {% endif %}
                     </div>
                     
-                    <!-- Media Display -->
+                    <!-- Original Media Display (for uploaded files) -->
                     {% if msg.media %}
                         <div class="mt-2">
                             {% if msg.media_type == 'image' or msg.media_type == 'gif' %}
-                                <img src="{{ msg.media.url }}" class="img-fluid rounded" style="max-width: 100%; max-height: 200px;">
+                                <img src="{{ msg.media.url }}" class="img-fluid rounded" style="max-width: 100%; max-height: 200px;" alt="Uploaded media">
                             {% elif msg.media_type == 'video' %}
                                 <video controls class="w-100 rounded" style="max-height: 200px;">
                                     <source src="{{ msg.media.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             {% endif %}
                         </div>
@@ -404,7 +457,7 @@ function addEmoji(emoji) {
 // Toggle media panel
 function toggleMediaPanel() {
     const mediaResults = document.getElementById('media-results');
-    if (mediaResults.style.display === 'none') {
+    if (mediaResults.style.display === 'none' || mediaResults.style.display === '') {
         document.getElementById('media-search').value = 'trending';
         handleMediaSearch();
     } else {
@@ -466,9 +519,14 @@ function handleMediaSearch() {
                     img.style.cursor = 'pointer';
                     img.style.borderRadius = '8px';
                     img.className = 'border';
+                    img.alt = 'Media result';
                     img.onclick = () => {
                         const tag = currentMediaType === 'gifs' ? 'GIF' : 'STICKER';
-                        textarea.value += `\n[${tag}:${url}]\n`;
+                        // Clear textarea if it only contains placeholder text
+                        if (textarea.value === '' || textarea.value === 'Type your message...') {
+                            textarea.value = '';
+                        }
+                        textarea.value += `[${tag}:${url}]`;
                         textarea.focus();
                         results.style.display = 'none';
                     };
@@ -476,8 +534,12 @@ function handleMediaSearch() {
                 });
                 results.appendChild(grid);
             } else {
-                results.innerHTML = '<p class="text-muted text-center">No results</p>';
+                results.innerHTML = '<p class="text-muted text-center">No results found.</p>';
             }
+        })
+        .catch(error => {
+            console.error('Media search error:', error);
+            results.innerHTML = '<p class="text-danger text-center">Failed to load media.</p>';
         });
 }
 
