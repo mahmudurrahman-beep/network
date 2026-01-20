@@ -10,7 +10,10 @@ services:
     build:
       docker:
         dockerfile: Dockerfile
-    # No healthcheck - Koyeb will auto-check
+      command: |
+        pip install -r requirements.txt
+        python manage.py collectstatic --noinput --clear
+        python manage.py migrate
     env:
       - name: DJANGO_SETTINGS_MODULE
         value: project4.settings
