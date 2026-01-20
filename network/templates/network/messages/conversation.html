@@ -1,5 +1,6 @@
 {% extends "network/layout.html" %}
 {% load static %}
+{% load parse_media %}  <!-- ADD THIS LINE -->
 
 {% block body %}
 <style>
@@ -105,12 +106,14 @@
     opacity: 0.8;
 }
 
-/* GIF/Sticker Image Styling */
+/* GIF/Sticker Image Styling - UPDATED */
 .media-gif {
     max-width: 300px !important;
     border-radius: 12px;
     margin-top: 8px;
     display: block;
+    background: #f8f9fa;
+    padding: 4px;
 }
 
 .media-sticker {
@@ -119,6 +122,7 @@
     border-radius: 12px;
     margin-top: 8px;
     display: block;
+    padding: 4px;
 }
 
 /* Chat Input Area - MODERN DESIGN */
@@ -325,37 +329,10 @@
         {% for msg in messages reversed %}
             <div class="message-item {% if msg.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
                 <div class="{% if msg.sender == user %}user-message-bubble{% else %}other-message-bubble{% endif %}">
-                    <!-- Message Content with GIF/Sticker Parsing -->
+                    <!-- Message Content with GIF/Sticker Parsing - FIXED SECTION -->
                     <div class="message-content">
-                        {% if '[GIF:' in msg.content or '[STICKER:' in msg.content %}
-                            <!-- Display text content safely -->
-                            {{ msg.content|safe|linebreaksbr|urlize }}
-                            
-                            <!-- Extract and display GIFs -->
-                            {% if '[GIF:' in msg.content %}
-                                {% with gif_content=msg.content|slice:"5:" %}
-                                    {% with gif_url=gif_content|slice:":-1" %}
-                                        {% if gif_url %}
-                                            <img src="{{ gif_url }}" class="media-gif img-fluid rounded" alt="GIF" loading="lazy">
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            {% endif %}
-                            
-                            <!-- Extract and display Stickers -->
-                            {% if '[STICKER:' in msg.content %}
-                                {% with sticker_content=msg.content|slice:"9:" %}
-                                    {% with sticker_url=sticker_content|slice:":-1" %}
-                                        {% if sticker_url %}
-                                            <img src="{{ sticker_url }}" class="media-sticker img-fluid rounded" alt="Sticker" loading="lazy" style="background: transparent;">
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            {% endif %}
-                        {% else %}
-                            <!-- Regular text message -->
-                            {{ msg.content|linebreaksbr|urlize }}
-                        {% endif %}
+                        <!-- SINGLE LINE FIX: Use the custom filter -->
+                        {{ msg.content|parse_media|safe }}
                     </div>
                     
                     <!-- Original Media Display (for uploaded files) -->
