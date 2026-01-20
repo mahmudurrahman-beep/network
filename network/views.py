@@ -607,24 +607,61 @@ def edit_comment(request, comment_id):
 
 @csrf_exempt
 def search_gifs(request):
-    query = request.GET.get('q', 'trending').lower().strip()
-    media_type = request.GET.get('type', 'gifs').lower()
-    placeholder_gifs = {
-        'hello': ["https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif"],
-        'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
-        'cat': ["https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"],
-        'trending': ["https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif", "https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif", "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"],
-    }
-    placeholder_stickers = {
-        'hello': ["https://media.giphy.com/media/3o7TKSha51ATTx9KzC/giphy.gif"],
-        'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],  # placeholders
-        'trending': ["https://media.giphy.com/media/3o7TKSha51ATTx9KzC/giphy.gif"],
-    }
-    data_source = placeholder_stickers if media_type == 'stickers' else placeholder_gifs
-    gifs = data_source.get(query, data_source['hello'])
+    query = request.GET.get('q', 'trending').strip().lower()
+    media_type = request.GET.get('type', 'gifs').lower()  # 'gifs' or 'stickers'
+    
+    api_key = os.getenv('GIPHY_API_KEY')
+    
+    if api_key:
+        # Production: Real Giphy API
+        if media_type == 'stickers':
+            endpoint = 'https://api.giphy.com/v1/stickers/search'
+        else:
+            endpoint = 'https://api.giphy.com/v1/gifs/search'
+            
+        params = {
+            'api_key': api_key,
+            'q': query or 'trending',
+            'limit': 12,           # Good balance: enough for grid, not too many
+            'rating': 'g',         # Family-friendly
+            'lang': 'en',
+            'bundle': 'messaging_non_clips'
+        }
+        
+        try:
+            response = requests.get(endpoint, params=params, timeout=8)
+            response.raise_for_status()
+            data = response.json()
+            gifs = [item['images']['fixed_height']['url'] for item in data.get('data', [])]
+            source = 'giphy'
+        except Exception as e:
+            print(f"Giphy API error: {e}")
+            gifs = []  # Fallback empty on error
+            source = 'giphy_error'
+    else:
+        # Local dev fallback (your placeholders)
+        placeholder_gifs = {
+            'hello': ["https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif"],
+            'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
+            'cat': ["https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"],
+            'trending': [
+                "https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif",
+                "https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif",
+                "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"
+            ],
+        }
+        placeholder_stickers = {
+            'hello': ["https://media.giphy.com/media/3o7TKSha51ATTx9KzC/giphy.gif"],
+            'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
+            'trending': ["https://media.giphy.com/media/3o7TKSha51ATTx9KzC/giphy.gif"],
+        }
+        data_source = placeholder_stickers if media_type == 'stickers' else placeholder_gifs
+        gifs = data_source.get(query, data_source.get('hello', []))
+        source = 'local_placeholder'
+    
     return JsonResponse({
         "gifs": gifs,
         "type": media_type,
         "count": len(gifs),
-        "source": "local"
+        "source": source
     })
