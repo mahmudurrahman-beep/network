@@ -3,11 +3,12 @@
 
 {% block body %}
     <div class="text-center mb-5">
-        <!-- Avatar with Floating + Button -->
+        <!-- Avatar with Floating + Button (perfect bottom-right, no username hide) -->
         <div class="position-relative d-inline-block mb-5">
             {% if profile_user.profile_picture %}
                 <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle shadow-lg" width="140" height="140" alt="{{ profile_user.username }}" style="object-fit: cover; border: 5px solid #fff;">
             {% else %}
+                <!-- Default Argon Avatar -->
                 <img src="{% static 'network/images/default-avatar.png' %}" 
                      class="rounded-circle shadow-lg" 
                      width="140" 
@@ -17,10 +18,10 @@
             {% endif %}
 
             {% if user == profile_user %}
-                <!-- FIXED: + Button with proper icon -->
+                <!-- + Button – exact bottom-right corner -->
                 <label for="id_profile_picture_quick" class="position-absolute" style="bottom: -10px; right: -10px; width:50px; height:50px; cursor:pointer; z-index: 10;">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width:100%; height:100%; border: 4px solid white; font-size: 24px; font-weight: bold;">
-                        +
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width:100%; height:100%; border: 4px solid white;">
+                        <i class="fas fa-plus fa-xl"></i>
                     </div>
                 </label>
 
@@ -46,7 +47,7 @@
             {% endif %}
         </p>
         
-        <!-- Clickable followers/following counts -->
+        <!-- Updated: Clickable followers/following counts with text included -->
         <p class="text-center">
             <strong id="followers-count" data-followers-count>
                 <a href="{% url 'followers_list' profile_user.username %}" class="text-dark text-decoration-none">
