@@ -378,3 +378,41 @@ document.querySelectorAll('.edit-comment').forEach(function(btn) {
         };
     });
 });
+
+// Delete Comment/Reply – Pessimistic: only remove if server confirms success
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.delete-comment');
+    if (!btn || btn.disabled) return;
+    if (!confirm('Delete this comment?')) return;
+    const commentId = btn.dataset.commentId;
+    const commentItem = btn.closest('.comment-item');
+    if (!commentItem) return;
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Deleting...';
+    fetch(`/delete-comment/${commentId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json().then(data => ({ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (ok && (data.status === 'success' || data.message)) {
+            commentItem.style.transition = 'opacity 0.5s ease, transform 0.3s ease';
+            commentItem.style.opacity = '0';
+            commentItem.style.transform = 'translateY(-10px)';
+            setTimeout(() => commentItem.remove(), 500);
+            console.log('Deleted successfully');
+        } else {
+            throw new Error(data.message || data.error || 'Delete rejected');
+        }
+    })
+    .catch(err => {
+        console.error('Delete failed:', err);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+        alert('Failed to delete: ' + err.message);
+    });
+});
