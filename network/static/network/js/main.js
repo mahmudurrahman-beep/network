@@ -1,3 +1,8 @@
+console.log('main.js loaded successfully at ' + new Date().toISOString());
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM ready – delete listeners should bind now');
+});
+
 // CSRF Token Helper
 function getCsrfToken() {
     const token = document.querySelector('[name=csrfmiddlewaretoken]');
