@@ -35,13 +35,14 @@ def login_view(request):
     if request.method == "POST":
         identifier = request.POST.get("identifier", "").strip()
         password = request.POST.get("password", "")
+        
         # Try to find user by username or email
         user = None
         try:
             user = User.objects.get(username=identifier)
         except User.DoesNotExist:
             try:
-                users = User.objects.filter(email=identifier)
+                users = User.objects.filter(email__iexact=identifier)
                 if users.count() == 1:
                     user = users.first()
                 elif users.count() > 1:
@@ -49,15 +50,21 @@ def login_view(request):
                     return render(request, "network/login.html")
             except User.DoesNotExist:
                 pass
+        
         if user:
             user = authenticate(request, username=user.username, password=password)
             if user is not None:
-                login(request, user)
-                return redirect('all_posts') # or 'index'
+                if user.is_active:
+                    login(request, user)
+                    messages.success(request, "Login successful! Welcome back.")
+                    return redirect('all_posts')
+                else:
+                    messages.error(request, "Account is inactive. Please check your email to activate.")
             else:
                 messages.error(request, "Invalid password.")
         else:
             messages.error(request, "No account found with that username or email.")
+    
     return render(request, "network/login.html")
 
 def logout_view(request):
