@@ -1,33 +1,245 @@
 {% extends "network/layout.html" %}
+{% load parse_media %}  <!-- ADD THIS LINE -->
 
 {% block body %}
-    <div class="container mt-5">
-        <h2>Messages</h2>
+<style>
+/* Modern Messages Inbox Styling */
+.messages-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
 
+.messages-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.message-item {
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.message-item:hover {
+    background: #f8f9fa;
+    transform: translateX(4px);
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+.message-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.message-avatar-default {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    border: 2px solid #e9ecef;
+}
+
+.unread-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.preview-image {
+    max-width: 40px;
+    max-height: 40px;
+    border-radius: 6px;
+    margin-right: 8px;
+    vertical-align: middle;
+    background: #f8f9fa;
+    padding: 2px;
+}
+
+.preview-text {
+    display: inline-block;
+    max-width: calc(100% - 50px);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+.time-indicator {
+    font-size: 12px;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .messages-container {
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .preview-text {
+        max-width: calc(100% - 40px);
+    }
+}
+</style>
+
+<div class="messages-container">
+    <!-- Header -->
+    <div class="messages-header">
+        <h2 class="mb-0">Messages</h2>
+        <p class="mb-0 opacity-75">Your conversations</p>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="p-0">
         {% if conversations %}
             <div class="list-group">
                 {% for conv in conversations %}
-                    <a href="{% url 'conversation' conv.user.username %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1">
-                                <strong>{{ conv.user.username }}</strong>
-                                {% if conv.unread_count > 0 %}
-                                    <span class="badge bg-primary rounded-pill ms-2">{{ conv.unread_count }}</span>
+                    <a href="{% url 'conversation' conv.user.username %}" 
+                       class="message-item list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                        
+                        <!-- Left Side: Avatar & Info -->
+                        <div class="d-flex align-items-center flex-grow-1">
+                            <!-- Avatar -->
+                            <div class="me-3">
+                                {% if conv.user.profile_picture %}
+                                    <img src="{{ conv.user.profile_picture.url }}" 
+                                         class="message-avatar" 
+                                         alt="{{ conv.user.username }}">
+                                {% else %}
+                                    <div class="message-avatar-default">
+                                        {{ conv.user.username|first|upper }}
+                                    </div>
                                 {% endif %}
-                            </h6>
-                            <small class="text-muted">
-                                {{ conv.latest_message.content|truncatewords:10|default:"No messages yet" }}
-                            </small>
+                            </div>
+                            
+                            <!-- User Info & Message Preview -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0">
+                                        <strong>{{ conv.user.username }}</strong>
+                                        {% if conv.unread_count > 0 %}
+                                            <span class="unread-badge ms-2">{{ conv.unread_count }}</span>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="time-indicator">
+                                        {{ conv.latest_message.timestamp|timesince }} ago
+                                    </small>
+                                </div>
+                                
+                                <!-- Message Preview with Media Parsing - FIXED SECTION -->
+                                <div class="text-muted small preview-text">
+                                    {% if conv.latest_message.content %}
+                                        <!-- Parse GIF/Sticker tags and show preview -->
+                                        {% with preview=conv.latest_message.content|parse_media|safe %}
+                                            {% if preview %}
+                                                <!-- Check if preview contains images -->
+                                                {% if '<img' in preview %}
+                                                    <!-- Extract and show first image -->
+                                                    {% for line in preview|slice:":1" %}
+                                                        <span class="media-indicator">
+                                                            {% if '[GIF:' in conv.latest_message.content %}
+                                                                🎬 GIF
+                                                            {% elif '[STICKER:' in conv.latest_message.content %}
+                                                                🎨 Sticker
+                                                            {% endif %}
+                                                        </span>
+                                                    {% endfor %}
+                                                    <!-- Show truncated text with images removed -->
+                                                    {{ preview|striptags|truncatechars:40 }}
+                                                {% else %}
+                                                    <!-- Regular text preview -->
+                                                    {{ preview|striptags|truncatechars:60 }}
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted fst-italic">No message preview</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <span class="text-muted fst-italic">No messages yet</span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                        <small class="text-muted">{{ conv.latest_message.timestamp|timesince }} ago</small>
                     </a>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="alert alert-info text-center py-5">
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
                 <h5>No messages yet</h5>
-                <p>Send a message to someone from their profile to start a conversation.</p>
+                <p class="text-muted">Send a message to someone from their profile to start a conversation.</p>
+                <a href="{% url 'discover_users' %}" class="btn btn-primary mt-2">
+                    <i class="fas fa-search me-2"></i>Discover Users
+                </a>
             </div>
         {% endif %}
     </div>
+</div>
+
+<script>
+// Auto-refresh inbox every 30 seconds
+setTimeout(() => {
+    window.location.reload();
+}, 30000);
+
+// Mark messages as read on click
+document.querySelectorAll('.message-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const badge = this.querySelector('.unread-badge');
+        if (badge) {
+            // Fade out animation
+            badge.style.transition = 'opacity 0.3s ease';
+            badge.style.opacity = '0';
+            setTimeout(() => {
+                badge.remove();
+            }, 300);
+        }
+    });
+});
+</script>
 {% endblock %}
