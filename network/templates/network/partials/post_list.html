@@ -265,7 +265,7 @@ const mediaTypes = {};
 document.addEventListener('DOMContentLoaded', function() {
     // Set default media type for each picker
     document.querySelectorAll('.gif-picker-comment-section').forEach(section => {
-        const id = section.dataset.postId;
+        const id = section.dataset.postId || section.dataset.replyTo;
         if (id) mediaTypes[id] = 'gifs';
     });
     
@@ -277,14 +277,18 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('click', function(e) {
     const typeBtn = e.target.closest('.comment-media-type');
     if (typeBtn) {
-        const id = typeBtn.dataset.postId;
+        const id = typeBtn.dataset.postId || typeBtn.dataset.replyTo;
         const type = typeBtn.dataset.mediaType;
         
         if (id && type) {
             mediaTypes[id] = type;
             
             // Update active state for all buttons in this section
-            const section = document.querySelector(`.gif-picker-comment-section[data-post-id="${id}"]`);
+            const selector = typeBtn.dataset.postId 
+                ? `.gif-picker-comment-section[data-post-id="${id}"]`
+                : `.gif-picker-comment-section[data-reply-to="${id}"]`;
+            
+            const section = document.querySelector(selector);
             if (section) {
                 section.querySelectorAll('.comment-media-type').forEach(btn => {
                     btn.classList.remove('active');
@@ -298,12 +302,21 @@ document.addEventListener('click', function(e) {
 });
 
 // Media search with FALLBACK
-function searchMedia(id) {
-    const input = document.querySelector(`.comment-media-search[data-post-id="${id}"]`);
-    const results = document.querySelector(`.comment-media-results[data-post-id="${id}"]`);
-    const textarea = document.querySelector(`textarea[data-post-id="${id}"]`);
+function searchMedia(id, isReply = false) {
+    const selector = isReply 
+        ? `[data-reply-to="${id}"]`
+        : `[data-post-id="${id}"]`;
     
-    if (!input || !results || !textarea) return;
+    const input = document.querySelector(`.comment-media-search${selector}`);
+    const results = document.querySelector(`.comment-media-results${selector}`);
+    const textarea = isReply
+        ? document.querySelector(`.reply-textarea${selector}`)
+        : document.querySelector(`textarea${selector}`);
+    
+    if (!input || !results || !textarea) {
+        console.error('Missing elements for media search');
+        return;
+    }
     
     const query = input.value.trim() || 'trending';
     const type = mediaTypes[id] || 'gifs';
@@ -326,7 +339,7 @@ function searchMedia(id) {
                 // Close button
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
-                closeBtn.className = 'btn btn-sm btn-outline-secondary mb-2';
+                closeBtn.className = 'btn btn-sm btn-outline-secondary mb-2 w-100';
                 closeBtn.innerHTML = '✕ Close';
                 closeBtn.onclick = () => {
                     results.style.display = 'none';
@@ -356,31 +369,22 @@ function searchMedia(id) {
                     
                     // FALLBACK: Show placeholder if image fails to load
                     img.onerror = function() {
-                        this.src = 'https://via.placeholder.com/80x80/cccccc/666666?text=Load+Failed';
+                        this.src = 'https://via.placeholder.com/80x80/cccccc/666666?text=Failed';
                         this.alt = `Failed to load ${type}`;
                         this.className = 'border media-item media-fallback';
                         this.style.opacity = '0.7';
-                        this.style.objectFit = 'contain';
-                        this.style.padding = '10px';
-                    };
-                    
-                    // Add loading state
-                    img.onload = function() {
-                        this.style.border = '2px solid #28a745';
-                        setTimeout(() => {
-                            this.style.border = '1px solid #dee2e6';
-                        }, 500);
                     };
                     
                     img.onclick = () => {
                         const tag = type === 'gifs' ? 'GIF' : 'STICKER';
-                        // Clear placeholder text
-                        if (textarea.value === '' || textarea.value === 'Write a comment...') {
-                            textarea.value = '';
-                        }
-                        // Insert tag with proper formatting
-                        textarea.value += `[${tag}:${url}]`;
+                        // Insert tag
+                        const cursorPos = textarea.selectionStart || 0;
+                        const textBefore = textarea.value.substring(0, cursorPos);
+                        const textAfter = textarea.value.substring(cursorPos);
+                        
+                        textarea.value = textBefore + `[${tag}:${url}]` + textAfter;
                         textarea.focus();
+                        
                         // Close results
                         results.style.display = 'none';
                         results.innerHTML = '';
@@ -394,7 +398,7 @@ function searchMedia(id) {
                 results.innerHTML = `
                     <div class="text-center py-3">
                         <p class="text-muted mb-2">No ${type} found for "${query}"</p>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="searchMedia('${id}')">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="searchMedia('${id}', ${isReply})">
                             Try trending ${type}
                         </button>
                     </div>
@@ -406,7 +410,7 @@ function searchMedia(id) {
             results.innerHTML = `
                 <div class="text-center py-3">
                     <p class="text-danger mb-2">Search failed. Check connection.</p>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="searchMedia('${id}')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="searchMedia('${id}', ${isReply})">
                         Retry
                     </button>
                 </div>
@@ -418,11 +422,15 @@ function searchMedia(id) {
 document.addEventListener('click', function(e) {
     const browseBtn = e.target.closest('.browse-media-comment');
     if (browseBtn) {
-        const id = browseBtn.dataset.postId;
-        const input = document.querySelector(`.comment-media-search[data-post-id="${id}"]`);
+        const id = browseBtn.dataset.postId || browseBtn.dataset.replyTo;
+        const isReply = !!browseBtn.dataset.replyTo;
+        const input = isReply
+            ? document.querySelector(`.comment-media-search[data-reply-to="${id}"]`)
+            : document.querySelector(`.comment-media-search[data-post-id="${id}"]`);
+        
         if (input) {
             input.value = 'trending';
-            searchMedia(id);
+            searchMedia(id, isReply);
         }
     }
 });
@@ -431,8 +439,9 @@ document.addEventListener('click', function(e) {
 document.addEventListener('click', function(e) {
     const searchBtn = e.target.closest('.comment-media-search-btn');
     if (searchBtn) {
-        const id = searchBtn.dataset.postId;
-        searchMedia(id);
+        const id = searchBtn.dataset.postId || searchBtn.dataset.replyTo;
+        const isReply = !!searchBtn.dataset.replyTo;
+        searchMedia(id, isReply);
     }
 });
 
@@ -440,8 +449,9 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keypress', function(e) {
     if (e.target.classList.contains('comment-media-search') && e.key === 'Enter') {
         e.preventDefault();
-        const id = e.target.dataset.postId;
-        searchMedia(id);
+        const id = e.target.dataset.postId || e.target.dataset.replyTo;
+        const isReply = !!e.target.dataset.replyTo;
+        searchMedia(id, isReply);
     }
 });
 
@@ -473,15 +483,9 @@ function parseMediaTags() {
     });
 }
 
-// Auto-refresh media on dynamic content load (for comments added via AJAX)
-function refreshMediaParsing() {
-    setTimeout(parseMediaTags, 100);
-}
-
 // Export for use in other scripts
-window.refreshMediaParsing = refreshMediaParsing;
-window.parseMediaTags = parseMediaTags;
 window.searchMedia = searchMedia;
+window.parseMediaTags = parseMediaTags;
 
-console.log('✅ Post list with enhanced media picker loaded successfully');
+console.log('✅ GIF/Sticker picker loaded successfully (NO reply button handler here)');
 </script>
