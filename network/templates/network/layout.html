@@ -4,19 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Network{% endblock %}</title>
+    <title>{% block title %}Argon{% endblock %}</title>
    
-    <!-- Favicons / PWA icons (your files) -->
+    <!-- ========== PWA CONFIGURATION ========== -->
+    <!-- Favicons / PWA icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/web-app-manifest-192x192.png' %}">
     <link rel="icon" type="image/png" sizes="512x512" href="{% static 'icons/web-app-manifest-512x512.png' %}">
     <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
     <link rel="icon" type="image/png" sizes="96x96" href="{% static 'icons/favicon-96x96.png' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
    
-    <meta name="theme-color" content="#ffffff">
+    <!-- Theme Color (MATCHES manifest theme_color) -->
+    <meta name="theme-color" content="#0A6EBD">
+    
+    <!-- iOS Safari PWA Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Argon">
+    <!-- ========== END PWA CONFIGURATION ========== -->
    
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -29,7 +38,8 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}">Network</a>
+        <!-- CHANGE: "Network" to "Argon" -->
+        <a class="navbar-brand" href="{% url 'index' %}">Argon</a>
        
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
