@@ -2,133 +2,106 @@
 {% load static %}
 
 {% block body %}
-<!-- MESSAGES – Full width for better placement -->
-{% if messages %}
-<div class="container mt-4">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-         style="max-width: 600px; border: none;" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!-- EXISTING MESSAGE (compatibility) -->
-{% if message %}
-<div class="container mt-4">
-    <div class="alert alert-danger alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-         style="max-width: 600px; border: none;" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- MAIN LOGIN FORM -->
 <div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85" 
-                 style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
-                <div class="card-body p-5 p-md-5 text-center">
-                    <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
-                        Welcome Back
-                    </h2>
-                    
-                    <p class="text-muted mb-4 lead fs-6">
-                        Log in to continue your Argon Network experience.
-                    </p>
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85"
+           style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
+        <div class="card-body p-5 p-md-5 text-center">
 
-                    <form action="{% url 'login' %}" method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <input type="text" name="identifier" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
-                                   id="identifier" placeholder="Username or Email" required autofocus>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
-                                   id="password" placeholder="Password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
-                            Log In
-                        </button>
-                    </form>
-
-                    <div class="mt-4">
-                        <a href="{% url 'password_reset' %}" class="text-primary fw-medium text-decoration-none d-block mb-2">
-                            Forgot password?
-                        </a>
-                        <a href="{% url 'register' %}" class="text-primary fw-medium text-decoration-none">
-                            Don't have an account? Register here
-                        </a>
+          <!-- Alerts inside card for consistent placement -->
+          <div class="form-alert-wrapper mb-3">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
+                     role="alert" style="max-width:100%; border:none;">
+                  <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 text-start">
+                      {{ message }}
                     </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
                 </div>
+              {% endfor %}
+            {% endif %}
+
+            {% if message %}
+              <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
+                   role="alert" style="max-width:100%; border:none;">
+                <div class="d-flex align-items-center">
+                  <div class="flex-grow-1 text-start">
+                    {{ message }}
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          <!-- /Alerts -->
+
+          <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
+            Welcome Back
+          </h2>
+
+          <p class="text-muted mb-4 lead fs-6">
+            Log in to continue your Argon Network experience.
+          </p>
+
+          <form action="{% url 'login' %}" method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-4">
+              <input type="text" name="identifier"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="identifier" placeholder="Username or Email" required autofocus>
             </div>
+
+            <div class="mb-4">
+              <input type="password" name="password"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="password" placeholder="Password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
+              Log In
+            </button>
+          </form>
+
+          <div class="mt-4">
+            <a href="{% url 'password_reset' %}" class="text-primary fw-medium text-decoration-none d-block mb-2">
+              Forgot password?
+            </a>
+            <a href="{% url 'register' %}" class="text-primary fw-medium text-decoration-none">
+              Don't have an account? Register here
+            </a>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
+<!-- Page-scoped CSS (minimal, safe) -->
 <style>
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-    .card {
-        transition: all 0.3s ease;
-    }
-    .card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 70px rgba(102, 126, 234, 0.25) !important;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-    }
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    }
-    .alert {
-        border-radius: 12px !important;
-        backdrop-filter: blur(10px);
-        background-color: rgba(255, 255, 255, 0.95) !important;
-    }
-    .alert-success {
-        border-left: 4px solid #28a745;
-        color: #155724;
-        background-color: rgba(40, 167, 69, 0.1) !important;
-    }
-    .alert-danger {
-        border-left: 4px solid #dc3545;
-        color: #721c24;
-        background-color: rgba(220, 53, 69, 0.1) !important;
-    }
-    .alert-info {
-        border-left: 4px solid #17a2b8;
-        color: #0c5460;
-        background-color: rgba(23, 162, 184, 0.1) !important;
-    }
-    .alert-warning {
-        border-left: 4px solid #ffc107;
-        color: #856404;
-        background-color: rgba(255, 193, 7, 0.1) !important;
-    }
-    @media (max-width: 576px) {
-        .card-body { padding: 2.5rem 1.5rem !important; }
-        .alert { margin: 0 15px; }
-    }
+  .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
+  .alert { position:relative; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; margin:0; max-width:100%; box-sizing:border-box; }
+  .alert::before { content:none !important; }
+  .alert ul { margin:0; padding:0; list-style:none; }
+
+  .card-body input[type="text"],
+  .card-body input[type="password"],
+  .card-body textarea {
+    text-align: left !important;
+    direction: ltr !important;
+    text-indent: 0 !important;
+    padding-left: 14px !important;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  @media (max-width:576px) {
+    .card-body { padding:2.5rem 1.5rem !important; }
+    .form-alert-wrapper { margin:0 0 12px 0; }
+  }
 </style>
 {% endblock %}
