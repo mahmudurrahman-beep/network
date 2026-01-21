@@ -323,3 +323,26 @@ textarea {
   .form-alert-wrapper { margin: 0 0 12px 0; }
   .alert { margin: 0 15px; }
 }
+
+/* Remove stray dot/marker inside alerts (safe, scoped) */
+.alert,
+.alert ul,
+.alert ol,
+.alert li {
+  list-style: none !important;    /* remove bullets from lists inside alerts */
+  margin: 0 !important;           /* avoid unexpected offsets */
+  padding: 0 !important;
+}
+
+/* Hide pseudo-element markers explicitly */
+.alert::before,
+.alert *::before,
+.alert li::marker,
+.alert li::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Keep alert layout intact */
+.alert .d-flex { align-items: center; gap: 0.75rem; }
+.alert .flex-grow-1 { margin: 0; }
