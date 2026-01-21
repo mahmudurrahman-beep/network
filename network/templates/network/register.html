@@ -2,175 +2,124 @@
 {% load static %}
 
 {% block body %}
-
-<!-- MAIN REGISTRATION FORM -->
 <div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85" 
-                 style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
-                <div class="card-body p-5 p-md-5 text-center">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85"
+           style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
+        <div class="card-body p-5 p-md-5 text-center">
 
-                    <!-- ALERTS: placed inside the card so they appear above the form -->
-                    <div class="form-alert-wrapper mb-3">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-                                     role="alert" style="max-width: 100%; border: none;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-grow-1 text-start">
-                                            {{ message }}
-                                        </div>
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        {% if message %}
-                            <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-                                 role="alert" style="max-width: 100%; border: none;">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-grow-1 text-start">
-                                        {{ message }}
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            </div>
-                        {% endif %}
+          <!-- Alerts placed inside the card so they appear above the form -->
+          <div class="form-alert-wrapper mb-3">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
+                     role="alert" style="max-width:100%; border:none;">
+                  <div class="d-flex align-items-center">
+                    <div class="flex-grow-1 text-start">
+                      {{ message }}
                     </div>
-                    <!-- /ALERTS -->
-
-                    <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
-                        Join Argon Network
-                    </h2>
-                    
-                    <p class="text-muted mb-4 lead fs-6">
-                        Create your account and start connecting today.
-                    </p>
-
-                    <form action="{% url 'register' %}" method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
-                                   id="username" placeholder="Username" required autofocus>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
-                                   id="email" placeholder="Email Address" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
-                                   id="password" placeholder="Password" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
-                                   id="confirmation" placeholder="Confirm Password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
-                            Register Now
-                        </button>
-                    </form>
-
-                    <div class="mt-4 text-muted">
-                        Already have an account? 
-                        <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">
-                            Log in here
-                        </a>
-                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
                 </div>
+              {% endfor %}
+            {% endif %}
+
+            {% if message %}
+              <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
+                   role="alert" style="max-width:100%; border:none;">
+                <div class="d-flex align-items-center">
+                  <div class="flex-grow-1 text-start">
+                    {{ message }}
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          <!-- /Alerts -->
+
+          <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
+            Join Argon Network
+          </h2>
+
+          <p class="text-muted mb-4 lead fs-6">
+            Create your account and start connecting today.
+          </p>
+
+          <form action="{% url 'register' %}" method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-4">
+              <input type="text" name="username"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="username" placeholder="Username" required autofocus>
             </div>
+
+            <div class="mb-4">
+              <input type="email" name="email"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="email" placeholder="Email Address" required>
+            </div>
+
+            <div class="mb-4">
+              <input type="password" name="password"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="password" placeholder="Password" required>
+            </div>
+
+            <div class="mb-4">
+              <input type="password" name="confirmation"
+                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
+                     id="confirmation" placeholder="Confirm Password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
+              Register Now
+            </button>
+          </form>
+
+          <div class="mt-4 text-muted">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">
+              Log in here
+            </a>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
+<!-- Minimal page-scoped CSS to avoid touching global styles.css -->
 <style>
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-    .card {
-        transition: all 0.3s ease;
-    }
-    .card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 70px rgba(102, 126, 234, 0.25) !important;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-    }
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    }
+  /* Keep alerts in normal flow and remove stray markers */
+  .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
+  .alert { position:relative; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; margin:0; max-width:100%; box-sizing:border-box; background-clip:padding-box; }
+  .alert::before { content:none !important; }
+  .alert ul { margin:0; padding:0; list-style:none; }
 
-    /* Alert styling kept but tightened so it sits in flow and doesn't show stray markers */
-    .alert {
-        border-radius: 12px !important;
-        backdrop-filter: blur(10px);
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        margin-bottom: 0.75rem;
-    }
-    .alert-success {
-        border-left: 4px solid #28a745;
-        color: #155724;
-        background-color: rgba(40, 167, 69, 0.06) !important;
-    }
-    .alert-danger {
-        border-left: 4px solid #dc3545;
-        color: #721c24;
-        background-color: rgba(220, 53, 69, 0.06) !important;
-    }
-    .alert-info {
-        border-left: 4px solid #17a2b8;
-        color: #0c5460;
-        background-color: rgba(23, 162, 184, 0.06) !important;
-    }
-    .alert-warning {
-        border-left: 4px solid #ffc107;
-        color: #856404;
-        background-color: rgba(255, 193, 7, 0.06) !important;
-    }
+  /* Force left caret and consistent padding for inputs on this page */
+  .card-body input[type="text"],
+  .card-body input[type="email"],
+  .card-body input[type="password"],
+  .card-body textarea {
+    text-align: left !important;
+    direction: ltr !important;
+    text-indent: 0 !important;
+    padding-left: 14px !important;
+    box-sizing: border-box;
+    min-width: 0;
+  }
 
-    /* Remove any accidental pseudo-element or list bullet inside alerts */
-    .alert::before { content: none !important; }
-    .alert ul { margin: 0; padding: 0; list-style: none; }
+  /* Ensure inputs expand correctly inside flex/grid parents */
+  .input-wrapper, .form-row { display:flex; }
+  .input-wrapper input, .form-row input { flex:1 1 auto; width:100%; min-width:0; }
 
-    /* Fix caret and alignment: left aligned inputs, consistent padding */
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    textarea {
-      text-align: left !important;
-      direction: ltr !important;
-      text-indent: 0 !important;
-      padding-left: 14px !important;
-      box-sizing: border-box;
-      min-width: 0;
-    }
-
-    /* Ensure inputs expand inside flex/grid parents */
-    .input-wrapper, .form-row {
-      display: flex;
-    }
-    .input-wrapper input, .form-row input {
-      flex: 1 1 auto;
-      width: 100%;
-      min-width: 0;
-    }
-
-    @media (max-width: 576px) {
-        .card-body { padding: 2.5rem 1.5rem !important; }
-        .form-alert-wrapper { 
-            margin: 0 0 12px 0;
-            max-width: 100% !important;
-        }
-    }
+  /* Small responsive tweak */
+  @media (max-width:576px) {
+    .card-body { padding:2.5rem 1.5rem !important; }
+    .form-alert-wrapper { margin:0 0 12px 0; }
+  }
 </style>
 {% endblock %}
