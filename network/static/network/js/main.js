@@ -420,4 +420,47 @@ document.addEventListener('click', e => {
         btn.innerHTML = originalHTML;
         alert('Failed to delete: ' + err.message);
     });
+});  
+
+// REPLY BUTTON HANDLER - Add this at the end of main.js
+document.addEventListener('click', function(e) {
+    const replyBtn = e.target.closest('.reply-btn');
+    if (replyBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const commentId = replyBtn.dataset.commentId;
+        console.log('Reply clicked for comment:', commentId);
+        
+        const form = document.querySelector(`.reply-form[data-parent-id="${commentId}"]`);
+        
+        if (form) {
+            const wasHidden = form.classList.contains('d-none');
+            form.classList.toggle('d-none');
+            
+            if (wasHidden) {
+                const textarea = form.querySelector('textarea');
+                if (textarea) {
+                    setTimeout(() => textarea.focus(), 100);
+                }
+            }
+            console.log('Form toggled:', wasHidden ? 'now visible' : 'now hidden');
+        } else {
+            console.error('Reply form not found for comment:', commentId);
+        }
+    }
+    
+    // Cancel reply
+    const cancelBtn = e.target.closest('.cancel-reply');
+    if (cancelBtn) {
+        e.preventDefault();
+        const form = cancelBtn.closest('.reply-form');
+        if (form) {
+            form.classList.add('d-none');
+            const textarea = form.querySelector('textarea');
+            if (textarea) textarea.value = '';
+        }
+    }
 });
+
+console.log('✅ Reply button handler loaded in main.js');
