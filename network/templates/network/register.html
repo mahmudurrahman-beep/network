@@ -2,37 +2,6 @@
 {% load static %}
 
 {% block body %}
-<!-- MESSAGES – Full width for better placement -->
-{% if messages %}
-<div class="container mt-4">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-         style="max-width: 600px; border: none;" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!-- EXISTING MESSAGE (compatibility) -->
-{% if message %}
-<div class="container mt-4">
-    <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
-         style="max-width: 600px; border: none;" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <!-- MAIN REGISTRATION FORM -->
 <div class="container mt-5 mb-5">
@@ -41,6 +10,37 @@
             <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85" 
                  style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
                 <div class="card-body p-5 p-md-5 text-center">
+
+                    <!-- ALERTS: placed inside the card so they appear above the form -->
+                    <div class="form-alert-wrapper mb-3">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
+                                     role="alert" style="max-width: 100%; border: none;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 text-start">
+                                            {{ message }}
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if message %}
+                            <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4" 
+                                 role="alert" style="max-width: 100%; border: none;">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1 text-start">
+                                        {{ message }}
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <!-- /ALERTS -->
+
                     <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
                         Join Argon Network
                     </h2>
@@ -53,22 +53,22 @@
                         {% csrf_token %}
                         
                         <div class="mb-4">
-                            <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                            <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
                                    id="username" placeholder="Username" required autofocus>
                         </div>
                         
                         <div class="mb-4">
-                            <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                            <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
                                    id="email" placeholder="Email Address" required>
                         </div>
                         
                         <div class="mb-4">
-                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                            <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
                                    id="password" placeholder="Password" required>
                         </div>
                         
                         <div class="mb-4">
-                            <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-center" 
+                            <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-start" 
                                    id="confirmation" placeholder="Confirm Password" required>
                         </div>
                         
@@ -109,36 +109,67 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
     }
+
+    /* Alert styling kept but tightened so it sits in flow and doesn't show stray markers */
     .alert {
         border-radius: 12px !important;
         backdrop-filter: blur(10px);
         background-color: rgba(255, 255, 255, 0.95) !important;
+        margin-bottom: 0.75rem;
     }
     .alert-success {
         border-left: 4px solid #28a745;
         color: #155724;
-        background-color: rgba(40, 167, 69, 0.1) !important;
+        background-color: rgba(40, 167, 69, 0.06) !important;
     }
     .alert-danger {
         border-left: 4px solid #dc3545;
         color: #721c24;
-        background-color: rgba(220, 53, 69, 0.1) !important;
+        background-color: rgba(220, 53, 69, 0.06) !important;
     }
     .alert-info {
         border-left: 4px solid #17a2b8;
         color: #0c5460;
-        background-color: rgba(23, 162, 184, 0.1) !important;
+        background-color: rgba(23, 162, 184, 0.06) !important;
     }
     .alert-warning {
         border-left: 4px solid #ffc107;
         color: #856404;
-        background-color: rgba(255, 193, 7, 0.1) !important;
+        background-color: rgba(255, 193, 7, 0.06) !important;
     }
+
+    /* Remove any accidental pseudo-element or list bullet inside alerts */
+    .alert::before { content: none !important; }
+    .alert ul { margin: 0; padding: 0; list-style: none; }
+
+    /* Fix caret and alignment: left aligned inputs, consistent padding */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+      text-align: left !important;
+      direction: ltr !important;
+      text-indent: 0 !important;
+      padding-left: 14px !important;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    /* Ensure inputs expand inside flex/grid parents */
+    .input-wrapper, .form-row {
+      display: flex;
+    }
+    .input-wrapper input, .form-row input {
+      flex: 1 1 auto;
+      width: 100%;
+      min-width: 0;
+    }
+
     @media (max-width: 576px) {
         .card-body { padding: 2.5rem 1.5rem !important; }
-        .alert { 
-            margin: 0 15px;
-            max-width: calc(100% - 30px) !important;
+        .form-alert-wrapper { 
+            margin: 0 0 12px 0;
+            max-width: 100% !important;
         }
     }
 </style>
