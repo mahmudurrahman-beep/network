@@ -1,27 +1,30 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
     <div class="container mt-5">
         <h2>Discover Users</h2>
-        
+
         <form method="get" class="mb-4">
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Search users..." value="{{ query }}">
                 <button type="submit" class="btn btn-primary">Search</button>
             </div>
         </form>
-        
+
         <div class="row">
             {% for u in users %}
                 <div class="col-md-4 mb-3">
                     <div class="card shadow-sm">
                         <div class="card-body text-center">
                             {% if u.profile_picture %}
-                                <img src="{{ u.profile_picture.url }}" class="rounded-circle mb-3" width="80" height="80">
+                                <img src="{{ u.profile_picture.url }}" class="rounded-circle mb-3" width="80" height="80" style="object-fit: cover;">
                             {% else %}
-                                <div class="bg-primary text-white rounded-circle mb-3 d-flex align-items-center justify-content-center mx-auto" style="width:80px; height:80px; font-size:2rem;">
-                                    {{ u.username|first|upper }}
-                                </div>
+                                <img src="{% static 'network/images/default-avatar.png' %}" 
+                                     class="rounded-circle mb-3 mx-auto d-block" 
+                                     width="80" height="80" 
+                                     style="object-fit: cover;"
+                                     alt="Default avatar">
                             {% endif %}
                             <h5>{{ u.username }}</h5>
                             <a href="{% url 'profile' u.username %}" class="btn btn-outline-primary btn-sm">View Profile</a>
