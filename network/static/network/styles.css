@@ -240,3 +240,51 @@ label[for="id_profile_picture"]:hover {
     margin: 8px 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+/* --- Form alert placement & cleanup --- */
+.form-alert-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Keep alerts in normal flow and prevent stray markers */
+.alert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+/* Remove any accidental pseudo-element or list bullet inside alerts */
+.alert::before { content: none !important; }
+.alert ul { margin: 0; padding: 0; list-style: none; }
+
+/* --- Input caret & alignment fixes --- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  text-align: left !important;
+  direction: ltr !important;
+  text-indent: 0 !important;
+  padding-left: 12px !important;
+  box-sizing: border-box;
+  min-width: 0;
+  caret-color: auto;
+}
+
+/* Ensure inputs expand correctly inside flex/grid parents */
+.input-wrapper, .form-row {
+  display: flex;
+}
+.input-wrapper input, .form-row input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
