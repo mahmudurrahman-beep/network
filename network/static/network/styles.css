@@ -324,3 +324,45 @@ textarea {
   .alert { margin: 0 15px; }
 }
 
+/* --- Scoped alert fixes: remove stray list markers but keep controls intact --- */
+.alert,
+.alert ul,
+.alert ol,
+.alert li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hide pseudo-element markers only (no blanket reset on all children) */
+.alert::marker,
+.alert li::marker,
+.alert::before,
+.alert::after,
+.alert *::before,
+.alert *::after {
+  content: none !important;
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Restore usable sizing for interactive controls inside alerts */
+.alert .btn,
+.alert button,
+.alert .btn-close {
+  margin: 0 !important;
+  padding: 0.25rem 0.5rem !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 1.5rem !important;
+  min-height: 1.5rem !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Keep alert layout spacing intact */
+.alert .d-flex { align-items: center; gap: 0.75rem; }
+.alert .flex-grow-1 { margin: 0; }
