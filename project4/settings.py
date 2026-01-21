@@ -135,6 +135,13 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ========== SAFE PWA ADDITION ==========
+# Ensure Django can find your icons folder
+STATICFILES_DIRS = [
+    BASE_DIR / 'network/static',  # Your icons are in network/static/icons/
+]
+# ========== END SAFE ADDITION ==========
+
 # ==================== MEDIA FILES ====================
 if os.getenv('CLOUDINARY_CLOUD_NAME'):
     # Cloudinary for production
