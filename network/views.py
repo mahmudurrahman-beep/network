@@ -23,7 +23,7 @@ from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 
-from .models import User, Post, PostMedia, Follow, Notification, Message, Comment
+from .models import User, Post, PostMedia, Follow, Notification, Message, Comment, Block, PrivacySettings
 
 
 
