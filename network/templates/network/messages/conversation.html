@@ -1,93 +1,413 @@
 {% extends "network/layout.html" %}
 {% load static %}
-{% load parse_media %}
+{% load parse_media %}  <!-- ADD THIS LINE -->
 
 {% block body %}
 <style>
-/* All your existing CSS remains the same */
-/* Add this new style for preview */
-.live-preview-box {
+/* Modern Chat Container */
+.chat-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+/* Chat Header */
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Chat Messages Area */
+.chat-box {
+    height: 500px;
+    overflow-y: auto;
+    padding: 20px;
     background: #f8f9fa;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.chat-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Message Bubbles - BEAUTIFUL DESIGN */
+.message-item {
+    display: flex;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* User's Own Messages - Modern Purple Gradient */
+.user-message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 18px 18px 4px 18px;
+    max-width: 65%;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    word-wrap: break-word;
+}
+
+/* Other User's Messages - Clean White */
+.other-message-bubble {
+    background: white;
+    color: #2c3e50;
+    padding: 12px 16px;
+    border-radius: 18px 18px 18px 4px;
+    max-width: 65%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    word-wrap: break-word;
+}
+
+/* Message Timestamp */
+.message-timestamp {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* Seen Indicator */
+.seen-indicator {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* GIF/Sticker Image Styling - UPDATED */
+.media-gif {
+    max-width: 300px !important;
+    border-radius: 12px;
+    margin-top: 8px;
+    display: block;
+    background: #f8f9fa;
+    padding: 4px;
+}
+
+.media-sticker {
+    max-width: 150px !important;
+    background: transparent !important;
+    border-radius: 12px;
+    margin-top: 8px;
+    display: block;
+    padding: 4px;
+}
+
+/* Chat Input Area - MODERN DESIGN */
+.chat-input-area {
+    background: white;
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Quick Emoji Bar - BEAUTIFUL PLACEMENT */
+.quick-emoji-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    justify-content: center;
+}
+
+.emoji-btn {
+    background: white;
+    border: none;
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.emoji-btn:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Message Textarea - MODERN */
+.message-textarea {
+    width: 100%;
     border: 2px solid #e9ecef;
     border-radius: 12px;
-    padding: 12px;
-    margin-top: 10px;
-    min-height: 80px;
-    display: none;
+    padding: 12px 16px;
+    font-size: 15px;
+    resize: none;
+    transition: border-color 0.3s;
 }
 
-.live-preview-box.active {
-    display: block;
-    animation: fadeIn 0.2s ease;
+.message-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Send Button - MODERN */
+.send-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.preview-placeholder {
-    color: #adb5bd;
-    font-style: italic;
+.send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
-.preview-content img {
-    max-width: 100% !important;
-    height: auto !important;
+/* Media Picker - CLEAN DESIGN */
+.media-picker-section {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.media-toggle-btn {
+    padding: 8px 16px;
+    border: 2px solid #e9ecef;
+    background: white;
     border-radius: 8px;
-    margin: 4px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
 }
 
-.preview-gif {
-    max-width: 200px !important;
+.media-toggle-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
 }
 
-.preview-sticker {
-    max-width: 100px !important;
-    background: transparent !important;
+.media-search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px;
+    transition: border-color 0.3s;
+}
+
+.media-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Attach Button */
+.attach-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.attach-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Delete Button in Messages */
+.delete-message {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.user-message-bubble .delete-message:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+    color: white;
+}
+
+.other-message-bubble .delete-message {
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.other-message-bubble .delete-message:hover {
+    background: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-box {
+        height: 400px;
+    }
+    
+    .user-message-bubble,
+    .other-message-bubble {
+        max-width: 80%;
+    }
+    
+    .quick-emoji-bar {
+        gap: 4px;
+    }
+    
+    .emoji-btn {
+        font-size: 18px;
+        padding: 6px 10px;
+    }
+    
+    .media-gif {
+        max-width: 250px !important;
+    }
+    
+    .media-sticker {
+        max-width: 120px !important;
+    }
 }
 </style>
 
 <div class="chat-container">
-    <!-- Chat Header (unchanged) -->
+    <!-- Chat Header -->
     <div class="chat-header">
-        <!-- ... your existing header code ... -->
+        <div class="d-flex align-items-center">
+            {% if other_user.profile_picture %}
+                <img src="{{ other_user.profile_picture.url }}" class="rounded-circle me-3" width="45" height="45" style="border: 2px solid white;">
+            {% else %}
+                <div class="rounded-circle me-3 bg-white text-primary d-flex align-items-center justify-content-center" style="width:45px; height:45px; font-size:20px; font-weight:bold;">
+                    {{ other_user.username|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h5 class="mb-0">{{ other_user.username }}</h5>
+                <small style="opacity: 0.9;">Active now</small>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'messages_inbox' %}" class="btn btn-light btn-sm">Back</a>
+            <button class="btn btn-light btn-sm delete-conversation" data-other="{{ other_user.username }}">Hide</button>
+        </div>
     </div>
 
     <!-- Chat Messages -->
     <div class="chat-box">
-        <!-- ... your existing messages loop ... -->
+        {% for msg in messages reversed %}
+            <div class="message-item {% if msg.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                <div class="{% if msg.sender == user %}user-message-bubble{% else %}other-message-bubble{% endif %}">
+                    <!-- Message Content with GIF/Sticker Parsing - FIXED SECTION -->
+                    <div class="message-content">
+                        <!-- SINGLE LINE FIX: Use the custom filter -->
+                        {{ msg.content|parse_media|safe }}
+                    </div>
+                    
+                    <!-- Original Media Display (for uploaded files) -->
+                    {% if msg.media %}
+                        <div class="mt-2">
+                            {% if msg.media_type == 'image' or msg.media_type == 'gif' %}
+                                <img src="{{ msg.media.url }}" class="img-fluid rounded" style="max-width: 100%; max-height: 200px;" alt="Uploaded media">
+                            {% elif msg.media_type == 'video' %}
+                                <video controls class="w-100 rounded" style="max-height: 200px;">
+                                    <source src="{{ msg.media.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Timestamp & Status -->
+                    <div class="message-timestamp text-end">
+                        {{ msg.timestamp|date:"g:i A" }}
+                        {% if msg.sender == user and msg.is_read %}
+                            <span class="seen-indicator">✓ Seen</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Delete Button -->
+                    {% if msg.sender == user %}
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm delete-message" data-message-id="{{ msg.id }}">Delete</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
     </div>
 
     <!-- Chat Input Area -->
     <div class="chat-input-area">
-        <form method="post" enctype="multipart/form-data" id="message-form">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <!-- Quick Emoji Bar -->
+            <!-- Quick Emoji Bar - BEAUTIFUL -->
             <div class="quick-emoji-bar">
-                <!-- ... your existing emoji buttons ... -->
+                <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('❤️')">❤️</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('👍')">👍</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('🎉')">🎉</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
+                <button type="button" class="emoji-btn" onclick="addEmoji('✨')">✨</button>
             </div>
             
             <!-- Media Picker -->
             <div class="media-picker-section">
-                <!-- ... your existing media picker code ... -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted fw-bold">🎨 Add Media</small>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleMediaPanel()">Browse</button>
+                </div>
+                
+                <div class="btn-group w-100 mb-2">
+                    <button type="button" class="media-toggle-btn active media-type-btn" data-media-type="gifs">GIFs</button>
+                    <button type="button" class="media-toggle-btn media-type-btn" data-media-type="stickers">Stickers</button>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="media-search" class="form-control media-search-input" placeholder="Search GIFs...">
+                    <button type="button" id="media-search-btn" class="btn btn-primary">Search</button>
+                </div>
+                
+                <div id="media-results" class="mt-2" style="display: none;"></div>
             </div>
 
-            <!-- Message Input with Live Preview -->
-            <div class="d-flex gap-2 align-items-start">
+            <!-- Message Input -->
+            <div class="d-flex gap-2 align-items-end">
                 <div style="flex: 1;">
-                    <textarea name="content" class="message-textarea" rows="2" 
-                              placeholder="Type your message..." id="message-content" 
-                              required data-preview-target="chatPreview"></textarea>
-                    
-                    <!-- LIVE PREVIEW BOX -->
-                    <div id="chatPreview" class="live-preview-box">
-                        <small class="text-muted d-block mb-2">Preview:</small>
-                        <div class="preview-content">
-                            <div class="preview-placeholder">Type to see preview...</div>
-                        </div>
-                    </div>
+                    <textarea name="content" class="message-textarea" rows="2" placeholder="Type your message..." id="message-content" required></textarea>
                 </div>
                 
                 <label class="attach-btn mb-0" for="message-media-input">
@@ -104,19 +424,11 @@
 </div>
 
 <script>
-// Add emoji to textarea and trigger preview
+// Add emoji to textarea
 function addEmoji(emoji) {
     const textarea = document.getElementById('message-content');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    
-    textarea.value = text.substring(0, start) + emoji + text.substring(end);
-    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+    textarea.value += emoji;
     textarea.focus();
-    
-    // Trigger preview update
-    updateLivePreview(textarea);
 }
 
 // Toggle media panel
@@ -187,16 +499,13 @@ function handleMediaSearch() {
                     img.alt = 'Media result';
                     img.onclick = () => {
                         const tag = currentMediaType === 'gifs' ? 'GIF' : 'STICKER';
-                        const cursorPos = textarea.selectionStart;
-                        const textBefore = textarea.value.substring(0, cursorPos);
-                        const textAfter = textarea.value.substring(cursorPos);
-                        
-                        textarea.value = textBefore + `[${tag}:${url}]` + textAfter;
+                        // Clear textarea if it only contains placeholder text
+                        if (textarea.value === '' || textarea.value === 'Type your message...') {
+                            textarea.value = '';
+                        }
+                        textarea.value += `[${tag}:${url}]`;
                         textarea.focus();
                         results.style.display = 'none';
-                        
-                        // Update preview
-                        updateLivePreview(textarea);
                     };
                     grid.appendChild(img);
                 });
@@ -211,64 +520,11 @@ function handleMediaSearch() {
         });
 }
 
-// LIVE PREVIEW FUNCTION
-function updateLivePreview(textarea) {
-    const previewId = textarea.dataset.previewTarget;
-    const previewBox = document.getElementById(previewId);
-    const previewContent = previewBox.querySelector('.preview-content');
-    const text = textarea.value.trim();
-    
-    if (!text) {
-        previewBox.classList.remove('active');
-        previewBox.style.display = 'none';
-        previewContent.innerHTML = '<div class="preview-placeholder">Type to see preview...</div>';
-        return;
-    }
-    
-    // Show preview
-    previewBox.style.display = 'block';
-    previewBox.classList.add('active');
-    
-    // Parse and format content for preview
-    let html = text
-        .replace(/\[GIF:(https?:\/\/[^\]]+)\]/gi, 
-            '<img src="$1" class="preview-gif" alt="GIF preview" loading="lazy" onerror="this.style.opacity=0.5;">')
-        .replace(/\[STICKER:(https?:\/\/[^\]]+)\]/gi, 
-            '<img src="$1" class="preview-sticker" alt="Sticker preview" loading="lazy" onerror="this.style.opacity=0.5;">')
-        .replace(/\n/g, '<br>');
-    
-    // Show text only if no media tags
-    if (html === text) {
-        html = text.replace(/\n/g, '<br>');
-    }
-    
-    previewContent.innerHTML = html || '<div class="preview-placeholder">Type to see preview...</div>';
-}
-
-// Initialize live preview
-document.addEventListener('DOMContentLoaded', function() {
-    const messageTextarea = document.getElementById('message-content');
-    
-    // Set up input listener
-    if (messageTextarea) {
-        messageTextarea.addEventListener('input', function() {
-            updateLivePreview(this);
-        });
-        
-        // Also trigger on paste
-        messageTextarea.addEventListener('paste', function(e) {
-            setTimeout(() => updateLivePreview(this), 10);
-        });
-        
-        // Initial check
-        setTimeout(() => updateLivePreview(messageTextarea), 100);
-    }
-    
-    // Auto-scroll to bottom
-    setTimeout(() => {
-        const chatBox = document.querySelector('.chat-box');
-        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-    }, 100);
-});
+// Auto-scroll to bottom
+setTimeout(() => {
+    const chatBox = document.querySelector('.chat-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+}, 100);
 </script>
 {% endblock %}
+
