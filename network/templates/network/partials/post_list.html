@@ -1,105 +1,297 @@
-{% extends "network/layout.html" %}
 {% load static %}
-{% load parse_media %}
+{% load parse_media %} 
+<style>
+.comment-item {
+    border-left: 3px solid #e9ecef;
+    padding-left: 12px;
+    transition: border-color 0.2s ease;
+}
 
-{% block body %}
-    <div class="container mt-5">
-        <a href="{% url 'all_posts' %}" class="btn btn-outline-secondary mb-4">
-            ← Back to Posts
-        </a>
+.comment-item:hover {
+    border-left-color: #667eea;
+}
 
-        <div class="post-card p-4 mb-4 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
-            <!-- Post Header -->
-            <div class="d-flex align-items-center mb-3">
-                {% if post.user.profile_picture %}
-                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" style="object-fit: cover;">
-                {% else %}
-                    <img src="{% static 'network/images/default-avatar.png' %}"
-                         class="rounded-circle me-2" width="48" height="48"
-                         style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                {% endif %}
-                <div>
-                    <strong>
-                        <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
-                            {{ post.user.username }}
-                        </a>
-                    </strong>
-                    <small class="text-muted ms-2">
-                        {% if post.user.gender == 'M' %}♂
-                        {% elif post.user.gender == 'F' %}♀
-                        {% elif post.user.gender == 'O' %}⚧
-                        {% else %}•
-                        {% endif %}
-                    </small>
-                    <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
-                </div>
-            </div>
+.gif-picker-comment-section {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+</style>
 
-            <!-- Post Content -->
-            <div class="post-content mb-3">
-                <div class="post-text mb-0">
-                    {{ post.content|parse_media|safe|linebreaksbr }}
-                </div>
-            </div>
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3" style="z-index: 9999;" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-            <!-- Post Media -->
-            <div class="mb-3">
-                {% for media in post.media.all %}
-                    <div class="mb-2">
-                        {% if media.media_type == 'image' %}
-                            <img src="{{ media.file.url }}" class="img-fluid rounded"
-                                 style="max-height: 500px; object-fit: contain;"
-                                 alt="Post image" loading="lazy">
-                        {% else %}
-                            <video controls class="w-100 rounded" style="max-height: 500px;">
-                                <source src="{{ media.file.url }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-
-            <!-- Post Actions (same as post_list) -->
-            <div class="d-flex gap-3 align-items-center flex-wrap">
-                <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}"
-                        data-post="{{ post.id }}" data-value="1">
-                    👍 <span>{{ post.thumbs_up.count }}</span>
-                </button>
-                <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
-                        data-post="{{ post.id }}" data-value="-1">
-                    👎 <span>{{ post.thumbs_down.count }}</span>
-                </button>
-                {% if request.user == post.user %}
-                    <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
-                {% endif %}
-            </div>
-
-            <!-- Comments Section (same style as post_list) -->
-            <div class="comments-section mt-4">
-                <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
-
-                <!-- Comment Form -->
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
-                        {% csrf_token %}
-                        <textarea name="content" class="form-control mb-2"
-                                  rows="2" placeholder="Write a comment..."
-                                  required></textarea>
-                        <button type="submit" class="btn btn-primary btn-sm">Comment</button>
-                    </form>
-                {% endif %}
-
-                <!-- Comments -->
-                {% for comment in post.comments.all %}
-                    {% if not comment.parent %}
-                        {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
+{% for post in page_obj %}
+    <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
+        <div class="d-flex align-items-center mb-3">
+            {% if post.user.profile_picture %}
+                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" style="object-fit: cover;">
+            {% else %}
+                <img src="{% static 'network/images/default-avatar.png' %}" 
+                     class="rounded-circle me-2" width="48" height="48" 
+                     style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            {% endif %}
+            <div>
+                <strong>
+                    <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
+                        {{ post.user.username }}
+                    </a>
+                </strong>
+                <small class="text-muted ms-2">
+                    {% if post.user.gender == 'M' %}♂
+                    {% elif post.user.gender == 'F' %}♀
+                    {% elif post.user.gender == 'O' %}⚧
+                    {% else %}•
                     {% endif %}
-                {% empty %}
-                    <p class="text-center text-muted py-3">No comments yet.</p>
-                {% endfor %}
+                </small>
+                <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
             </div>
         </div>
+
+        <div class="post-content mb-3">
+            <p class="post-text mb-0">{{ post.content|linebreaksbr }}</p>
+        </div>
+
+        <div class="mb-3">
+            {% for media in post.media.all %}
+                <div class="mb-2">
+                    {% if media.media_type == 'image' %}
+                        <img src="{{ media.file.url }}" class="img-fluid rounded" style="max-height: 500px; object-fit: contain;">
+                    {% else %}
+                        <video controls class="w-100 rounded" style="max-height: 500px;">
+                            <source src="{{ media.file.url }}" type="video/mp4">
+                        </video>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                    data-post="{{ post.id }}" data-value="1">
+                👍 <span>{{ post.thumbs_up.count }}</span>
+            </button>
+
+            <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}" 
+                    data-post="{{ post.id }}" data-value="-1">
+                👎 <span>{{ post.thumbs_down.count }}</span>
+            </button>
+
+            {% if request.user == post.user %}
+                <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
+                <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
+            {% endif %}
+        </div>
+
+        <!-- COMMENTS SECTION -->
+        <div class="comments-section mt-4">
+            <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
+
+            <!-- MAIN COMMENT FORM WITH GIF/STICKER PICKER -->
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
+                    {% csrf_token %}
+                    <textarea name="content" class="form-control mb-2" 
+                              rows="2" placeholder="Write a comment..." 
+                              required data-post-id="{{ post.id }}"></textarea>
+                    
+                    <!-- GIF/Sticker Picker -->
+                    <div class="gif-picker-comment-section" data-post-id="{{ post.id }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">🎨 Add GIFs or Stickers</small>
+                            <button type="button" class="btn btn-sm btn-outline-primary browse-media-comment" data-post-id="{{ post.id }}">
+                                Browse Media
+                            </button>
+                        </div>
+                        
+                        <div class="btn-group w-100 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
+                                    data-post-id="{{ post.id }}" data-media-type="gifs">GIFs</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
+                                    data-post-id="{{ post.id }}" data-media-type="stickers">Stickers</button>
+                        </div>
+                        
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="text" class="form-control" 
+                                   placeholder="Search GIFs..." data-post-id="{{ post.id }}" class="comment-media-search">
+                            <button type="button" class="btn btn-primary comment-media-search-btn" data-post-id="{{ post.id }}">
+                                Search
+                            </button>
+                        </div>
+                        
+                        <div class="comment-media-results" data-post-id="{{ post.id }}" style="display: none;"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                </form>
+            {% endif %}
+
+            <!-- ROOT COMMENTS -->
+            {% for comment in post.comments.all %}
+                {% if not comment.parent %}
+                    {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
+                {% endif %}
+            {% empty %}
+                <p class="text-center text-muted py-3">No comments yet. Be the first!</p>
+            {% endfor %}
+        </div>
     </div>
-{% endblock %} 
+{% empty %}
+    <p class="text-center text-muted py-5">No posts to show.</p>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+<script>
+console.log('🚀 POST LIST LOADED');
+
+function getCSRF() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
+
+// GIF/STICKER PICKER
+const mediaTypes = {};
+
+document.querySelectorAll('.gif-picker-comment-section').forEach(section => {
+    const id = section.dataset.postId || section.dataset.replyTo;
+    if (id) mediaTypes[id] = 'gifs';
+});
+
+// Media type toggle
+document.querySelectorAll('.comment-media-type').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.postId || this.dataset.replyTo;
+        const type = this.dataset.mediaType;
+        mediaTypes[id] = type;
+        
+        const selector = this.dataset.postId ? `[data-post-id="${id}"]` : `[data-reply-to="${id}"]`;
+        document.querySelectorAll(`.comment-media-type${selector}`).forEach(b => {
+            b.classList.toggle('active', b.dataset.mediaType === type);
+        });
+    });
+});
+
+// Media search
+function searchMedia(id, isReply = false) {
+    const selector = isReply ? `[data-reply-to="${id}"]` : `[data-post-id="${id}"]`;
+    const input = document.querySelector(`.comment-media-search${selector}`);
+    const results = document.querySelector(`.comment-media-results${selector}`);
+    const textarea = document.querySelector(isReply ? `.reply-textarea${selector}` : `textarea${selector}`);
+    
+    if (!input || !results || !textarea) return;
+    
+    const query = input.value.trim() || 'trending';
+    const type = mediaTypes[id] || 'gifs';
+    
+    results.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+    results.style.display = 'block';
+    
+    fetch(`/search-gifs/?q=${encodeURIComponent(query)}&type=${type}`)
+        .then(r => r.json())
+        .then(data => {
+            results.innerHTML = '';
+            const items = data.gifs || [];
+            
+            if (items.length > 0) {
+                const close = document.createElement('button');
+                close.type = 'button';
+                close.className = 'btn btn-sm btn-outline-secondary mb-2';
+                close.innerHTML = '✕ Close';
+                close.onclick = () => { results.style.display = 'none'; results.innerHTML = ''; };
+                results.appendChild(close);
+                
+                const grid = document.createElement('div');
+                grid.className = 'd-flex flex-wrap gap-2';
+                grid.style.maxHeight = '200px';
+                grid.style.overflowY = 'auto';
+                
+                items.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.cursor = 'pointer';
+                    img.style.borderRadius = '4px';
+                    img.className = 'border';
+                    img.onclick = () => {
+                        const tag = type === 'gifs' ? 'GIF' : 'STICKER';
+                        textarea.value += `\n[${tag}:${url}]\n`;
+                        textarea.focus();
+                        results.style.display = 'none';
+                        results.innerHTML = '';
+                        input.value = '';
+                    };
+                    grid.appendChild(img);
+                });
+                results.appendChild(grid);
+            } else {
+                results.innerHTML = '<p class="text-muted text-center">No results</p>';
+            }
+        })
+        .catch(() => {
+            results.innerHTML = '<p class="text-danger text-center">Search failed</p>';
+        });
+}
+
+document.querySelectorAll('.browse-media-comment').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.postId || this.dataset.replyTo;
+        searchMedia(id, !!this.dataset.replyTo);
+    });
+});
+
+document.querySelectorAll('.comment-media-search-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.postId || this.dataset.replyTo;
+        searchMedia(id, !!this.dataset.replyTo);
+    });
+});
+
+document.querySelectorAll('.comment-media-search').forEach(input => {
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const id = this.dataset.postId || this.dataset.replyTo;
+            searchMedia(id, !!this.dataset.replyTo);
+        }
+    });
+});
+
+// Process media tags
+document.querySelectorAll('.comment-text').forEach(el => {
+    let html = el.innerHTML;
+    html = html.replace(/\[GIF:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:200px;"></div>');
+    html = html.replace(/\[STICKER:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:150px;"></div>');
+    el.innerHTML = html;
+});
+
+console.log('✅ GIF picker ready');
+</script>
