@@ -302,7 +302,7 @@ unblock_usr = unblock_user
 
 
 @login_required
-def privacy_settings_view(request):
+def privacy_settings(request):
     privacy_settings, _ = PrivacySettings.objects.get_or_create(
         user=request.user,
         defaults={'post_visibility': 'universal'}
