@@ -1,6 +1,7 @@
 <!-- network/templates/network/partials/comment_item.html -->
 {% load static %}
 {% load parse_media %} 
+
 <div class="comment-item mb-3 p-3 bg-light rounded" data-comment-id="{{ comment.id }}" style="{% if depth > 0 %}margin-left: {{ depth }}rem;{% endif %}">
     <div class="d-flex align-items-start">
         {% if comment.user.profile_picture %}
@@ -45,8 +46,10 @@
                 </div>
             </div>
             
-            <!-- Parsed comment text - INTEGRATED -->
-            <div class="comment-text mb-2">{{ comment.content|parse_media|safe|linebreaksbr }}</div>
+            <!-- Parsed comment text -->
+            <div class="comment-text mb-2">
+                {{ comment.content|parse_media|safe|linebreaksbr }}
+            </div>
             
             <!-- Edit form (hidden by default) -->
             <div class="edit-form mt-3 d-none" data-comment-id="{{ comment.id }}">
@@ -55,7 +58,7 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm cancel-edit">Cancel</button>
             </div>
             
-            <!-- Reply button - MAX 3 LEVELS (depth < 2 means: 0, 1, 2 = 3 levels) -->
+            <!-- Reply button - MAX 3 LEVELS -->
             {% if user.is_authenticated and depth < 2 %}
                 <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
                     ↩ Reply
@@ -66,7 +69,7 @@
                 </small>
             {% endif %}
             
-            <!-- Reply form - INTEGRATED LIVE PREVIEW -->
+            <!-- Reply form with live preview -->
             {% if user.is_authenticated and depth < 2 %}
                 <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
                     <form method="post" action="{% url 'add_comment' post.id %}">
@@ -80,7 +83,7 @@
                         <textarea name="content" class="form-control reply-textarea mb-2" rows="2" 
                                   placeholder="Write your reply..." required data-reply-to="{{ comment.id }}"></textarea>
                         
-                        <!-- LIVE PREVIEW BOX - INTEGRATED -->
+                        <!-- LIVE PREVIEW BOX -->
                         <div class="comment-preview border rounded p-3 bg-light mb-3" style="min-height:80px; display:none;">
                             <small class="text-muted">Preview (GIFs/stickers will appear here):</small>
                             <div class="preview-content mt-2"></div>
@@ -125,7 +128,7 @@
                 </div>
             {% endif %}
             
-            <!-- Nested replies - MAX 3 LEVELS -->
+            <!-- Nested replies -->
             {% if depth < 2 %}
                 {% for reply in comment.replies.all %}
                     {% with comment=reply depth=depth|add:1 %}
@@ -137,7 +140,7 @@
     </div>
 </div>
 
-<!-- INTEGRATED ONERROR SCRIPT FOR FALLBACK -->
+<!-- Fallback for broken images -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.comment-text img').forEach(img => {
