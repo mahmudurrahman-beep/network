@@ -74,4 +74,27 @@ class Comment(models.Model):
     media_url = models.URLField(max_length=500, null=True, blank=True)  # Added from local for GIFs
     media_type = models.CharField(max_length=10, choices=[('image', 'Image'), ('video', 'Video'), ('gif', 'GIF'), ('sticker', 'Sticker')], blank=True)
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['-timestamp']       
+
+class Block(models.Model):
+    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocks')
+    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('blocker', 'blocked')  # No duplicate blocks
+
+class PrivacySettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='privacy')
+    post_visibility = models.CharField(
+        max_length=10,
+        choices=[
+            ('followers', 'Followers Only'),
+            ('following', 'Following Only'),
+            ('both', 'Followers & Following'),
+            ('universal', 'Everyone')
+        ],
+        default='universal'
+    )     
+        
+
