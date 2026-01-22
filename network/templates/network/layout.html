@@ -123,5 +123,22 @@
     </form>
     <!-- Your custom JS -->
     <script src="{% static 'network/js/main.js' %}"></script>
+    <!-- Profile Page Protection Script - Only runs on profile pages -->
+    {% if request.path|slice:"0:9" == "/profile/" %}
+    <script>
+        console.log('🛡️ PROFILE PAGE PROTECTION - MINIMAL');
+        
+        // Only clean block button, NOT follow button
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clean ONLY block button
+            const blockBtn = document.getElementById('block-btn');
+            if (blockBtn) {
+                const cleanBtn = blockBtn.cloneNode(true);
+                blockBtn.parentNode.replaceChild(cleanBtn, blockBtn);
+                console.log('✅ Block button cleaned (follow button left alone)');
+            }
+        });   
+    </script>
+    {% endif %}
 </body>
 </html>
