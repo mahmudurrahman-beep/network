@@ -252,40 +252,7 @@ def new_post(request):
             media_type = 'video' if f.content_type.startswith('video') else 'image'
             PostMedia.objects.create(post=post, file=f, media_type=media_type)
         return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
-    return render(request, "network/new_post.html")
-
-@login_required
-def all_posts(request):
-    posts = Post.objects.all().order_by('-timestamp').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user')
-    # Add root_comments for nested display (from local)
-    for post in posts:
-        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "network/all_posts.html", {'page_obj': page_obj})
-
-@login_required
-def profile(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    posts = profile_user.posts.all().order_by('-timestamp').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user')
-    # Add root_comments (from local)
-    for post in posts:
-        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-   
-    is_following = Follow.objects.filter(follower=request.user, followed=profile_user).exists() if request.user != profile_user else False
-   
-    return render(request, "network/profile.html", {
-        'profile_user': profile_user,
-        'page_obj': page_obj,
-        'is_following': is_following,
-        'followers_count': profile_user.followers.count(),
-        'following_count': profile_user.following.count(),
-    })
-
+    return render(request, "network/new_post.html") 
 
 @csrf_exempt
 @login_required
@@ -505,14 +472,6 @@ def quick_upload_picture(request):
         request.user.save()
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
 
-@login_required
-def discover_users(request):
-    query = request.GET.get('q', '')
-    users = User.objects.exclude(id=request.user.id)
-    if query:
-        users = users.filter(username__icontains=query)
-    return render(request, "network/discover_users.html", {'users': users, 'query': query})
-
 @csrf_exempt
 @login_required
 def delete_post(request, post_id):
@@ -608,41 +567,6 @@ def delete_conversation(request, username):
         return JsonResponse({"message": "Conversation hidden"})
     return JsonResponse({"error": "POST required"}, status=400)
 
-@login_required
-def followers_list(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    followers = User.objects.filter(following__followed=profile_user)
-    is_following_dict = {str(f.id): request.user.following.filter(followed=f).exists() for f in followers}
-    return render(request, "network/followers_list.html", {
-        'profile_user': profile_user,
-        'users': followers,
-        'list_type': 'Followers',
-        'is_following_dict': is_following_dict
-    })
-
-@login_required
-def following_list(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    following = User.objects.filter(followers__follower=profile_user)
-    is_following_dict = {str(f.id): request.user.following.filter(followed=f).exists() for f in following}
-    return render(request, "network/followers_list.html", {
-        'profile_user': profile_user,
-        'users': following,
-        'list_type': 'Following',
-        'is_following_dict': is_following_dict
-    })  
-    
-    
-@login_required
-def following(request):
-    followed_users = request.user.following.values_list('followed_id', flat=True)
-    posts = Post.objects.filter(user__id__in=followed_users).order_by('-timestamp').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user')
-    for post in posts:
-        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "network/following.html", {'page_obj': page_obj})
 
 @csrf_exempt
 @login_required
