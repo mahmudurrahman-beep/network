@@ -18,7 +18,7 @@
     margin-bottom: 12px;
 }
 .comment-item:hover {
-    border-left-color: #667eea;
+    border-left-color: #20c997;
 }
 .gif-picker-comment-section {
     background: #f8f9fa;
@@ -48,22 +48,10 @@
     max-width: 100% !important;
     height: auto !important;
 }
-/* Preview box styling */
-.comment-preview {
-    background: rgba(102,126,234,0.05);
-    border: 1px solid rgba(102,126,234,0.1);
-    min-height: 60px;
-    max-height: 200px;
-    overflow-y: auto;
-    border-radius: 8px;
-    padding: 12px;
-}
-.comment-preview img {
-    max-width: 180px;
-    display: block;
-    margin: 8px auto;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.comment-media-type.active {
+    background: linear-gradient(135deg, #20c997 0%, #11998e 100%) !important;
+    color: white !important;
+    border-color: #20c997 !important;
 }
 </style>
 
@@ -88,7 +76,7 @@
             {% else %}
                 <img src="{% static 'network/images/default-avatar.png' %}"
                      class="rounded-circle me-2" width="48" height="48"
-                     style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                     style="object-fit: cover;">
             {% endif %}
             <div>
                 <strong>
@@ -106,14 +94,12 @@
                 <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
             </div>
         </div>
-
         <!-- Post Content -->
         <div class="post-content mb-3">
             <div class="post-text mb-0">
                 {{ post.content|parse_media|safe|linebreaksbr }}
             </div>
         </div>
-
         <!-- Post Media -->
         <div class="mb-3">
             {% for media in post.media.all %}
@@ -131,7 +117,6 @@
                 </div>
             {% endfor %}
         </div>
-
         <!-- Post Actions -->
         <div class="d-flex gap-3 align-items-center flex-wrap">
             <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}"
@@ -147,25 +132,21 @@
                 <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
             {% endif %}
         </div>
-
         <!-- COMMENTS SECTION -->
         <div class="comments-section mt-4">
             <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
-
-            <!-- MAIN COMMENT FORM -->
+            <!-- MAIN COMMENT FORM WITH INLINE GIF RENDER -->
             {% if user.is_authenticated %}
                 <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
                     {% csrf_token %}
-                    <textarea name="content" class="form-control mb-2 comment-textarea" 
-                              rows="2" placeholder="Write a comment..." 
-                              required data-post-id="{{ post.id }}"></textarea>
-
-                    <!-- LIVE PREVIEW BOX -->
-                    <div class="comment-preview border rounded p-3 bg-light mb-3" style="min-height:80px; display:none;">
-                        <small class="text-muted">Preview (GIFs/stickers will appear here):</small>
-                        <div class="preview-content mt-2"></div>
-                    </div>
-
+                    <!-- Hidden input for raw content -->
+                    <input type="hidden" name="content" id="main-comment-hidden-{{ post.id }}">
+                    
+                    <!-- Contenteditable div (inline GIF render) -->
+                    <div class="form-control mb-2 comment-editable" contenteditable="true" 
+                         data-post-id="{{ post.id }}" style="min-height: 80px; overflow-y: auto; padding: 12px; border-radius: 8px;"
+                         placeholder="Write a comment..."></div>
+                    
                     <!-- GIF/Sticker Picker -->
                     <div class="gif-picker-comment-section" data-post-id="{{ post.id }}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -174,14 +155,14 @@
                                 Browse Media
                             </button>
                         </div>
-
+                        
                         <div class="btn-group w-100 mb-2">
                             <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
                                     data-post-id="{{ post.id }}" data-media-type="gifs">GIFs</button>
                             <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
                                     data-post-id="{{ post.id }}" data-media-type="stickers">Stickers</button>
                         </div>
-
+                        
                         <div class="input-group input-group-sm mb-2">
                             <input type="text" class="form-control comment-media-search"
                                    placeholder="Search GIFs..." data-post-id="{{ post.id }}">
@@ -189,10 +170,10 @@
                                 Search
                             </button>
                         </div>
-
+                        
                         <div class="comment-media-results media-results-grid" data-post-id="{{ post.id }}" style="display: none;"></div>
                     </div>
-
+                    
                     <button type="submit" class="btn btn-primary btn-sm">Comment</button>
                 </form>
             {% endif %}
@@ -230,46 +211,94 @@
     </nav>
 {% endif %}
 
-<!-- LIVE PREVIEW JS -->
+<!-- INLINE GIF RENDER JS FOR COMMENTS -->
 <script>
-// Live Preview for comments & replies
-function updateCommentPreview(textarea, previewDiv) {
-    const content = textarea.value.trim();
-    const previewContent = previewDiv.querySelector('.preview-content');
+// Insert image in contenteditable
+function insertMedia(editable, tag, url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.maxWidth = tag === 'GIF' ? '220px' : '140px';
+    img.style.display = 'block';
+    img.style.margin = '4px 0';
+    img.style.borderRadius = '8px';
+    img.dataset.tag = tag;
+    img.dataset.url = url;
     
-    if (content === '') {
-        previewDiv.style.display = 'none';
-        return;
-    }
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(img);
+    range.collapse(false);
     
-    previewDiv.style.display = 'block';
-    
-    let html = content
-        .replace(/\[GIF:(https?:\/\/[^\]]+)\]/gi, '<img src="$1" class="img-fluid rounded my-1" style="max-width:220px;" alt="GIF" loading="lazy">')
-        .replace(/\[STICKER:(https?:\/\/[^\]]+)\]/gi, '<img src="$1" class="img-fluid rounded my-1" style="max-width:140px; background:transparent;" alt="Sticker" loading="lazy">')
-        .replace(/\n/g, '<br>');
-    
-    previewContent.innerHTML = html || '<small class="text-muted">Type to preview...</small>';
+    // Add space after
+    const space = document.createTextNode(' ');
+    range.insertNode(space);
+    range.setStartAfter(space);
+    selection.removeAllRanges();
+    selection.addRange(range);
 }
 
-// Bind to all comment/reply textareas
-document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('comment-textarea') || e.target.classList.contains('reply-textarea')) {
-        const textarea = e.target;
-        const form = textarea.closest('form');
-        const previewDiv = form.querySelector('.comment-preview');
-        if (previewDiv) {
-            updateCommentPreview(textarea, previewDiv);
+// Get raw content for submit
+function getRawContent(editable) {
+    let content = '';
+    editable.childNodes.forEach(node => {
+        if (node.nodeType === 3) { // Text
+            content += node.textContent;
+        } else if (node.tagName === 'IMG' && node.dataset.tag && node.dataset.url) {
+            content += `[${node.dataset.tag}:${node.dataset.url}]`;
+        } else if (node.tagName === 'BR') {
+            content += '\n';
+        } else if (node.tagName === 'DIV') {
+            content += node.innerText + '\n';
+        }
+    });
+    return content.trim();
+}
+
+// Submit handler
+document.querySelectorAll('form[action^="/add-comment/"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const editable = form.querySelector('.comment-editable, .reply-editable');
+        const hidden = form.querySelector('input[name="content"]');
+        if (editable && hidden) {
+            hidden.value = getRawContent(editable);
+            if (!hidden.value) {
+                e.preventDefault();
+                alert('Comment cannot be empty');
+            }
+        }
+    });
+});
+
+// Picker insert
+document.addEventListener('click', e => {
+    const img = e.target.closest('.media-item');
+    if (img) {
+        const section = img.closest('.gif-picker-comment-section');
+        const id = section.dataset.postId || section.dataset.replyTo;
+        const selector = section.dataset.postId ? `[data-post-id="${id}"]` : `[data-reply-to="${id}"]`;
+        const editable = document.querySelector(`.comment-editable${selector}, .reply-editable${selector}`);
+        const type = mediaTypes[id] || 'gifs';
+        const tag = type === 'gifs' ? 'GIF' : 'STICKER';
+        if (editable) {
+            insertMedia(editable, tag, img.src);
+            section.querySelector('.comment-media-results').style.display = 'none';
         }
     }
 });
+
+// Enter for line break
+document.querySelectorAll('.comment-editable, .reply-editable').forEach(editable => {
+    editable.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.execCommand('insertLineBreak');
+        }
+    });
+});
 </script>
 
+<!-- Your existing GIF picker script (unchanged) -->
 <script>
-// CSRF Token Helper
-function getCSRF() {
-    const token = document.querySelector('[name=csrfmiddlewaretoken]');
-    return token ? token.value : '';
-}
-// ... (your existing GIF picker script remains here unchanged)
+ // ... (keep your full picker script from before)
 </script>
