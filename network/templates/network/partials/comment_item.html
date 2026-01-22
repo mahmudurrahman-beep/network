@@ -1,61 +1,91 @@
+<!-- network/templates/network/partials/comment_item.html -->
 {% load static %}
 {% load parse_media %} 
-
 <div class="comment-item mb-3 p-3 bg-light rounded" data-comment-id="{{ comment.id }}" style="{% if depth > 0 %}margin-left: {{ depth }}rem;{% endif %}">
     <div class="d-flex align-items-start">
-        <!-- ... your existing comment header code ... -->
-       
+        {% if comment.user.profile_picture %}
+            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+        {% else %}
+            <img src="{% static 'network/images/default-avatar.png' %}" 
+                 class="rounded-circle me-3" width="40" height="40" 
+                 style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        {% endif %}
+        
         <div class="flex-grow-1">
-            <!-- ... your existing comment metadata ... -->
-           
-            <!-- Parsed comment text -->
-            <div class="comment-text mb-2">
-                {{ comment.content|parse_media|safe }}
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <strong>
+                        <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
+                            {{ comment.user.username }}
+                        </a>
+                    </strong>
+                    <small class="text-muted ms-2">{{ comment.timestamp|timesince }} ago</small>
+                    
+                    {% if comment.parent and comment.parent.user %}
+                    <div class="mt-1">
+                        <small class="text-muted">
+                            ↳ Replying to 
+                            <a href="{% url 'profile' comment.parent.user.username %}" class="text-primary text-decoration-none fw-semibold">
+                                @{{ comment.parent.user.username }}
+                            </a>
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="comment-actions">
+                    {% if request.user == comment.user %}
+                        <button class="btn btn-sm btn-outline-danger delete-comment" data-comment-id="{{ comment.id }}" type="button">
+                            Delete
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary edit-comment ms-2" data-comment-id="{{ comment.id }}" type="button">
+                            Edit
+                        </button>
+                    {% endif %}
+                </div>
             </div>
-           
+            
+            <!-- Parsed comment text - INTEGRATED -->
+            <div class="comment-text mb-2">{{ comment.content|parse_media|safe|linebreaksbr }}</div>
+            
             <!-- Edit form (hidden by default) -->
             <div class="edit-form mt-3 d-none" data-comment-id="{{ comment.id }}">
                 <textarea class="form-control mb-2 edit-textarea" rows="2">{{ comment.content }}</textarea>
-                
-                <!-- Live Preview for Edit -->
-                <div id="editPreview-{{ comment.id }}" class="live-preview-box mb-2">
-                    <small class="text-muted d-block mb-1">Edit Preview:</small>
-                    <div class="preview-content">
-                        <div class="preview-placeholder">Type to see preview...</div>
-                    </div>
-                </div>
-                
                 <button type="button" class="btn btn-primary btn-sm save-edit">Save</button>
                 <button type="button" class="btn btn-outline-secondary btn-sm cancel-edit">Cancel</button>
             </div>
-           
-            <!-- Reply button -->
-            <!-- ... your existing reply button code ... -->
-           
-            <!-- Reply form -->
+            
+            <!-- Reply button - MAX 3 LEVELS (depth < 2 means: 0, 1, 2 = 3 levels) -->
+            {% if user.is_authenticated and depth < 2 %}
+                <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
+                    ↩ Reply
+                </button>
+            {% elif user.is_authenticated and depth >= 2 %}
+                <small class="text-muted">
+                    ⓘ Maximum reply depth reached
+                </small>
+            {% endif %}
+            
+            <!-- Reply form - INTEGRATED LIVE PREVIEW -->
             {% if user.is_authenticated and depth < 2 %}
                 <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
                     <form method="post" action="{% url 'add_comment' post.id %}">
                         {% csrf_token %}
                         <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                       
+                        
                         <div class="replying-to-indicator mb-2">
                             ↳ Replying to <a href="{% url 'profile' comment.user.username %}" class="text-primary">@{{ comment.user.username }}</a>
                         </div>
-                       
-                        <textarea name="content" class="form-control reply-textarea mb-2" rows="2"
-                                  placeholder="Write your reply..." required 
-                                  data-preview-target="replyPreview-{{ comment.id }}"
-                                  data-reply-to="{{ comment.id }}"></textarea>
                         
-                        <!-- LIVE PREVIEW for Reply -->
-                        <div id="replyPreview-{{ comment.id }}" class="live-preview-box mb-2">
-                            <small class="text-muted d-block mb-1">Preview:</small>
-                            <div class="preview-content">
-                                <div class="preview-placeholder">Type to see preview...</div>
-                            </div>
+                        <textarea name="content" class="form-control reply-textarea mb-2" rows="2" 
+                                  placeholder="Write your reply..." required data-reply-to="{{ comment.id }}"></textarea>
+                        
+                        <!-- LIVE PREVIEW BOX - INTEGRATED -->
+                        <div class="comment-preview border rounded p-3 bg-light mb-3" style="min-height:80px; display:none;">
+                            <small class="text-muted">Preview (GIFs/stickers will appear here):</small>
+                            <div class="preview-content mt-2"></div>
                         </div>
-                       
+                        
                         <!-- GIF/Sticker Picker for Replies -->
                         <div class="gif-picker-comment-section mb-2" data-reply-to="{{ comment.id }}" style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -64,25 +94,25 @@
                                     Browse
                                 </button>
                             </div>
-                           
+                            
                             <div class="btn-group w-100 mb-2">
-                                <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type"
+                                <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
                                         data-reply-to="{{ comment.id }}" data-media-type="gifs">GIFs</button>
-                                <button type="button" class="btn btn-sm btn-outline-primary comment-media-type"
+                                <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
                                         data-reply-to="{{ comment.id }}" data-media-type="stickers">Stickers</button>
                             </div>
-                           
+                            
                             <div class="input-group input-group-sm mb-2">
-                                <input type="text" class="form-control comment-media-search"
+                                <input type="text" class="form-control comment-media-search" 
                                        placeholder="Search GIFs..." data-reply-to="{{ comment.id }}">
                                 <button type="button" class="btn btn-primary comment-media-search-btn" data-reply-to="{{ comment.id }}">
                                     Search
                                 </button>
                             </div>
-                           
+                            
                             <div class="comment-media-results" data-reply-to="{{ comment.id }}" style="display: none;"></div>
                         </div>
-                       
+                        
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary btn-sm">
                                 Send Reply
@@ -94,8 +124,8 @@
                     </form>
                 </div>
             {% endif %}
-           
-            <!-- Nested replies -->
+            
+            <!-- Nested replies - MAX 3 LEVELS -->
             {% if depth < 2 %}
                 {% for reply in comment.replies.all %}
                     {% with comment=reply depth=depth|add:1 %}
@@ -107,85 +137,15 @@
     </div>
 </div>
 
-<!-- ADD THIS SCRIPT FOR LIVE PREVIEW IN COMMENTS -->
+<!-- INTEGRATED ONERROR SCRIPT FOR FALLBACK -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set up live preview for edit textareas
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('edit-textarea') || e.target.classList.contains('reply-textarea')) {
-            const textarea = e.target;
-            const previewId = textarea.dataset.previewTarget;
-            
-            if (previewId) {
-                const previewBox = document.getElementById(previewId);
-                if (!previewBox) return;
-                
-                const previewContent = previewBox.querySelector('.preview-content');
-                const text = textarea.value.trim();
-                
-                if (!text) {
-                    previewBox.style.display = 'none';
-                    previewBox.classList.remove('active');
-                    previewContent.innerHTML = '<div class="preview-placeholder">Type to see preview...</div>';
-                    return;
-                }
-                
-                // Show preview
-                previewBox.style.display = 'block';
-                previewBox.classList.add('active');
-                
-                // Parse and format content for preview
-                let html = text
-                    .replace(/\[GIF:(https?:\/\/[^\]]+)\]/gi, 
-                        '<img src="$1" class="preview-gif" alt="GIF preview" loading="lazy" onerror="this.style.opacity=0.5;">')
-                    .replace(/\[STICKER:(https?:\/\/[^\]]+)\]/gi, 
-                        '<img src="$1" class="preview-sticker" alt="Sticker preview" loading="lazy" onerror="this.style.opacity=0.5;">')
-                    .replace(/\n/g, '<br>');
-                
-                if (html === text) {
-                    html = text.replace(/\n/g, '<br>');
-                }
-                
-                previewContent.innerHTML = html || '<div class="preview-placeholder">Type to see preview...</div>';
-            }
-        }
-    });
-    
-    // Handle error images in comments
     document.querySelectorAll('.comment-text img').forEach(img => {
         img.onerror = function() {
             this.src = 'https://via.placeholder.com/200x150/cccccc/666666?text=Media+Failed';
             this.alt = 'Failed to load media';
             this.style.opacity = '0.7';
         };
-    });
-    
-    // Set up reply button to show form and initialize preview
-    document.addEventListener('click', function(e) {
-        const replyBtn = e.target.closest('.reply-btn');
-        if (replyBtn) {
-            const commentId = replyBtn.dataset.commentId;
-            const replyForm = document.querySelector(`.reply-form[data-parent-id="${commentId}"]`);
-            
-            if (replyForm) {
-                replyForm.classList.remove('d-none');
-                const textarea = replyForm.querySelector('.reply-textarea');
-                
-                // Focus and initialize preview after form is shown
-                setTimeout(() => {
-                    if (textarea) {
-                        textarea.focus();
-                        const previewId = textarea.dataset.previewTarget;
-                        if (previewId) {
-                            const previewBox = document.getElementById(previewId);
-                            if (previewBox) {
-                                previewBox.style.display = 'none';
-                            }
-                        }
-                    }
-                }, 10);
-            }
-        }
     });
 });
 </script>
