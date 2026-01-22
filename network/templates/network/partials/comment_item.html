@@ -1,7 +1,6 @@
 <!-- network/templates/network/partials/comment_item.html -->
 {% load static %}
 {% load parse_media %} 
-
 <div class="comment-item mb-3 p-3 bg-light rounded" data-comment-id="{{ comment.id }}" style="{% if depth > 0 %}margin-left: {{ depth }}rem;{% endif %}">
     <div class="d-flex align-items-start">
         {% if comment.user.profile_picture %}
@@ -9,7 +8,7 @@
         {% else %}
             <img src="{% static 'network/images/default-avatar.png' %}" 
                  class="rounded-circle me-3" width="40" height="40" 
-                 style="object-fit: cover;">
+                 style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         {% endif %}
         
         <div class="flex-grow-1">
@@ -46,19 +45,17 @@
                 </div>
             </div>
             
-            <!-- Parsed comment text -->
-            <div class="comment-text mb-2">
-                {{ comment.content|parse_media|safe|linebreaksbr }}
-            </div>
+            <!-- Original comment text -->
+            <div class="comment-text mb-2">{{ comment.content|linebreaksbr }}</div>
             
-            <!-- Edit form -->
+            <!-- Edit form (hidden by default) -->
             <div class="edit-form mt-3 d-none" data-comment-id="{{ comment.id }}">
                 <textarea class="form-control mb-2 edit-textarea" rows="2">{{ comment.content }}</textarea>
                 <button type="button" class="btn btn-primary btn-sm save-edit">Save</button>
                 <button type="button" class="btn btn-outline-secondary btn-sm cancel-edit">Cancel</button>
             </div>
             
-            <!-- Reply button -->
+            <!-- Reply button - MAX 3 LEVELS (depth < 2 means: 0, 1, 2 = 3 levels) -->
             {% if user.is_authenticated and depth < 2 %}
                 <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
                     ↩ Reply
@@ -69,24 +66,21 @@
                 </small>
             {% endif %}
             
-            <!-- Reply form with inline GIF render -->
+            <!-- Reply form -->
             {% if user.is_authenticated and depth < 2 %}
                 <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
                     <form method="post" action="{% url 'add_comment' post.id %}">
                         {% csrf_token %}
                         <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                        <input type="hidden" name="content" class="reply-hidden" data-reply-id="{{ comment.id }}">
                         
                         <div class="replying-to-indicator mb-2">
                             ↳ Replying to <a href="{% url 'profile' comment.user.username %}" class="text-primary">@{{ comment.user.username }}</a>
                         </div>
                         
-                        <!-- Contenteditable for reply -->
-                        <div class="form-control mb-2 reply-editable" contenteditable="true" 
-                             data-reply-id="{{ comment.id }}" style="min-height: 80px; overflow-y: auto; padding: 12px; border-radius: 8px;"
-                             placeholder="Write your reply..."></div>
+                        <textarea name="content" class="form-control reply-textarea mb-2" rows="2" 
+                                  placeholder="Write your reply..." required data-reply-to="{{ comment.id }}"></textarea>
                         
-                        <!-- GIF/Sticker Picker -->
+                        <!-- GIF/Sticker Picker for Replies -->
                         <div class="gif-picker-comment-section mb-2" data-reply-to="{{ comment.id }}" style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <small class="text-muted">🎨 Add Media</small>
@@ -125,7 +119,7 @@
                 </div>
             {% endif %}
             
-            <!-- Nested replies -->
+            <!-- Nested replies - MAX 3 LEVELS -->
             {% if depth < 2 %}
                 {% for reply in comment.replies.all %}
                     {% with comment=reply depth=depth|add:1 %}
