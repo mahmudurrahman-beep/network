@@ -1,0 +1,116 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Privacy & Settings</h2>
+    
+    <!-- Post Visibility Settings -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Post Visibility</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'privacy_settings' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="post_visibility" class="form-label fw-bold">Who can see your posts?</label>
+                    <select name="post_visibility" id="post_visibility" class="form-select" style="max-width: 300px;">
+                        <option value="universal" {% if request.user.privacy.post_visibility == 'universal' %}selected{% endif %}>
+                            🌍 Everyone (Public)
+                        </option>
+                        <option value="followers" {% if request.user.privacy.post_visibility == 'followers' %}selected{% endif %}>
+                            👥 Followers Only
+                        </option>
+                        <option value="following" {% if request.user.privacy.post_visibility == 'following' %}selected{% endif %}>
+                            🔄 Following Only
+                        </option>
+                        <option value="both" {% if request.user.privacy.post_visibility == 'both' %}selected{% endif %}>
+                            🤝 Followers & Following Only
+                        </option>
+                    </select>
+                    <div class="form-text mt-2">
+                        <small>
+                            <strong>Current setting:</strong> 
+                            {% if request.user.privacy.post_visibility == 'universal' %}Everyone can see your posts
+                            {% elif request.user.privacy.post_visibility == 'followers' %}Only your followers can see your posts
+                            {% elif request.user.privacy.post_visibility == 'following' %}Only users you follow can see your posts
+                            {% elif request.user.privacy.post_visibility == 'both' %}Only users who follow you AND you follow back can see your posts
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Save Settings
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Blocked Users Management -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-person-x me-2"></i>Blocked Users</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Users you've blocked won't see your posts or be able to interact with you.</p>
+            
+            {% if blocked_users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Blocked Since</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for block in blocked_users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ block.blocked.username }}</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ block.timestamp|date:"M d, Y" }}</small>
+                                </td>
+                                <td>
+                                    <a href="{% url 'unblock_user' block.blocked.username %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       onclick="return confirm('Are you sure you want to unblock {{ block.blocked.username }}?')">
+                                        <i class="bi bi-unlock me-1"></i>Unblock
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3">You haven't blocked any users.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{% url 'profile' user.username %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Profile
+        </a>
+        
+        <a href="{% url 'edit_profile' %}" class="btn btn-outline-info">
+            <i class="bi bi-pencil me-1"></i>Edit Profile
+        </a>
+    </div>
+    
+    <!-- Info Alert -->
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Note:</strong> Privacy settings apply to all your existing and future posts. 
+        Blocked users won't appear in your "All Posts" or "Following" feeds.
+    </div>
+</div>
+{% endblock %}  
