@@ -1,21 +1,22 @@
 {% extends "network/layout.html" %}
 {% load static %}
-{% load parse_media %} 
+{% load parse_media %}
+
 {% block body %}
     <div class="container my-5">
         {% if user.is_authenticated %}
-            <div class="card mb-5 shadow-2xl rounded-4 border-0 bg-white">
+            <div class="card mb-5 shadow-2xl rounded-4 border-0 bg-white" style="background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%); border: 1px solid rgba(102,126,234,0.1);">
                 <div class="card-body p-5">
-                    <h3 class="mb-4 fw-bold text-primary">Create a New Post</h3>
+                    <h3 class="mb-4 fw-bold" style="color: #667eea;">Create a New Post</h3>
                     <form id="new-post-form" enctype="multipart/form-data">
                         {% csrf_token %}
                         <textarea name="content" class="form-control form-control-lg mb-4 rounded-4 shadow-sm" rows="4" 
-                                  placeholder="What's on your mind?" required style="font-size:1.2rem;"></textarea>
+                                  placeholder="What's on your mind?" required style="font-size:1.2rem; border-color: #e9ecef;"></textarea>
                         <div class="mb-4">
-                            <label class="form-label fw-bold fs-4">Add photos/videos (optional)</label>
-                            <input type="file" name="media_files" class="form-control form-control-lg rounded-4" multiple accept="image/*,video/*">
+                            <label class="form-label fw-bold fs-4" style="color: #667eea;">Add photos/videos (optional)</label>
+                            <input type="file" name="media_files" class="form-control form-control-lg rounded-4" multiple accept="image/*,video/*" style="border-color: #e9ecef;">
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-lg">Post</button>
+                        <button type="submit" class="btn btn-lg rounded-pill px-5 fw-bold shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">Post</button>
                     </form>
                     <div id="post-message" class="mt-4 alert d-none rounded-4"></div>
                 </div>
