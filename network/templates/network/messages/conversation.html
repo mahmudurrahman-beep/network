@@ -1,6 +1,6 @@
 {% extends "network/layout.html" %}
 {% load static %}
-{% load parse_media %}
+{% load parse_media %}  <!-- ADD THIS LINE -->
 
 {% block body %}
 <style>
@@ -13,15 +13,17 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     overflow: hidden;
 }
-/* Chat Header - Teal Gradient */
+
+/* Chat Header */
 .chat-header {
-    background: linear-gradient(135deg, #20c997 0%, #11998e 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 /* Chat Messages Area */
 .chat-box {
     height: 500px;
@@ -31,80 +33,277 @@
     display: flex;
     flex-direction: column-reverse;
 }
-/* Message Bubbles */
+
+.chat-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Message Bubbles - BEAUTIFUL DESIGN */
+.message-item {
+    display: flex;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* User's Own Messages - Modern Purple Gradient */
 .user-message-bubble {
-    background: linear-gradient(135deg, #20c997 0%, #11998e 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 12px 16px;
     border-radius: 18px 18px 4px 18px;
     max-width: 65%;
-    box-shadow: 0 2px 8px rgba(32,201,151,0.3);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    word-wrap: break-word;
 }
+
+/* Other User's Messages - Clean White */
 .other-message-bubble {
     background: white;
     color: #2c3e50;
     padding: 12px 16px;
     border-radius: 18px 18px 18px 4px;
     max-width: 65%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
+    word-wrap: break-word;
 }
-/* GIF/Sticker in messages */
+
+/* Message Timestamp */
+.message-timestamp {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* Seen Indicator */
+.seen-indicator {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* GIF/Sticker Image Styling - UPDATED */
 .media-gif {
     max-width: 300px !important;
     border-radius: 12px;
     margin-top: 8px;
+    display: block;
+    background: #f8f9fa;
+    padding: 4px;
 }
+
 .media-sticker {
     max-width: 150px !important;
     background: transparent !important;
     border-radius: 12px;
     margin-top: 8px;
+    display: block;
+    padding: 4px;
 }
-/* Chat Input */
+
+/* Chat Input Area - MODERN DESIGN */
 .chat-input-area {
     background: white;
     padding: 20px;
     border-top: 1px solid #e9ecef;
 }
-/* Editable input (inline GIF render) */
-.message-editable {
-    min-height: 60px;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 12px 16px;
+
+/* Quick Emoji Bar - BEAUTIFUL PLACEMENT */
+.quick-emoji-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    justify-content: center;
+}
+
+.emoji-btn {
+    background: white;
+    border: none;
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.emoji-btn:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Message Textarea - MODERN */
+.message-textarea {
+    width: 100%;
     border: 2px solid #e9ecef;
     border-radius: 12px;
-    background: white;
+    padding: 12px 16px;
+    font-size: 15px;
+    resize: none;
+    transition: border-color 0.3s;
 }
-.message-editable:focus {
+
+.message-textarea:focus {
     outline: none;
-    border-color: #20c997;
-    box-shadow: 0 0 0 3px rgba(32,201,151,0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-.message-editable img {
-    max-width: 250px;
-    border-radius: 8px;
-    margin: 4px 0;
-    display: block;
-}
+
+/* Send Button - MODERN */
 .send-btn {
-    background: linear-gradient(135deg, #20c997 0%, #11998e 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
+
+.send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Media Picker - CLEAN DESIGN */
+.media-picker-section {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.media-toggle-btn {
+    padding: 8px 16px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
 .media-toggle-btn.active {
-    background: linear-gradient(135deg, #20c997 0%, #11998e 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border-color: #20c997;
+    border-color: #667eea;
 }
+
+.media-search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px;
+    transition: border-color 0.3s;
+}
+
+.media-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Attach Button */
+.attach-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.attach-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Delete Button in Messages */
+.delete-message {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.user-message-bubble .delete-message:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+    color: white;
+}
+
+.other-message-bubble .delete-message {
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.other-message-bubble .delete-message:hover {
+    background: #f8f9fa;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-    .chat-box { height: 400px; }
-    .user-message-bubble, .other-message-bubble { max-width: 80%; }
+    .chat-box {
+        height: 400px;
+    }
+    
+    .user-message-bubble,
+    .other-message-bubble {
+        max-width: 80%;
+    }
+    
+    .quick-emoji-bar {
+        gap: 4px;
+    }
+    
+    .emoji-btn {
+        font-size: 18px;
+        padding: 6px 10px;
+    }
+    
+    .media-gif {
+        max-width: 250px !important;
+    }
+    
+    .media-sticker {
+        max-width: 120px !important;
+    }
 }
 </style>
 
 <div class="chat-container">
+    <!-- Chat Header -->
     <div class="chat-header">
         <div class="d-flex align-items-center">
             {% if other_user.profile_picture %}
@@ -125,30 +324,40 @@
         </div>
     </div>
 
+    <!-- Chat Messages -->
     <div class="chat-box">
         {% for msg in messages reversed %}
             <div class="message-item {% if msg.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
                 <div class="{% if msg.sender == user %}user-message-bubble{% else %}other-message-bubble{% endif %}">
+                    <!-- Message Content with GIF/Sticker Parsing - FIXED SECTION -->
                     <div class="message-content">
+                        <!-- SINGLE LINE FIX: Use the custom filter -->
                         {{ msg.content|parse_media|safe }}
                     </div>
+                    
+                    <!-- Original Media Display (for uploaded files) -->
                     {% if msg.media %}
                         <div class="mt-2">
                             {% if msg.media_type == 'image' or msg.media_type == 'gif' %}
-                                <img src="{{ msg.media.url }}" class="img-fluid rounded" style="max-width: 100%; max-height: 200px;">
+                                <img src="{{ msg.media.url }}" class="img-fluid rounded" style="max-width: 100%; max-height: 200px;" alt="Uploaded media">
                             {% elif msg.media_type == 'video' %}
                                 <video controls class="w-100 rounded" style="max-height: 200px;">
                                     <source src="{{ msg.media.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             {% endif %}
                         </div>
                     {% endif %}
+                    
+                    <!-- Timestamp & Status -->
                     <div class="message-timestamp text-end">
                         {{ msg.timestamp|date:"g:i A" }}
                         {% if msg.sender == user and msg.is_read %}
                             <span class="seen-indicator">✓ Seen</span>
                         {% endif %}
                     </div>
+                    
+                    <!-- Delete Button -->
                     {% if msg.sender == user %}
                         <div class="text-end mt-2">
                             <button class="btn btn-sm delete-message" data-message-id="{{ msg.id }}">Delete</button>
@@ -159,11 +368,12 @@
         {% endfor %}
     </div>
 
+    <!-- Chat Input Area -->
     <div class="chat-input-area">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="hidden" name="content" id="chat-hidden-content">
             
+            <!-- Quick Emoji Bar - BEAUTIFUL -->
             <div class="quick-emoji-bar">
                 <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
                 <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
@@ -174,6 +384,7 @@
                 <button type="button" class="emoji-btn" onclick="addEmoji('✨')">✨</button>
             </div>
             
+            <!-- Media Picker -->
             <div class="media-picker-section">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <small class="text-muted fw-bold">🎨 Add Media</small>
@@ -192,11 +403,11 @@
                 
                 <div id="media-results" class="mt-2" style="display: none;"></div>
             </div>
-            
+
+            <!-- Message Input -->
             <div class="d-flex gap-2 align-items-end">
                 <div style="flex: 1;">
-                    <!-- Contenteditable for inline GIF render -->
-                    <div id="message-editable" class="message-editable" contenteditable="true" placeholder="Type your message..."></div>
+                    <textarea name="content" class="message-textarea" rows="2" placeholder="Type your message..." id="message-content" required></textarea>
                 </div>
                 
                 <label class="attach-btn mb-0" for="message-media-input">
@@ -213,82 +424,106 @@
 </div>
 
 <script>
-// Add emoji
+// Add emoji to textarea
 function addEmoji(emoji) {
-    const editable = document.getElementById('message-editable');
-    const range = window.getSelection().getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(document.createTextNode(emoji));
-    range.collapse(false);
-    editable.focus();
+    const textarea = document.getElementById('message-content');
+    textarea.value += emoji;
+    textarea.focus();
 }
 
-// Insert image
-function insertChatMedia(tag, url) {
-    const editable = document.getElementById('message-editable');
-    const img = document.createElement('img');
-    img.src = url;
-    img.style.maxWidth = tag === 'GIF' ? '250px' : '150px';
-    img.style.display = 'block';
-    img.style.margin = '4px 0';
-    img.style.borderRadius = '8px';
-    img.dataset.tag = tag;
-    img.dataset.url = url;
-    
-    const range = window.getSelection().getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(img);
-    range.collapse(false);
-    const space = document.createTextNode(' ');
-    range.insertNode(space);
-    editable.focus();
+// Toggle media panel
+function toggleMediaPanel() {
+    const mediaResults = document.getElementById('media-results');
+    if (mediaResults.style.display === 'none' || mediaResults.style.display === '') {
+        document.getElementById('media-search').value = 'trending';
+        handleMediaSearch();
+    } else {
+        mediaResults.style.display = 'none';
+    }
 }
 
-// Get raw content
-function getChatRawContent() {
-    const editable = document.getElementById('message-editable');
-    let content = '';
-    editable.childNodes.forEach(node => {
-        if (node.nodeType === 3) {
-            content += node.textContent;
-        } else if (node.tagName === 'IMG' && node.dataset.tag && node.dataset.url) {
-            content += `[${node.dataset.tag}:${node.dataset.url}]`;
-        } else if (node.tagName === 'BR') {
-            content += '\n';
-        }
+// Media type toggle
+let currentMediaType = 'gifs';
+
+document.querySelectorAll('.media-type-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        currentMediaType = this.dataset.mediaType;
+        document.querySelectorAll('.media-type-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('media-search').placeholder = currentMediaType === 'gifs' ? 'Search GIFs...' : 'Search Stickers...';
     });
-    return content.trim();
+});
+
+// Media search
+document.getElementById('media-search-btn').addEventListener('click', handleMediaSearch);
+document.getElementById('media-search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        handleMediaSearch();
+    }
+});
+
+function handleMediaSearch() {
+    const query = document.getElementById('media-search').value.trim() || 'trending';
+    const results = document.getElementById('media-results');
+    const textarea = document.getElementById('message-content');
+    
+    results.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+    results.style.display = 'block';
+    
+    fetch(`/search-gifs/?q=${encodeURIComponent(query)}&type=${currentMediaType}`)
+        .then(r => r.json())
+        .then(data => {
+            results.innerHTML = '';
+            if (data.gifs && data.gifs.length > 0) {
+                const close = document.createElement('button');
+                close.className = 'btn btn-sm btn-outline-secondary mb-2';
+                close.textContent = '✕ Close';
+                close.onclick = () => results.style.display = 'none';
+                results.appendChild(close);
+                
+                const grid = document.createElement('div');
+                grid.className = 'd-flex flex-wrap gap-2';
+                grid.style.maxHeight = '200px';
+                grid.style.overflowY = 'auto';
+                
+                data.gifs.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.cursor = 'pointer';
+                    img.style.borderRadius = '8px';
+                    img.className = 'border';
+                    img.alt = 'Media result';
+                    img.onclick = () => {
+                        const tag = currentMediaType === 'gifs' ? 'GIF' : 'STICKER';
+                        // Clear textarea if it only contains placeholder text
+                        if (textarea.value === '' || textarea.value === 'Type your message...') {
+                            textarea.value = '';
+                        }
+                        textarea.value += `[${tag}:${url}]`;
+                        textarea.focus();
+                        results.style.display = 'none';
+                    };
+                    grid.appendChild(img);
+                });
+                results.appendChild(grid);
+            } else {
+                results.innerHTML = '<p class="text-muted text-center">No results found.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Media search error:', error);
+            results.innerHTML = '<p class="text-danger text-center">Failed to load media.</p>';
+        });
 }
 
-// Submit
-document.querySelector('form').addEventListener('submit', function(e) {
-    const hidden = document.getElementById('chat-hidden-content');
-    hidden.value = getChatRawContent();
-    if (!hidden.value) {
-        e.preventDefault();
-        alert('Message cannot be empty');
-    }
-});
-
-// Picker insert
-document.addEventListener('click', e => {
-    const img = e.target.closest('.media-item');
-    if (img) {
-        const type = currentMediaType === 'gifs' ? 'GIF' : 'STICKER';
-        insertChatMedia(type, img.src);
-        document.getElementById('media-results').style.display = 'none';
-    }
-});
-
-// Enter for send, Shift+Enter for line break
-document.getElementById('message-editable').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        document.querySelector('form').dispatchEvent(new Event('submit'));
-    }
-});
-
-// Rest of your original picker script (toggle, search, etc.) remains unchanged
-// ... (keep Claude's original picker JS here)
+// Auto-scroll to bottom
+setTimeout(() => {
+    const chatBox = document.querySelector('.chat-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+}, 100);
 </script>
 {% endblock %}
