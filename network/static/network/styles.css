@@ -365,4 +365,35 @@ textarea {
 
 /* Keep alert layout spacing intact */
 .alert .d-flex { align-items: center; gap: 0.75rem; }
-.alert .flex-grow-1 { margin: 0; }
+.alert .flex-grow-1 { margin: 0; }  
+
+/* Discover page styling */
+.hover-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Profile links */
+.profile-link {
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.profile-link:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+/* Stats icons */
+.bi-people, .bi-person-check {
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
