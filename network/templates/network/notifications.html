@@ -1,29 +1,49 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
     <div class="container mt-5">
-        <h2>Notifications</h2>
+        <h2 class="mb-4">Notifications</h2>
 
         {% if notifications %}
             <div class="list-group">
                 {% for notif in notifications %}
                     <div class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">
-                                <strong>{{ notif.actor.username }}</strong> {{ notif.verb }}
-                                {% if notif.post %}
-                                    <small>on post: "{{ notif.post.content|truncatewords:8 }}"</small>
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <!-- Clickable username -->
+                                    <a href="{% url 'profile' notif.actor.username %}"
+                                       class="text-primary fw-bold text-decoration-none">
+                                        {{ notif.actor.username }}
+                                    </a>
+                                    {{ notif.verb }}
+                                    {% if notif.post %}
+                                        <!-- Clickable post preview -->
+                                        on post: 
+                                        <a href="{% url 'post_detail' notif.post.id %}"
+                                           class="text-dark fw-medium">
+                                            "{{ notif.post.content|truncatewords:10 }}"
+                                        </a>
+                                    {% endif %}
+                                </h6>
+                                {% if notif.timestamp %}
+                                    <small class="text-muted">
+                                        {{ notif.timestamp|timesince }} ago
+                                    </small>
                                 {% endif %}
-                            </h6>
-                            <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="text-center py-5">
-                <h4 class="text-muted">No notifications yet.</h4>
-                <p>Follow users or get likes to see activity here.</p>
+            <div class="text-center py-5 bg-light rounded-3">
+                <h4 class="text-muted mb-3">No notifications yet</h4>
+                <p class="text-muted">
+                    When someone follows you, likes your post, or comments,<br>
+                    you'll see it here.
+                </p>
             </div>
         {% endif %}
     </div>
