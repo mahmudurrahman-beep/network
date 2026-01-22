@@ -1,0 +1,105 @@
+{% extends "network/layout.html" %}
+{% load static %}
+{% load parse_media %}
+
+{% block body %}
+    <div class="container mt-5">
+        <a href="{% url 'all_posts' %}" class="btn btn-outline-secondary mb-4">
+            ← Back to Posts
+        </a>
+
+        <div class="post-card p-4 mb-4 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
+            <!-- Post Header -->
+            <div class="d-flex align-items-center mb-3">
+                {% if post.user.profile_picture %}
+                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" style="object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'network/images/default-avatar.png' %}"
+                         class="rounded-circle me-2" width="48" height="48"
+                         style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                {% endif %}
+                <div>
+                    <strong>
+                        <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
+                            {{ post.user.username }}
+                        </a>
+                    </strong>
+                    <small class="text-muted ms-2">
+                        {% if post.user.gender == 'M' %}♂
+                        {% elif post.user.gender == 'F' %}♀
+                        {% elif post.user.gender == 'O' %}⚧
+                        {% else %}•
+                        {% endif %}
+                    </small>
+                    <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="post-content mb-3">
+                <div class="post-text mb-0">
+                    {{ post.content|parse_media|safe|linebreaksbr }}
+                </div>
+            </div>
+
+            <!-- Post Media -->
+            <div class="mb-3">
+                {% for media in post.media.all %}
+                    <div class="mb-2">
+                        {% if media.media_type == 'image' %}
+                            <img src="{{ media.file.url }}" class="img-fluid rounded"
+                                 style="max-height: 500px; object-fit: contain;"
+                                 alt="Post image" loading="lazy">
+                        {% else %}
+                            <video controls class="w-100 rounded" style="max-height: 500px;">
+                                <source src="{{ media.file.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Post Actions (same as post_list) -->
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+                        data-post="{{ post.id }}" data-value="1">
+                    👍 <span>{{ post.thumbs_up.count }}</span>
+                </button>
+                <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+                        data-post="{{ post.id }}" data-value="-1">
+                    👎 <span>{{ post.thumbs_down.count }}</span>
+                </button>
+                {% if request.user == post.user %}
+                    <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
+                {% endif %}
+            </div>
+
+            <!-- Comments Section (same style as post_list) -->
+            <div class="comments-section mt-4">
+                <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
+
+                <!-- Comment Form -->
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
+                        {% csrf_token %}
+                        <textarea name="content" class="form-control mb-2"
+                                  rows="2" placeholder="Write a comment..."
+                                  required></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                    </form>
+                {% endif %}
+
+                <!-- Comments -->
+                {% for comment in post.comments.all %}
+                    {% if not comment.parent %}
+                        {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
+                    {% endif %}
+                {% empty %}
+                    <p class="text-center text-muted py-3">No comments yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %} 
