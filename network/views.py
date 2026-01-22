@@ -303,26 +303,30 @@ unblock_usr = unblock_user
 
 @login_required
 def privacy_settings(request):
-    privacy_settings, _ = PrivacySettings.objects.get_or_create(
+    # Ensure privacy settings exist
+    privacy_settings_obj, _ = PrivacySettings.objects.get_or_create(
         user=request.user,
         defaults={'post_visibility': 'universal'}
     )
 
     if request.method == "POST":
-        visibility = request.POST.get('post_visibility', 'universal')
-        privacy_settings.post_visibility = visibility
-        privacy_settings.save()
+        privacy_settings_obj.post_visibility = request.POST.get('post_visibility', 'universal')
+        privacy_settings_obj.save()
         messages.success(request, "Privacy settings updated.")
         return redirect('privacy_settings')
 
+    # Prefer related_name if available, otherwise query Block directly
+    try:
+        # If your Block model defines related_name='blocks' on blocker FK:
+        blocked_qs = request.user.blocks.all().order_by('-timestamp')
+    except Exception:
+        # Fallback explicit query (adjust field names if different)
+        blocked_qs = Block.objects.filter(blocker=request.user).order_by('-timestamp')
+
     return render(request, "network/privacy_settings.html", {
-        'privacy_settings': privacy_settings,
-        'visibility_choices': [
-            ('universal', 'Everyone'),
-            ('followers', 'Followers only'),
-            ('following', 'People I follow'),
-            ('both', 'Followers and People I follow')
-        ]
+        'blocked_users': blocked_qs,
+        'privacy_settings': privacy_settings_obj,
+        'user': request.user,   # ensures template { user.username } works
     })
 
 
