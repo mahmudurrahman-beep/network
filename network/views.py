@@ -25,20 +25,21 @@ from django.template.loader import render_to_string
 
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment, Block, PrivacySettings
 
-
+# Logger
+logger = logging.getLogger(__name__)
 
 
 def index(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('all_posts'))
-    else:
-        return render(request, "network/landing.html")
+    return render(request, "network/landing.html")
+
 
 def login_view(request):
     if request.method == "POST":
         identifier = request.POST.get("identifier", "").strip()
         password = request.POST.get("password", "")
-        
+
         # Try to find user by username or email
         user = None
         try:
@@ -53,7 +54,7 @@ def login_view(request):
                     return render(request, "network/login.html")
             except User.DoesNotExist:
                 pass
-        
+
         if user:
             user = authenticate(request, username=user.username, password=password)
             if user is not None:
@@ -61,31 +62,27 @@ def login_view(request):
                     login(request, user)
                     messages.success(request, "Login successful! Welcome back.")
                     return redirect('all_posts')
-                else:
-                    messages.error(request, "Account is inactive. Please check your email to activate.")
+                messages.error(request, "Account is inactive. Please check your email to activate.")
             else:
                 messages.error(request, "Invalid password.")
         else:
             messages.error(request, "No account found with that username or email.")
-    
+
     return render(request, "network/login.html")
+
 
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-# Set up logger (logs to Koyeb console)
-logger = logging.getLogger(__name__)
 
 def register(request):
     if request.method == "POST":
-        # Safely get and clean form data
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
         confirmation = request.POST.get("confirmation", "")
 
-        # Validation
         errors = []
 
         if not username:
@@ -110,14 +107,12 @@ def register(request):
         if password != confirmation:
             errors.append("Passwords do not match.")
 
-        # Return early if validation errors
         if errors:
             for error in errors:
                 messages.error(request, error)
             return render(request, "network/register.html")
 
         try:
-            # Check duplicates before creation
             if User.objects.filter(username=username).exists():
                 messages.error(request, "Username already taken.")
                 return render(request, "network/register.html")
@@ -126,19 +121,15 @@ def register(request):
                 messages.error(request, "Email already registered.")
                 return render(request, "network/register.html")
 
-            # Create inactive user
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
             user.is_active = False
-
-            # Generate and save activation token (using your existing field)
             user.activation_token = get_random_string(32)
             user.save()
 
-            # Build activation link
             try:
                 activation_link = request.build_absolute_uri(
                     reverse('activate', kwargs={'token': user.activation_token})
@@ -146,7 +137,6 @@ def register(request):
             except Exception:
                 activation_link = f"{request.scheme}://{request.get_host()}/activate/{user.activation_token}/"
 
-            # Email context
             context = {
                 'username': username,
                 'activation_link': activation_link,
@@ -159,7 +149,6 @@ def register(request):
                 'site_name': 'Argon Network',
             }
 
-            # Render HTML email
             try:
                 html_message = render_to_string('network/emails/activation_email.html', context)
                 plain_message = strip_tags(html_message)
@@ -173,7 +162,6 @@ def register(request):
                 """
                 plain_message = f"Welcome! Activate: {activation_link}"
 
-            # Send email
             try:
                 email_msg = EmailMultiAlternatives(
                     subject=f'Activate Your Argon Network Account - {username}',
@@ -201,7 +189,6 @@ def register(request):
                 return render(request, "network/register.html")
 
             except Exception as email_error:
-                # Cleanup user if email fails
                 user.delete()
                 logger.error(f"Email send failed for {email}: {str(email_error)}")
                 messages.error(
@@ -223,21 +210,22 @@ def register(request):
             )
             return render(request, "network/register.html")
 
-    # GET request - empty form
     return render(request, "network/register.html")
+
 
 def activate(request, token):
     try:
         user = User.objects.get(activation_token=token, is_active=False)
         user.is_active = True
-        user.activation_token = '' # Clear token after use
+        user.activation_token = ''
         user.save()
         login(request, user)
         messages.success(request, "Account activated successfully! Welcome to Argon Network.")
-        return redirect('index') # or 'all_posts' or 'profile'
+        return redirect('index')
     except User.DoesNotExist:
         messages.error(request, "Invalid or expired activation link.")
         return render(request, "network/activation_error.html")
+
 
 @login_required
 def new_post(request):
@@ -248,25 +236,26 @@ def new_post(request):
         post = Post.objects.create(user=request.user, content=content)
         for f in request.FILES.getlist('media_files'):
             if f.content_type.startswith('audio/'):
-                return JsonResponse({"error": "Audio files not supported"}, status=400)  # Or add 'audio' type to PostMedia
+                return JsonResponse({"error": "Audio files not supported"}, status=400)
             media_type = 'video' if f.content_type.startswith('video') else 'image'
             PostMedia.objects.create(post=post, file=f, media_type=media_type)
         return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
-    return render(request, "network/new_post.html") 
+    return render(request, "network/new_post.html")
+
 
 @csrf_exempt
 @login_required
 def toggle_follow(request, username):
     target_user = get_object_or_404(User, username=username)
-   
+
     if request.user == target_user:
         return JsonResponse({"error": "Cannot follow yourself"}, status=400)
-   
+
     follow, created = Follow.objects.get_or_create(
         follower=request.user,
         followed=target_user
     )
-   
+
     if not created:
         follow.delete()
         action = "unfollowed"
@@ -277,46 +266,145 @@ def toggle_follow(request, username):
             actor=request.user,
             verb="followed you"
         )
-   
-    # Return both counts
+
     return JsonResponse({
         "action": action,
         "followers": target_user.followers.count(),
         "following": target_user.following.count()
     })
 
+
+@csrf_exempt
+@login_required
+def toggle_block(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if request.user == target_user:
+        return JsonResponse({"error": "Cannot block yourself"}, status=400)
+    block, created = Block.objects.get_or_create(blocker=request.user, blocked=target_user)
+    if not created:
+        block.delete()
+        action = "unblocked"
+    else:
+        action = "blocked"
+    return JsonResponse({"action": action})
+
+
+@login_required
+def unblock_user(request, username):
+    target_user = get_object_or_404(User, username=username)
+    Block.objects.filter(blocker=request.user, blocked=target_user).delete()
+    messages.success(request, f"You have unblocked {username}.")
+    return redirect('privacy_settings')
+
+
+# Backwards-compatible alias
+unblock_usr = unblock_user
+
+
+@login_required
+def privacy_settings_view(request):
+    privacy_settings, _ = PrivacySettings.objects.get_or_create(
+        user=request.user,
+        defaults={'post_visibility': 'universal'}
+    )
+
+    if request.method == "POST":
+        visibility = request.POST.get('post_visibility', 'universal')
+        privacy_settings.post_visibility = visibility
+        privacy_settings.save()
+        messages.success(request, "Privacy settings updated.")
+        return redirect('privacy_settings')
+
+    return render(request, "network/privacy_settings.html", {
+        'privacy_settings': privacy_settings,
+        'visibility_choices': [
+            ('universal', 'Everyone'),
+            ('followers', 'Followers only'),
+            ('following', 'People I follow'),
+            ('both', 'Followers and People I follow')
+        ]
+    })
+
+
+@csrf_exempt
+@login_required
+def submit_report(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    data = request.POST
+    target_type = data.get('target_type')
+    target_id = data.get('target_id')
+    reason = data.get('reason', '').strip()
+
+    if not target_type or not target_id or not reason:
+        return JsonResponse({"error": "Missing required fields"}, status=400)
+
+    try:
+        if target_type == 'post':
+            target = Post.objects.get(id=target_id)
+        elif target_type == 'comment':
+            target = Comment.objects.get(id=target_id)
+        elif target_type == 'user':
+            target = User.objects.get(id=target_id)
+        elif target_type == 'message':
+            target = Message.objects.get(id=target_id)
+        else:
+            return JsonResponse({"error": "Invalid target_type"}, status=400)
+    except (Post.DoesNotExist, Comment.DoesNotExist, User.DoesNotExist, Message.DoesNotExist):
+        return JsonResponse({"error": "Target not found"}, status=404)
+
+    try:
+        subject = f"User report: {target_type} #{target_id}"
+        html_content = render_to_string("network/emails/report_notification.html", {
+            'reporter': request.user,
+            'target_type': target_type,
+            'target_id': target_id,
+            'reason': reason,
+            'target': target
+        })
+        text_content = strip_tags(html_content)
+        admin_emails = [a[1] for a in settings.ADMINS] if hasattr(settings, 'ADMINS') and settings.ADMINS else [settings.DEFAULT_FROM_EMAIL]
+        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=True)
+    except Exception:
+        return JsonResponse({"error": "Could not submit report at this time"}, status=500)
+
+    return JsonResponse({"status": "success", "message": "Report submitted"})
+
+
 @csrf_exempt
 @login_required
 def edit_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id, user=request.user) # only own posts
+    post = get_object_or_404(Post, id=post_id, user=request.user)
     if request.method == "PUT":
         data = json.loads(request.body)
         post.content = data.get('content', post.content)
         post.save()
         return JsonResponse({"message": "Post updated"})
-   
     return JsonResponse({"error": "PUT request required"}, status=400)
+
 
 @csrf_exempt
 @login_required
 def toggle_vote(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     data = json.loads(request.body)
-    value = data['value'] # 1 for up, -1 for down
-   
+    value = data.get('value')  # 1 for up, -1 for down
+
     if value == 1:
         field = post.thumbs_up
         opposite = post.thumbs_down
     else:
         field = post.thumbs_down
         opposite = post.thumbs_up
-   
+
     if request.user in field.all():
-        field.remove(request.user) # Undo vote
+        field.remove(request.user)
     else:
-        opposite.remove(request.user) # Remove opposite vote if present
+        opposite.remove(request.user)
         field.add(request.user)
-        # Notification
         if request.user != post.user:
             Notification.objects.create(
                 user=post.user,
@@ -324,17 +412,19 @@ def toggle_vote(request, post_id):
                 verb="voted on your post",
                 post=post
             )
-   
+
     return JsonResponse({
         "up": post.thumbs_up.count(),
         "down": post.thumbs_down.count()
     })
+
 
 @login_required
 def notifications_view(request):
     notifs = request.user.notifications.all()[:30]
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return render(request, "network/notifications.html", {'notifications': notifs})
+
 
 @csrf_exempt
 @login_required
@@ -343,6 +433,7 @@ def mark_notifications_read(request):
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return JsonResponse({"status": "success"})
     return JsonResponse({"error": "POST required"}, status=400)
+
 
 @login_required
 def edit_profile(request):
@@ -367,9 +458,9 @@ def edit_profile(request):
         'timezone_choices': timezone_choices
     })
 
+
 @login_required
 def messages_inbox(request):
-    # Get unique conversations (latest message per recipient/sender)
     conversations = []
     sent = request.user.sent_messages.values('recipient').distinct()
     received = request.user.received_messages.values('sender').distinct()
@@ -378,55 +469,51 @@ def messages_inbox(request):
         users.add(s['recipient'])
     for r in received:
         users.add(r['sender'])
-   
+
     for u in users:
         other_user = User.objects.get(id=u)
-        # Skip if hidden
         if request.user.hidden_conversations.filter(id=other_user.id).exists():
             continue
-       
+
         latest = Message.objects.filter(
             (Q(sender=request.user) & Q(recipient=other_user)) |
             (Q(sender=other_user) & Q(recipient=request.user))
-        ).first()
+        ).order_by('-timestamp').first()
         unread = Message.objects.filter(sender=other_user, recipient=request.user, is_read=False).count()
         conversations.append({
             'user': other_user,
             'latest_message': latest,
             'unread_count': unread
         })
-   
+
     return render(request, "network/messages/messages_inbox.html", {'conversations': conversations})
+
 
 @login_required
 def conversation(request, username):
     other_user = get_object_or_404(User, username=username)
     if request.user == other_user:
         return HttpResponseRedirect(reverse('messages_inbox'))
-   
-    messages = Message.objects.filter(
+
+    msgs = Message.objects.filter(
         Q(sender=request.user, recipient=other_user) |
         Q(sender=other_user, recipient=request.user)
     ).order_by('timestamp')
-   
-    # Mark messages as read
+
     Message.objects.filter(sender=other_user, recipient=request.user, is_read=False).update(is_read=True)
-   
+
     if request.method == "POST":
         content = request.POST.get('content', '').strip()
         media_file = request.FILES.get('media')
-       
+
         if content or media_file:
-            # Create message
             msg = Message.objects.create(
                 sender=request.user,
                 recipient=other_user,
                 content=content or ''
             )
-           
-            # Handle media upload
+
             if media_file:
-                # Determine media type
                 content_type = media_file.content_type
                 if content_type == 'image/gif':
                     media_type = 'gif'
@@ -435,7 +522,6 @@ def conversation(request, username):
                 elif content_type.startswith('video/'):
                     media_type = 'video'
                 else:
-                    # Check extension as fallback
                     ext = os.path.splitext(media_file.name)[1].lower()
                     if ext == '.gif':
                         media_type = 'gif'
@@ -444,25 +530,21 @@ def conversation(request, username):
                     elif ext in ['.mp4', '.mov', '.avi', '.mkv', '.webm']:
                         media_type = 'video'
                     else:
-                        media_type = 'image' # default
-               
-                # Save media to message
+                        media_type = 'image'
                 msg.media = media_file
                 msg.media_type = media_type
                 msg.save()
-           
-            # Unhide for YOU (sender) so you see your own message
+
             request.user.hidden_conversations.remove(other_user)
-           
-            # Unhide for recipient (so conversation reappears)
             other_user.hidden_conversations.remove(request.user)
-       
+
         return HttpResponseRedirect(reverse('conversation', args=[username]))
-   
+
     return render(request, "network/messages/conversation.html", {
         'other_user': other_user,
-        'messages': messages
+        'messages': msgs
     })
+
 
 @csrf_exempt
 @login_required
@@ -471,6 +553,7 @@ def quick_upload_picture(request):
         request.user.profile_picture = request.FILES['profile_picture']
         request.user.save()
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+
 
 @csrf_exempt
 @login_required
@@ -481,17 +564,50 @@ def delete_post(request, post_id):
         return JsonResponse({"message": "Post deleted"})
     return JsonResponse({"error": "POST required"}, status=400)
 
+
 @csrf_exempt
 @login_required
 def delete_comment(request, comment_id):
     if request.method == "POST":
         try:
-            comment = Comment.objects.get(id=comment_id, user=request.user)  # No 404 – handle manually
+            comment = Comment.objects.get(id=comment_id, user=request.user)
             comment.delete()
-            return JsonResponse({"message": "Comment deleted"})
+            return JsonResponse({"status": "success", "message": "Comment deleted"})
+        except Comment.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Not found or not yours"}, status=403)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+
+
+@csrf_exempt
+@login_required
+def delete_message(request, message_id):
+    if request.method == "POST":
+        try:
+            message = Message.objects.get(id=message_id, sender=request.user)
+            message.delete()
+            return JsonResponse({"message": "Message deleted"})
+        except Message.DoesNotExist:
+            return JsonResponse({"error": "Message not found or not yours"}, status=404)
+    return JsonResponse({"error": "POST required"}, status=400)
+
+
+@csrf_exempt
+@login_required
+def edit_comment(request, comment_id):
+    if request.method == "PUT":
+        try:
+            comment = Comment.objects.get(id=comment_id, user=request.user)
+            data = json.loads(request.body)
+            new_content = data.get('content', '').strip()
+            if not new_content:
+                return JsonResponse({"error": "Content cannot be empty"}, status=400)
+            comment.content = new_content
+            comment.save()
+            return JsonResponse({"message": "Comment updated", "content": new_content})
         except Comment.DoesNotExist:
             return JsonResponse({"error": "Comment not found or not yours"}, status=404)
-    return JsonResponse({"error": "POST required"}, status=400)
+    return JsonResponse({"error": "PUT required"}, status=400)
+
 
 @login_required
 def add_comment(request, post_id):
@@ -510,7 +626,6 @@ def add_comment(request, post_id):
         if parent_id:
             try:
                 parent = Comment.objects.get(id=parent_id, post=post)
-                # Depth limit (max 4 levels)
                 depth = 0
                 current = parent
                 while current.parent:
@@ -557,82 +672,266 @@ def add_comment(request, post_id):
         return redirect('all_posts')
     return redirect('all_posts')
 
+
 @csrf_exempt
 @login_required
 def delete_conversation(request, username):
     other_user = get_object_or_404(User, username=username)
     if request.method == "POST":
-        # Hide the conversation for you (add to hidden_conversations)
         request.user.hidden_conversations.add(other_user)
         return JsonResponse({"message": "Conversation hidden"})
     return JsonResponse({"error": "POST required"}, status=400)
 
 
-@csrf_exempt
 @login_required
-def delete_comment(request, comment_id):
-    if request.method == "POST":
-        try:
-            comment = Comment.objects.get(id=comment_id, user=request.user)
-            comment.delete()
-            return JsonResponse({"status": "success", "message": "Comment deleted"})
-        except Comment.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Not found or not yours"}, status=403)
-    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+def all_posts(request):
+    base_qs = Post.objects.select_related('user').prefetch_related(
+        'media', 'thumbs_up', 'thumbs_down', 'comments__user'
+    ).order_by('-timestamp')
 
-@csrf_exempt
+    visible_posts = []
+    for post in base_qs:
+        try:
+            if Block.objects.filter(blocker=request.user, blocked=post.user).exists():
+                continue
+        except (Block.DoesNotExist, AttributeError):
+            pass
+
+        privacy_settings, _ = PrivacySettings.objects.get_or_create(user=post.user, defaults={'post_visibility': 'universal'})
+        visibility = privacy_settings.post_visibility
+
+        if visibility == 'universal':
+            visible_posts.append(post)
+        elif visibility == 'followers' and post.user.followers.filter(follower=request.user).exists():
+            visible_posts.append(post)
+        elif visibility == 'following' and post.user.following.filter(followed=request.user).exists():
+            visible_posts.append(post)
+        elif visibility == 'both' and (
+            post.user.followers.filter(follower=request.user).exists() or
+            post.user.following.filter(followed=request.user).exists()
+        ):
+            visible_posts.append(post)
+
+    post_ids = [p.id for p in visible_posts]
+    posts = Post.objects.filter(id__in=post_ids).order_by('-timestamp').prefetch_related(
+        'media', 'thumbs_up', 'thumbs_down', 'comments__user'
+    )
+
+    for post in posts:
+        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "network/all_posts.html", {'page_obj': page_obj})
+
+
 @login_required
-def delete_message(request, message_id):
-    if request.method == "POST":
-        try:
-            message = Message.objects.get(id=message_id, sender=request.user)  # Only own messages
-            message.delete()
-            return JsonResponse({"message": "Message deleted"})
-        except Message.DoesNotExist:
-            return JsonResponse({"error": "Message not found or not yours"}, status=404)
-    return JsonResponse({"error": "POST required"}, status=400)
+def post_detail(request, post_id):
+    post = get_object_or_404(Post.objects.select_related('user').prefetch_related(
+        'media', 'thumbs_up', 'thumbs_down', 'comments__user', 'comments__parent'
+    ), id=post_id)
+
+    try:
+        if Block.objects.filter(blocker=request.user, blocked=post.user).exists():
+            messages.error(request, "You cannot view this post.")
+            return redirect('all_posts')
+    except (Block.DoesNotExist, AttributeError):
+        pass
+
+    privacy_settings, _ = PrivacySettings.objects.get_or_create(user=post.user, defaults={'post_visibility': 'universal'})
+    visibility = privacy_settings.post_visibility
+    allowed = False
+    if visibility == 'universal':
+        allowed = True
+    elif visibility == 'followers' and post.user.followers.filter(follower=request.user).exists():
+        allowed = True
+    elif visibility == 'following' and post.user.following.filter(followed=request.user).exists():
+        allowed = True
+    elif visibility == 'both' and (
+        post.user.followers.filter(follower=request.user).exists() or
+        post.user.following.filter(followed=request.user).exists()
+    ):
+        allowed = True
+
+    if not allowed and request.user != post.user:
+        messages.error(request, "This post is not visible to you.")
+        return redirect('all_posts')
+
+    root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
+
+    context = {
+        'post': post,
+        'root_comments': root_comments,
+        'up_count': post.thumbs_up.count(),
+        'down_count': post.thumbs_down.count(),
+        'is_upvoted': request.user in post.thumbs_up.all(),
+        'is_downvoted': request.user in post.thumbs_down.all(),
+    }
+    return render(request, "network/post_detail.html", context)
 
 
-@csrf_exempt
 @login_required
-def edit_comment(request, comment_id):
-    if request.method == "PUT":
+def profile(request, username):
+    profile_user = get_object_or_404(User, username=username)
+
+    is_blocked = False
+    try:
+        is_blocked = Block.objects.filter(blocker=request.user, blocked=profile_user).exists()
+    except (Block.DoesNotExist, AttributeError):
+        is_blocked = False
+
+    posts_qs = profile_user.posts.select_related('user').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user').order_by('-timestamp')
+
+    for post in posts_qs:
+        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
+
+    paginator = Paginator(posts_qs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    is_following = False
+    if request.user != profile_user:
+        is_following = Follow.objects.filter(follower=request.user, followed=profile_user).exists()
+
+    privacy_settings, _ = PrivacySettings.objects.get_or_create(user=profile_user, defaults={'post_visibility': 'universal'})
+
+    return render(request, "network/profile.html", {
+        'profile_user': profile_user,
+        'page_obj': page_obj,
+        'is_following': is_following,
+        'is_blocked': is_blocked,
+        'privacy_settings': privacy_settings,
+        'followers_count': profile_user.followers.count(),
+        'following_count': profile_user.following.count(),
+    })
+
+
+@login_required
+def discover_users(request):
+    query = request.GET.get('q', '').strip()
+    users = User.objects.exclude(id=request.user.id)
+
+    try:
+        blocked_user_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
+        users = users.exclude(id__in=blocked_user_ids)
+    except (Block.DoesNotExist, AttributeError):
+        pass
+
+    if query:
+        users = users.filter(username__icontains=query)
+
+    return render(request, "network/discover_users.html", {
+        'users': users,
+        'query': query
+    })
+
+
+@login_required
+def followers_list(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    followers = User.objects.filter(following__followed=profile_user)
+
+    try:
+        blocked_user_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
+        followers = followers.exclude(id__in=blocked_user_ids)
+    except (Block.DoesNotExist, AttributeError):
+        pass
+
+    is_following_dict = {str(f.id): request.user.following.filter(followed=f).exists() for f in followers}
+
+    return render(request, "network/followers_list.html", {
+        'profile_user': profile_user,
+        'users': followers,
+        'list_type': 'Followers',
+        'is_following_dict': is_following_dict
+    })
+
+
+@login_required
+def following_list(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    following = User.objects.filter(followers__follower=profile_user)
+
+    try:
+        blocked_user_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
+        following = following.exclude(id__in=blocked_user_ids)
+    except (Block.DoesNotExist, AttributeError):
+        pass
+
+    is_following_dict = {str(u.id): request.user.following.filter(followed=u).exists() for u in following}
+
+    return render(request, "network/followers_list.html", {
+        'profile_user': profile_user,
+        'users': following,
+        'list_type': 'Following',
+        'is_following_dict': is_following_dict
+    })
+
+
+@login_required
+def following(request):
+    followed_user_ids = request.user.following.values_list('followed_id', flat=True)
+    filtered_posts = []
+
+    for post in Post.objects.filter(user__id__in=followed_user_ids).select_related('user').prefetch_related('media', 'comments__user'):
         try:
-            comment = Comment.objects.get(id=comment_id, user=request.user)
-            data = json.loads(request.body)
-            new_content = data.get('content', '').strip()
-            if not new_content:
-                return JsonResponse({"error": "Content cannot be empty"}, status=400)
-            comment.content = new_content
-            comment.save()
-            return JsonResponse({"message": "Comment updated", "content": new_content})
-        except Comment.DoesNotExist:
-            return JsonResponse({"error": "Comment not found or not yours"}, status=404)
-    return JsonResponse({"error": "PUT required"}, status=400)
+            if Block.objects.filter(blocker=request.user, blocked=post.user).exists():
+                continue
+        except (Block.DoesNotExist, AttributeError):
+            pass
+
+        privacy_settings, _ = PrivacySettings.objects.get_or_create(user=post.user, defaults={'post_visibility': 'universal'})
+        visibility = privacy_settings.post_visibility
+
+        if visibility == 'universal':
+            filtered_posts.append(post)
+        elif visibility == 'followers' and post.user.followers.filter(follower=request.user).exists():
+            filtered_posts.append(post)
+        elif visibility == 'following' and post.user.following.filter(followed=request.user).exists():
+            filtered_posts.append(post)
+        elif visibility == 'both' and (
+            post.user.followers.filter(follower=request.user).exists() and
+            post.user.following.filter(followed=request.user).exists()
+        ):
+            filtered_posts.append(post)
+
+    post_ids = [p.id for p in filtered_posts]
+    posts = Post.objects.filter(id__in=post_ids).order_by('-timestamp').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user')
+
+    for post in posts:
+        post.root_comments = post.comments.filter(parent__isnull=True).order_by('timestamp')
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "network/following.html", {'page_obj': page_obj})
+
 
 @csrf_exempt
 def search_gifs(request):
     query = request.GET.get('q', 'trending').strip().lower()
-    media_type = request.GET.get('type', 'gifs').lower()  # 'gifs' or 'stickers'
-    
+    media_type = request.GET.get('type', 'gifs').lower()
+
     api_key = os.getenv('GIPHY_API_KEY')
-    
+
     if api_key:
-        # Production: Real Giphy API
         if media_type == 'stickers':
             endpoint = 'https://api.giphy.com/v1/stickers/search'
         else:
             endpoint = 'https://api.giphy.com/v1/gifs/search'
-            
+
         params = {
             'api_key': api_key,
             'q': query or 'trending',
-            'limit': 12,           # Good balance: enough for grid, not too many
-            'rating': 'g',         # Family-friendly
+            'limit': 12,
+            'rating': 'g',
             'lang': 'en',
             'bundle': 'messaging_non_clips'
         }
-        
+
         try:
             response = requests.get(endpoint, params=params, timeout=8)
             response.raise_for_status()
@@ -640,11 +939,10 @@ def search_gifs(request):
             gifs = [item['images']['fixed_height']['url'] for item in data.get('data', [])]
             source = 'giphy'
         except Exception as e:
-            print(f"Giphy API error: {e}")
-            gifs = []  # Fallback empty on error
+            logger.warning(f"Giphy API error: {e}")
+            gifs = []
             source = 'giphy_error'
     else:
-        # Local dev fallback (your placeholders)
         placeholder_gifs = {
             'hello': ["https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif"],
             'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
@@ -663,7 +961,7 @@ def search_gifs(request):
         data_source = placeholder_stickers if media_type == 'stickers' else placeholder_gifs
         gifs = data_source.get(query, data_source.get('hello', []))
         source = 'local_placeholder'
-    
+
     return JsonResponse({
         "gifs": gifs,
         "type": media_type,
