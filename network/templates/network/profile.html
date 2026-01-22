@@ -2,83 +2,205 @@
 {% load static %}
 
 {% block body %}
-    <div class="text-center mb-5">
-        <!-- Avatar with Floating + Button (perfect bottom-right, no username hide) -->
-        <div class="position-relative d-inline-block mb-5">
-            {% if profile_user.profile_picture %}
-                <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle shadow-lg" width="140" height="140" alt="{{ profile_user.username }}" style="object-fit: cover; border: 5px solid #fff;">
-            {% else %}
-                <!-- Default Argon Avatar -->
-                <img src="{% static 'network/images/default-avatar.png' %}" 
-                     class="rounded-circle shadow-lg" 
-                     width="140" 
-                     height="140" 
-                     alt="{{ profile_user.username }}"
-                     style="object-fit: cover; border: 5px solid #fff; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            {% endif %}
+<div class="text-center mb-5">
 
-            {% if user == profile_user %}
-                <!-- + Button – exact bottom-right corner -->
-                <label for="id_profile_picture_quick" class="position-absolute" style="bottom: -10px; right: -10px; width:50px; height:50px; cursor:pointer; z-index: 10;">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width:100%; height:100%; border: 4px solid white;">
-                        <i class="fas fa-plus fa-xl"></i>
-                    </div>
-                </label>
-
-                <!-- Hidden Quick Upload Form -->
-                <form method="post" enctype="multipart/form-data" id="quick-upload-form" action="{% url 'quick_upload_picture' %}" style="display:none;">
-                    {% csrf_token %}
-                    <input type="file" name="profile_picture" id="id_profile_picture_quick" accept="image/*" class="d-none" onchange="this.form.submit();">
-                </form>
-            {% endif %}
-        </div>
-
-        <h3 class="mb-2">{{ profile_user.username }}</h3>
-        {% if profile_user.bio %}
-            <p class="text-muted mb-3">{{ profile_user.bio }}</p>
+    <!-- Avatar -->
+    <div class="position-relative d-inline-block mb-5">
+        {% if profile_user.profile_picture %}
+            <img src="{{ profile_user.profile_picture.url }}"
+                 class="rounded-circle shadow-lg"
+                 width="140" height="140"
+                 style="object-fit:cover;border:5px solid #fff;">
+        {% else %}
+            <img src="{% static 'network/images/default-avatar.png' %}"
+                 class="rounded-circle shadow-lg"
+                 width="140" height="140"
+                 style="object-fit:cover;border:5px solid #fff;">
         {% endif %}
-        
-        <!-- Gender Display -->
-        <p class="text-muted mb-3">
-            {% if profile_user.gender == 'M' %}♂ Male
-            {% elif profile_user.gender == 'F' %}♀ Female
-            {% elif profile_user.gender == 'O' %}⚧ Other
-            {% else %}• Prefer not to say
-            {% endif %}
-        </p>
-        
-        <!-- Updated: Clickable followers/following counts with text included -->
-        <p class="text-center">
-            <strong id="followers-count" data-followers-count>
-                <a href="{% url 'followers_list' profile_user.username %}" class="text-dark text-decoration-none">
-                    {{ profile_user.followers.count }} followers
-                </a>
-            </strong> • 
-            <strong id="following-count">
-                <a href="{% url 'following_list' profile_user.username %}" class="text-dark text-decoration-none">
-                    {{ profile_user.following.count }} following
-                </a>
-            </strong>
-        </p>
 
-        <!-- Buttons Row -->
-        <div class="d-flex justify-content-center gap-3 mt-3">
-            {% if user.is_authenticated and user != profile_user %}
-                <button class="btn {% if is_following %}btn-outline-primary{% else %}btn-primary{% endif %} px-4" id="follow-btn" data-username="{{ profile_user.username }}">
-                    {% if is_following %}Unfollow{% else %}Follow{% endif %}
-                </button>
-                <a href="{% url 'conversation' profile_user.username %}" class="btn btn-outline-primary px-4">
-                    Message
-                </a>
-            {% endif %}
-            {% if user == profile_user %}
-                <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary px-4">
-                    Edit Bio
-                </a>
-            {% endif %}
-        </div>
+        {% if user == profile_user %}
+            <label for="id_profile_picture_quick"
+                   class="position-absolute"
+                   style="bottom:-10px;right:-10px;width:50px;height:50px;cursor:pointer;">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                     style="width:100%;height:100%;border:4px solid white;font-size:24px;">
+                    +
+                </div>
+            </label>
+
+            <form method="post" enctype="multipart/form-data"
+                  action="{% url 'quick_upload_picture' %}"
+                  style="display:none;">
+                {% csrf_token %}
+                <input type="file" name="profile_picture"
+                       id="id_profile_picture_quick"
+                       accept="image/*"
+                       onchange="this.form.submit();">
+            </form>
+        {% endif %}
     </div>
 
-    <h4 class="mb-4">Posts</h4>
-    {% include "network/partials/post_list.html" %}
+    <h3>{{ profile_user.username }}</h3>
+
+    {% if profile_user.bio %}
+        <p class="text-muted">{{ profile_user.bio }}</p>
+    {% endif %}
+
+    <p class="text-muted">
+        {% if profile_user.gender == 'M' %}♂ Male
+        {% elif profile_user.gender == 'F' %}♀ Female
+        {% elif profile_user.gender == 'O' %}⚧ Other
+        {% else %}• Prefer not to say
+        {% endif %}
+    </p>
+
+    <p>
+        <strong data-followers-count>
+            <a href="{% url 'followers_list' profile_user.username %}" class="text-dark text-decoration-none">
+                {{ profile_user.followers.count }} followers
+            </a>
+        </strong> •
+        <strong>
+            <a href="{% url 'following_list' profile_user.username %}" class="text-dark text-decoration-none">
+                {{ profile_user.following.count }} following
+            </a>
+        </strong>
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 mt-3">
+
+        {% if user.is_authenticated and user != profile_user %}
+            <button class="btn {% if is_following %}btn-outline-primary{% else %}btn-primary{% endif %}"
+                    id="follow-btn"
+                    data-username="{{ profile_user.username }}">
+                {% if is_following %}Unfollow{% else %}Follow{% endif %}
+            </button>
+
+            <a href="{% url 'conversation' profile_user.username %}"
+               class="btn btn-outline-primary">Message</a>
+
+            <button class="btn {% if is_blocked %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                    onclick="handleBlock('{{ profile_user.username }}', this)">
+                {% if is_blocked %}Unblock{% else %}Block{% endif %}
+            </button>
+
+            <!-- FIXED REPORT BUTTON - Bootstrap 4 + INLINE onclick -->
+            <button class="btn btn-outline-warning" onclick="openReportModal('{{ profile_user.username }}', {{ profile_user.id }})">
+                Report
+            </button>
+        {% endif %}
+
+        {% if user == profile_user %}
+            <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary">Edit Bio</a>
+            <a href="{% url 'privacy_settings' %}" class="btn btn-outline-info">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<h4 class="mb-4">Posts</h4>
+{% include "network/partials/post_list.html" %}
+
+<!-- FIXED REPORT MODAL - Pure Bootstrap 4 -->
+<div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Report User</h5>
+                <button type="button" class="close" onclick="closeReportModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea id="reportReason" class="form-control" rows="4" placeholder="Describe the issue (minimum 10 characters)..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="handleReport()">Submit Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* BLOCK USER - WORKING */
+function handleBlock(username, button) {
+    const csrf = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+    if (!confirm(button.textContent.trim() === 'Block' ? 'Block this user?' : 'Unblock this user?')) return;
+
+    fetch(`/toggle-block/${username}/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrf}
+    })
+    .then(r => r.json())
+    .then(() => location.reload());
+}
+
+/* REPORT USER FUNCTIONS - FIXED WITH INLINE ONCLICK */
+let reportUsername = '';
+let reportUserId = 0;
+
+function openReportModal(username, userId) {
+    reportUsername = username;
+    reportUserId = userId;
+    document.getElementById('reportReason').value = '';
+    
+    // Bootstrap 4 manual modal show
+    const modal = document.getElementById('reportModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    document.body.style.paddingRight = '17px'; // Account for scrollbar
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    document.body.style.paddingRight = '';
+    
+    // Remove backdrop
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
+    
+    document.getElementById('reportReason').value = '';
+}
+
+function handleReport() {
+    const reason = document.getElementById('reportReason').value.trim();
+    if (reason.length < 10) {
+        alert('Please provide a detailed reason (minimum 10 characters).');
+        return false;
+    }
+    
+    const email = 'mahmudurrahman23@yahoo.com';
+    const subject = `Report User: ${reportUsername}`;
+    const body = `User: ${reportUsername} (ID: ${reportUserId})\n\nReason:\n${reason}\n\nReported by: {{ user.username }}\nReported at: ${new Date().toLocaleString('en-US', {timeZone: 'Asia/Dhaka'})}`;
+    
+    // Close modal first
+    closeReportModal();
+    
+    // Open email client
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'reportModal') {
+        closeReportModal();
+    }
+});
+
+document.addEventListener('keyup', function(e) {
+    if (e.key === 'Escape' && document.getElementById('reportModal').style.display === 'block') {
+        closeReportModal();
+    }
+});
+</script>
+
 {% endblock %}
+
+{% block script %}{% endblock %}
