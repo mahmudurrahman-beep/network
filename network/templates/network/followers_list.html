@@ -57,40 +57,58 @@
     </div>
 
     <script>
-        // JavaScript for follow/unfollow functionality
+        // JavaScript for follow/unfollow functionality - FIXED URL
         document.addEventListener('DOMContentLoaded', function() {
             // Add event listeners to all follow buttons
             document.querySelectorAll('.follow-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const username = this.dataset.username;
-                    const isUnfollow = this.textContent.trim() === 'Unfollow';
-                    const url = isUnfollow 
-                        ? `/api/unfollow/${username}/`
-                        : `/api/follow/${username}/`;
+                    const csrfToken = getCookie('csrftoken');
                     
-                    fetch(url, {
+                    if (!csrfToken) {
+                        alert('Security error. Please refresh the page.');
+                        return;
+                    }
+                    
+                    console.log(`Toggling follow for ${username}`);
+                    
+                    // Use CORRECT URL - NOT /api/toggle-follow/
+                    fetch(`/toggle-follow/${username}/`, {
                         method: 'POST',
                         headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-CSRFToken': csrfToken,
                             'Content-Type': 'application/json'
-                        },
-                        credentials: 'same-origin'
+                        }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success) {
-                            // Toggle button text and style
-                            if (isUnfollow) {
-                                this.textContent = 'Follow';
-                                this.classList.remove('btn-outline-primary');
-                                this.classList.add('btn-primary');
-                            } else {
-                                this.textContent = 'Unfollow';
-                                this.classList.remove('btn-primary');
-                                this.classList.add('btn-outline-primary');
-                            }
-                        } else {
-                            alert('Error: ' + (data.error || 'Something went wrong'));
+                        console.log('Follow response:', data);
+                        
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        
+                        // Toggle button text and style
+                        if (data.action === 'followed') {
+                            this.textContent = 'Unfollow';
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-outline-primary');
+                        } else if (data.action === 'unfollowed') {
+                            this.textContent = 'Follow';
+                            this.classList.remove('btn-outline-primary');
+                            this.classList.add('btn-primary');
+                        }
+                        
+                        // Optional: Update follower count display if on page
+                        const followersCount = document.querySelector('[data-followers-count]');
+                        if (followersCount && data.followers !== undefined) {
+                            followersCount.textContent = data.followers + ' followers';
                         }
                     })
                     .catch(error => {
