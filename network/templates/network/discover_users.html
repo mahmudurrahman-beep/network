@@ -3,35 +3,126 @@
 
 {% block body %}
     <div class="container mt-5">
-        <h2>Discover Users</h2>
-
-        <form method="get" class="mb-4">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Search users..." value="{{ query }}">
-                <button type="submit" class="btn btn-primary">Search</button>
+        <h2 class="mb-4">Discover Users</h2>
+        
+        <!-- Search Form -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" class="mb-0">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Search by username..." 
+                               value="{{ query }}"
+                               aria-label="Search users">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
 
-        <div class="row">
-            {% for u in users %}
-                <div class="col-md-4 mb-3">
-                    <div class="card shadow-sm">
-                        <div class="card-body text-center">
-                            {% if u.profile_picture %}
-                                <img src="{{ u.profile_picture.url }}" class="rounded-circle mb-3" width="80" height="80" style="object-fit: cover;">
-                            {% else %}
-                                <img src="{% static 'network/images/default-avatar.png' %}" 
-                                     class="rounded-circle mb-3 mx-auto d-block" 
-                                     width="80" height="80" 
-                                     style="object-fit: cover;"
-                                     alt="Default avatar">
-                            {% endif %}
-                            <h5>{{ u.username }}</h5>
-                            <a href="{% url 'profile' u.username %}" class="btn btn-outline-primary btn-sm">View Profile</a>
+        <!-- Users Grid -->
+        {% if users %}
+            <div class="row">
+                {% for u in users %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100 hover-card" 
+                             style="transition: transform 0.2s; border-left: 4px solid #667eea;">
+                            <div class="card-body text-center">
+                                <!-- Avatar -->
+                                <div class="mb-3">
+                                    {% if u.profile_picture %}
+                                        <img src="{{ u.profile_picture.url }}" 
+                                             class="rounded-circle" 
+                                             width="90" height="90" 
+                                             style="object-fit: cover; border: 3px solid #f8f9fa; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                    {% else %}
+                                        <img src="{% static 'network/images/default-avatar.png' %}" 
+                                             class="rounded-circle" 
+                                             width="90" height="90" 
+                                             style="object-fit: cover; border: 3px solid #f8f9fa; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                                             alt="{{ u.username }}">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Username -->
+                                <h5 class="card-title mb-2">
+                                    <a href="{% url 'profile' u.username %}" 
+                                       class="text-dark text-decoration-none">
+                                        {{ u.username }}
+                                    </a>
+                                </h5>
+                                
+                                <!-- Bio Preview -->
+                                {% if u.bio %}
+                                    <p class="text-muted small mb-3" style="min-height: 40px;">
+                                        {{ u.bio|truncatechars:60 }}
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted small mb-3" style="min-height: 40px;">
+                                        <em>No bio yet</em>
+                                    </p>
+                                {% endif %}
+                                
+                                <!-- Stats -->
+                                <div class="text-muted small mb-3">
+                                    <i class="bi bi-people"></i> {{ u.followers.count }} followers • 
+                                    <i class="bi bi-person-check"></i> {{ u.following.count }} following
+                                </div>
+                                
+                                <!-- Action Button -->
+                                <a href="{% url 'profile' u.username %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-person-circle"></i> View Profile
+                                </a>
+                            </div>
                         </div>
                     </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-people display-1 text-muted"></i>
                 </div>
-            {% endfor %}
-        </div>
+                <h4 class="text-muted mb-3">
+                    {% if query %}
+                        No users found for "{{ query }}"
+                    {% else %}
+                        No users to discover
+                    {% endif %}
+                </h4>
+                <p class="text-muted">
+                    {% if query %}
+                        Try a different search term
+                    {% else %}
+                        All discoverable users are either blocked or you've blocked them
+                    {% endif %}
+                </p>
+                {% if query %}
+                    <a href="{% url 'discover_users' %}" class="btn btn-outline-secondary">
+                        Clear Search
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <!-- Info Note -->
+        {% if users %}
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Note:</strong> Blocked users and users who have blocked you are not shown here.
+                Manage your blocks in <a href="{% url 'privacy_settings' %}" class="alert-link">Privacy Settings</a>.
+            </div>
+        {% endif %}
     </div>
+    
+    <style>
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+    </style>
 {% endblock %}
