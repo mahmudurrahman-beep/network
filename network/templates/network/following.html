@@ -30,3 +30,58 @@
     <!-- Post List -->
     {% include "network/partials/post_list.html" %}
 {% endblock %}
+
+{% block script %}
+    <script>
+        // New Post Form Submission (if you need it here)
+        const newPostForm = document.getElementById('new-post-form');
+        if (newPostForm) {
+            newPostForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const messageDiv = document.getElementById('post-message');
+                
+                if (messageDiv) {
+                    messageDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
+                    messageDiv.classList.add('alert-info');
+                    messageDiv.textContent = 'Posting...';
+                }
+                
+                fetch('/new-post/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        if (messageDiv) {
+                            messageDiv.classList.remove('alert-info');
+                            messageDiv.classList.add('alert-danger');
+                            messageDiv.textContent = data.error;
+                        }
+                    } else {
+                        if (messageDiv) {
+                            messageDiv.classList.remove('alert-info');
+                            messageDiv.classList.add('alert-success');
+                            messageDiv.textContent = 'Posted successfully!';
+                        }
+                        newPostForm.reset();
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Post error:', error);
+                    if (messageDiv) {
+                        messageDiv.classList.remove('alert-info');
+                        messageDiv.classList.add('alert-danger');
+                        messageDiv.textContent = 'Failed to post. Try again.';
+                    }
+                });
+            });
+        }
+    </script>
+{% endblock %}
