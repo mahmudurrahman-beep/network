@@ -32,6 +32,11 @@ urlpatterns = [
     path("delete-comment/<int:comment_id>/", views.delete_comment, name="delete_comment"),
     path("edit-comment/<int:comment_id>/", views.edit_comment, name="edit_comment"),
     path("search-gifs/", views.search_gifs, name="search_gifs"),
+    path('privacy-settings/', views.privacy_settings, name='privacy_settings'),
+    path('unblock/<str:username>/', views.unblock_user, name='unblock_user'),
+    path('toggle-block/<str:username>/', views.toggle_block, name='toggle_block'), 
+    path('submit-report/', views.submit_report, name='submit_report'), 
+    path('post/<int:post_id>/', views.post_detail, name='post_detail'), 
 ]
 
 # Password Reset URLs (from production)
