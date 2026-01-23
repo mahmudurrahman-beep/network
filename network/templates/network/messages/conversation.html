@@ -2,7 +2,7 @@
 {% load static %}
 {% load parse_media %}
 
-{% block body %}
+{% block body %} 
 <style>
 /* Modern Chat Container */
 .chat-container {
@@ -237,52 +237,57 @@
     z-index: 1;
 }
 
-/* FIXED RED CROSS REMOVE BUTTON */
+/* PERFECT CIRCLE RED CROSS - FIXED */
 .media-preview-item .remove-preview-item {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
-    background: #dc2626;
-    color: white;
-    border-radius: 50%;
-    border: 2px solid white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+    top: -8px;
+    right: -8px;
+    width: 24px !important;
+    height: 24px !important;
+    background: #dc2626 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    border: 3px solid white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
     transition: all 0.15s;
-    font-weight: bold;
     z-index: 2;
     line-height: 1;
+    padding: 0;
+    margin: 0;
 }
 
 .media-preview-item .remove-preview-item:hover {
-    background: #b91c1c;
-    transform: scale(1.2);
+    background: #b91c1c !important;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.5);
 }
 
 .media-preview-item .remove-preview-item::before {
     content: '×';
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
+    line-height: 1;
     margin-top: -1px;
 }
 
-/* CHAT INPUT CONTAINER */
+/* CHAT INPUT CONTAINER - IMPROVED DESIGN */
 .chat-input-container {
     display: flex;
     gap: 12px;
     align-items: flex-end;
     background: #f8fafc;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 16px;
+    border-radius: 16px;
     border: 1px solid #e5e7eb;
     width: 100%;
     box-sizing: border-box;
+    position: relative;
 }
 
 .message-input-wrapper {
@@ -295,44 +300,51 @@
 
 /* INPUT PREVIEW */
 .input-preview-container {
-    padding: 8px 12px;
+    padding: 10px 14px;
     background: white;
-    border-radius: 8px 8px 0 0;
+    border-radius: 12px 12px 0 0;
     border: 1px solid #e5e7eb;
     border-bottom: none;
-    min-height: 36px;
+    min-height: 40px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
     width: 100%;
+    transition: all 0.3s;
+}
+
+.input-preview-container.has-items {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .preview-item-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 500;
+    gap: 6px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
     transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .preview-item-indicator .emoji {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .preview-item-indicator .count {
-    background: #6b7280;
-    color: white;
-    border-radius: 8px;
-    padding: 0 4px;
-    font-size: 9px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1e40af;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
     font-weight: bold;
-    min-width: 14px;
+    min-width: 20px;
     text-align: center;
 }
 
@@ -340,8 +352,8 @@
 .message-textarea {
     width: 100%;
     border: 1px solid #e5e7eb;
-    border-radius: 0 0 8px 8px;
-    padding: 12px;
+    border-radius: 0 0 12px 12px;
+    padding: 14px;
     font-size: 15px;
     resize: none;
     background: white;
@@ -359,31 +371,134 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* ACTION BUTTONS CONTAINER */
-.action-buttons {
+/* EMOJI CONTAINER - INTEGRATED DESIGN */
+.emoji-container {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* EMOJI TOGGLE BUTTON - IMPROVED DESIGN */
+.emoji-toggle-btn {
+    background: white;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #3b82f6;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.emoji-toggle-btn:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.emoji-toggle-btn i {
+    font-size: 18px;
+}
+
+.emoji-toggle-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* QUICK EMOJI BAR - IMPROVED DESIGN */
+.quick-emoji-bar {
+    display: none;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.quick-emoji-bar.show {
+    display: flex;
+    animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.emoji-btn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    font-size: 22px;
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+}
+
+.emoji-btn:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+/* ACTION BUTTONS CONTAINER - IMPROVED */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+    min-width: 100px;
+    width: 100px;
 }
 
 /* Attach Button */
 .attach-btn {
     background: white;
-    border: 1px solid #e5e7eb;
-    padding: 10px 14px;
-    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 12px 16px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s;
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 13px;
-    height: 40px;
-    min-width: 80px;
+    gap: 8px;
+    font-size: 14px;
+    height: 46px;
+    width: 100%;
+    color: #6b7280;
 }
 
 .attach-btn:hover {
@@ -391,6 +506,7 @@
     color: #3b82f6;
     background: #eff6ff;
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.1);
 }
 
 /* Send Button */
@@ -398,25 +514,25 @@
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 13px;
-    height: 40px;
-    min-width: 80px;
+    gap: 8px;
+    font-size: 14px;
+    height: 46px;
+    width: 100%;
 }
 
 .send-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
@@ -428,38 +544,40 @@
 /* File preview indicator */
 .file-selected-indicator {
     display: none;
-    padding: 8px 12px;
+    padding: 12px 16px;
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border: 1px solid #86efac;
-    border-radius: 8px;
-    font-size: 12px;
+    border: 2px solid #86efac;
+    border-radius: 12px;
+    font-size: 14px;
     color: #15803d;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
     box-sizing: border-box;
+    font-weight: 500;
 }
 
 .file-selected-indicator.show {
     display: flex;
+    animation: fadeIn 0.3s ease;
 }
 
 .file-selected-indicator i {
     color: #22c55e;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .file-selected-indicator .remove-file {
     margin-left: auto;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #f87171;
+    background: white;
+    border: 2px solid #f87171;
     color: #dc2626;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
     transition: all 0.2s;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -468,113 +586,34 @@
     transform: translateY(-1px);
 }
 
-/* EMOJI TOGGLE BUTTON - MODERN DESIGN */
-.emoji-toggle-container {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.emoji-toggle-btn {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #6b7280;
-    font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.emoji-toggle-btn:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.emoji-toggle-btn i {
-    font-size: 16px;
-}
-
-/* QUICK EMOJI BAR - HIDDEN BY DEFAULT */
-.quick-emoji-bar {
-    display: none;
-    gap: 4px;
-    margin-bottom: 12px;
-    padding: 8px;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    flex-wrap: wrap;
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-.quick-emoji-bar.show {
-    display: flex;
-}
-
-.emoji-btn {
-    background: white;
-    border: 1px solid #e5e7eb;
-    font-size: 20px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.emoji-btn:hover {
-    transform: translateY(-2px) scale(1.1);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-color: #3b82f6;
-    background: #eff6ff;
-}
-
-/* INLINE MEDIA PICKER - WITH EMOJI TOGGLE */
+/* INLINE MEDIA PICKER - IMPROVED */
 .chat-media-inline {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 50px 10px 10px; /* Extra right padding for emoji toggle */
+    gap: 8px;
+    padding: 12px;
     background: #f8fafc;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 12px;
     flex-wrap: wrap;
     width: 100%;
     box-sizing: border-box;
-    position: relative;
 }
 
 .chat-media-btn {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     padding: 0;
-    border: 1px solid #e5e7eb;
+    border: 2px solid #e5e7eb;
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 18px;
+    font-size: 20px;
     flex-shrink: 0;
 }
 
@@ -588,16 +627,62 @@
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
     border-color: #3b82f6;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+.chat-preview-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 3px solid #3b82f6;
+    background: white;
+    display: none;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+
+.chat-preview-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat-preview-thumb .remove-thumb {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    border: 3px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: all 0.2s;
+    z-index: 10;
+    font-weight: bold;
+}
+
+.chat-preview-thumb .remove-thumb:hover {
+    background: #b91c1c;
+    transform: scale(1.1);
 }
 
 .chat-search-input {
     flex: 1;
-    min-width: 120px;
-    padding: 6px 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 13px;
+    min-width: 140px;
+    padding: 8px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
     display: none;
     transition: all 0.3s;
     box-sizing: border-box;
@@ -610,15 +695,15 @@
 .chat-search-input:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .chat-search-btn {
-    border-radius: 8px;
-    padding: 6px 12px;
+    border-radius: 10px;
+    padding: 8px 16px;
     font-weight: 600;
-    font-size: 13px;
-    border: 1px solid #3b82f6;
+    font-size: 14px;
+    border: 2px solid #3b82f6;
     background: white;
     color: #3b82f6;
     cursor: pointer;
@@ -628,55 +713,60 @@
 .chat-search-btn:hover {
     background: #3b82f6;
     color: white;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
 }
 
 .chat-results-popup {
     position: absolute;
     background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    padding: 8px;
-    max-width: 300px;
-    max-height: 250px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    padding: 12px;
+    max-width: 320px;
+    max-height: 280px;
     overflow-y: auto;
     z-index: 1050;
     display: none;
     bottom: 100%;
     left: 0;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .chat-results-popup.show {
     display: block;
+    animation: fadeInUp 0.3s ease;
 }
 
 /* MEDIA PREVIEW STATS */
 .media-stats {
-    font-size: 11px;
+    font-size: 12px;
     color: #6b7280;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
     flex-wrap: wrap;
     width: 100%;
+    font-weight: 500;
 }
 
 .clear-media-btn {
     background: #fee2e2;
-    border: 1px solid #f87171;
+    border: 2px solid #f87171;
     color: #dc2626;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    font-weight: 600;
 }
 
 .clear-media-btn:hover {
     background: #fecaca;
+    transform: translateY(-1px);
 }
 
 /* Responsive */
@@ -718,32 +808,40 @@
     .chat-input-container {
         flex-direction: column;
         gap: 8px;
-        padding: 10px;
+        padding: 12px;
     }
     
     .action-buttons {
         flex-direction: row;
         width: 100%;
         justify-content: space-between;
+        min-width: auto;
+        gap: 8px;
     }
     
     .attach-btn,
     .send-btn {
         flex: 1;
-        height: 38px;
-        min-width: 70px;
-        font-size: 12px;
+        height: 42px;
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+    
+    .emoji-toggle-btn {
+        width: 100%;
+        margin-bottom: 8px;
+        font-size: 13px;
         padding: 8px 12px;
     }
     
     .message-textarea {
         min-height: 70px;
         font-size: 14px;
-        padding: 10px;
+        padding: 12px;
     }
     
     .input-preview-container {
-        padding: 6px 10px;
+        padding: 8px 12px;
     }
     
     .media-preview-item {
@@ -751,30 +849,33 @@
         height: 56px;
     }
     
+    .media-preview-item .remove-preview-item {
+        width: 22px !important;
+        height: 22px !important;
+        top: -6px;
+        right: -6px;
+        border-width: 2px !important;
+        font-size: 12px !important;
+    }
+    
+    .media-preview-item .remove-preview-item::before {
+        font-size: 16px;
+    }
+    
     .chat-media-inline {
-        padding: 8px 40px 8px 8px;
-    }
-    
-    .emoji-toggle-container {
-        right: 6px;
-    }
-    
-    .emoji-toggle-btn {
-        padding: 5px 8px;
-        font-size: 12px;
-        gap: 4px;
+        padding: 10px;
     }
     
     .quick-emoji-bar.show {
-        padding: 6px;
-        gap: 3px;
+        padding: 10px;
+        gap: 4px;
     }
     
     .emoji-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-        padding: 3px 6px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        padding: 6px;
     }
 }
 
@@ -803,22 +904,26 @@
     }
     
     .chat-input-container {
-        padding: 8px;
+        padding: 10px;
         gap: 6px;
     }
     
     .message-textarea {
         min-height: 60px;
         font-size: 13px;
-        padding: 8px;
+        padding: 10px;
     }
     
     .attach-btn,
     .send-btn {
-        height: 36px;
-        min-width: 60px;
-        font-size: 11px;
+        height: 40px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    .emoji-toggle-btn {
         padding: 6px 10px;
+        font-size: 12px;
     }
     
     .media-preview-item {
@@ -826,40 +931,62 @@
         height: 50px;
     }
     
+    .media-preview-item .remove-preview-item {
+        width: 20px !important;
+        height: 20px !important;
+        top: -5px;
+        right: -5px;
+        border-width: 2px !important;
+    }
+    
+    .media-preview-item .remove-preview-item::before {
+        font-size: 14px;
+    }
+    
     .input-preview-container {
-        padding: 5px 8px;
-        min-height: 32px;
+        padding: 6px 10px;
+        min-height: 36px;
     }
     
     .preview-item-indicator {
-        font-size: 10px;
-        padding: 3px 6px;
+        font-size: 11px;
+        padding: 5px 10px;
     }
     
     .chat-media-inline {
-        padding: 6px 36px 6px 6px;
-    }
-    
-    .emoji-toggle-container {
-        right: 4px;
-    }
-    
-    .emoji-toggle-btn {
-        padding: 4px 6px;
-        font-size: 11px;
-        gap: 3px;
+        padding: 8px;
     }
     
     .quick-emoji-bar.show {
-        padding: 4px;
-        gap: 2px;
+        padding: 8px;
+        gap: 3px;
     }
     
     .emoji-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-        padding: 2px 4px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        padding: 5px;
+    }
+}
+
+/* Desktop layout */
+@media (min-width: 769px) {
+    .action-buttons {
+        width: 110px;
+    }
+    
+    .emoji-container {
+        position: relative;
+    }
+    
+    .quick-emoji-bar.show {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        width: 100%;
+        margin-bottom: 8px;
+        z-index: 10;
     }
 }
 
@@ -974,30 +1101,13 @@
         <form method="post" enctype="multipart/form-data" id="chat-form">
             {% csrf_token %}
             
-            <!-- EMOJI BAR - HIDDEN BY DEFAULT -->
-            <div class="quick-emoji-bar" id="quick-emoji-bar">
-                <!-- Most used emojis -->
-                <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('😍')">😍</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('❤️')">❤️</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('👍')">👍</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('🙏')">🙏</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('😡')">😡</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('😭')">😭</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('😎')">😎</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('✨')">✨</button>
-                <button type="button" class="emoji-btn" onclick="addEmoji('🎉')">🎉</button>
-            </div>
-            
             <!-- MEDIA PREVIEWS -->
             <div class="media-previews-container">
                 <div class="media-previews-list" id="media-previews-list"></div>
                 <div class="media-stats" id="media-preview-stats"></div>
             </div>
 
-            <!-- INLINE MEDIA PICKER WITH EMOJI TOGGLE -->
+            <!-- INLINE MEDIA PICKER -->
             <div class="chat-media-inline position-relative" data-picker="chat-main">
                 <button type="button" class="chat-media-btn active" data-type="gifs" title="GIFs">
                     🎞️
@@ -1006,26 +1116,19 @@
                     🏷️
                 </button>
                 <input type="text" class="chat-search-input form-control" placeholder="Search GIFs or Stickers..." />
-                <button type="button" class="chat-search-btn" style="border: none; background: none; padding: 0;">
-                    <!-- Search button removed from here - using the styled one below -->
-                </button>
-                
-                <!-- EMOJI TOGGLE BUTTON - POSITIONED TO THE RIGHT -->
-                <div class="emoji-toggle-container">
-                    <button type="button" class="emoji-toggle-btn" id="emoji-toggle-btn">
-                        <i class="bi bi-emoji-smile"></i>
-                        <span class="d-none d-sm-inline">Emojis</span>
-                    </button>
+                <div class="chat-preview-thumb">
+                    <img src="" alt="Preview" />
+                    <div class="remove-thumb" onclick="removeThumbPreview()">
+                        <i class="bi bi-x"></i>
+                    </div>
                 </div>
+                <button type="button" class="chat-search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
                 
                 <!-- Results popup -->
                 <div class="chat-results-popup" data-results="chat-main"></div>
             </div>
-            
-            <!-- Search Button (now separate for better UX) -->
-            <button type="button" class="chat-search-btn w-100 mb-3" id="media-search-btn">
-                <i class="bi bi-search me-2"></i> Search GIFs & Stickers
-            </button>
 
             <!-- File Selected Indicator -->
             <div class="file-selected-indicator" id="file-indicator">
@@ -1036,28 +1139,54 @@
                 </button>
             </div>
             
-            <!-- CHAT INPUT CONTAINER -->
-            <div class="chat-input-container">
-                <div class="message-input-wrapper">
-                    <div class="input-preview-container" id="input-preview">
-                        <!-- Emoji preview will appear here -->
-                    </div>
-                    <textarea name="content" class="message-textarea" rows="2" 
-                              placeholder="Type your message..." id="message-content" required></textarea>
+            <!-- EMOJI CONTAINER - PROPERLY INTEGRATED -->
+            <div class="emoji-container">
+                <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT -->
+                <div class="quick-emoji-bar" id="quick-emoji-bar">
+                    <!-- Most used emojis -->
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😍')">😍</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('❤️')">❤️</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('👍')">👍</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('🙏')">🙏</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😡')">😡</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😭')">😭</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😎')">😎</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('✨')">✨</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('🎉')">🎉</button>
                 </div>
                 
-                <div class="action-buttons">
-                    <label class="attach-btn" for="message-media-input" title="Attach file">
-                        <i class="bi bi-paperclip"></i>
-                        <span class="d-none d-sm-inline">Attach</span>
-                    </label>
-                    <input type="file" name="media" class="d-none" accept="image/*,video/*,.gif" 
-                           id="message-media-input" onchange="showFilePreview(this)">
+                <!-- CHAT INPUT CONTAINER -->
+                <div class="chat-input-container">
+                    <div class="message-input-wrapper">
+                        <div class="input-preview-container" id="input-preview">
+                            <!-- Emoji preview will appear here -->
+                        </div>
+                        <textarea name="content" class="message-textarea" rows="2" 
+                                  placeholder="Type your message..." id="message-content" required></textarea>
+                    </div>
                     
-                    <button type="submit" class="send-btn">
-                        <i class="bi bi-send-fill"></i>
-                        <span>Send</span>
-                    </button>
+                    <div class="action-buttons">
+                        <!-- EMOJI TOGGLE BUTTON -->
+                        <button type="button" class="emoji-toggle-btn" id="emoji-toggle-btn">
+                            <i class="bi bi-emoji-smile"></i>
+                            <span>Emojis</span>
+                        </button>
+                        
+                        <label class="attach-btn" for="message-media-input" title="Attach file">
+                            <i class="bi bi-paperclip"></i>
+                            <span class="d-none d-sm-inline">Attach</span>
+                        </label>
+                        <input type="file" name="media" class="d-none" accept="image/*,video/*,.gif" 
+                               id="message-media-input" onchange="showFilePreview(this)">
+                        
+                        <button type="submit" class="send-btn">
+                            <i class="bi bi-send-fill"></i>
+                            <span>Send</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -1080,18 +1209,23 @@ const quickEmojiBar = document.getElementById('quick-emoji-bar');
 emojiToggleBtn.addEventListener('click', function() {
     emojiBarVisible = !emojiBarVisible;
     quickEmojiBar.classList.toggle('show', emojiBarVisible);
+    emojiToggleBtn.classList.toggle('active', emojiBarVisible);
     
     // Update button text and icon
     if (emojiBarVisible) {
-        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile-fill"></i> <span class="d-none d-sm-inline">Hide</span>';
-        emojiToggleBtn.style.background = '#eff6ff';
-        emojiToggleBtn.style.borderColor = '#3b82f6';
-        emojiToggleBtn.style.color = '#3b82f6';
+        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile-fill"></i> <span>Hide</span>';
     } else {
-        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile"></i> <span class="d-none d-sm-inline">Emojis</span>';
-        emojiToggleBtn.style.background = 'white';
-        emojiToggleBtn.style.borderColor = '#e5e7eb';
-        emojiToggleBtn.style.color = '#6b7280';
+        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile"></i> <span>Emojis</span>';
+    }
+});
+
+// Close emoji bar when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.emoji-container') && emojiBarVisible) {
+        emojiBarVisible = false;
+        quickEmojiBar.classList.remove('show');
+        emojiToggleBtn.classList.remove('active');
+        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile"></i> <span>Emojis</span>';
     }
 });
 
@@ -1140,6 +1274,7 @@ function addMediaItem(url, type) {
     mediaItems.push(mediaItem);
     updateMediaPreviews();
     updateInputPreview();
+    updateThumbPreview();
 }
 
 function removeMediaItem(index) {
@@ -1147,6 +1282,7 @@ function removeMediaItem(index) {
         mediaItems.splice(index, 1);
         updateMediaPreviews();
         updateInputPreview();
+        updateThumbPreview();
     }
 }
 
@@ -1154,6 +1290,7 @@ function clearAllMedia() {
     mediaItems = [];
     updateMediaPreviews();
     updateInputPreview();
+    updateThumbPreview();
 }
 
 function updateMediaPreviews() {
@@ -1189,25 +1326,54 @@ function updateMediaPreviews() {
         let statsHTML = '<div class="media-stats">';
         
         if (gifCount > 0) {
-            statsHTML += `<span style="background: #fef3c7; padding: 2px 6px; border-radius: 4px; border: 1px solid #fbbf24;">
+            statsHTML += `<span style="background: #fef3c7; padding: 4px 8px; border-radius: 6px; border: 1px solid #fbbf24; font-weight: 600;">
                 🎞️ ${gifCount} GIF${gifCount > 1 ? 's' : ''}
             </span>`;
         }
         
         if (stickerCount > 0) {
-            statsHTML += `<span style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px; border: 1px solid #818cf8;">
+            statsHTML += `<span style="background: #e0e7ff; padding: 4px 8px; border-radius: 6px; border: 1px solid #818cf8; font-weight: 600;">
                 🏷️ ${stickerCount} Sticker${stickerCount > 1 ? 's' : ''}
             </span>`;
         }
         
         if (mediaItems.length > 0) {
             statsHTML += `<button class="clear-media-btn" onclick="clearAllMedia()">
-                <i class="bi bi-x me-1" style="font-size: 9px;"></i>Clear All
+                <i class="bi bi-x me-1" style="font-size: 10px;"></i>Clear All
             </button>`;
         }
         
         statsHTML += `</div>`;
         statsContainer.innerHTML = statsHTML;
+    }
+}
+
+function updateThumbPreview() {
+    const thumb = document.querySelector('.chat-preview-thumb');
+    const thumbImg = thumb.querySelector('img');
+    
+    if (mediaItems.length > 0) {
+        const latestItem = mediaItems[mediaItems.length - 1];
+        thumbImg.src = latestItem.url;
+        thumb.classList.add('show');
+    } else {
+        thumbImg.src = '';
+        thumb.classList.remove('show');
+    }
+}
+
+function removeThumbPreview() {
+    const thumb = document.querySelector('.chat-preview-thumb');
+    const thumbImg = thumb.querySelector('img');
+    
+    thumb.classList.remove('show');
+    thumbImg.src = '';
+    
+    // Also remove from media items
+    if (mediaItems.length > 0) {
+        mediaItems.pop();
+        updateMediaPreviews();
+        updateInputPreview();
     }
 }
 
@@ -1222,12 +1388,14 @@ function updateInputPreview() {
     
     if (mediaItems.length === 0) {
         textarea.placeholder = "Type your message...";
+        inputPreview.classList.remove('has-items');
         mediaDataInput.value = '';
         return;
     }
     
     // Update placeholder
     textarea.placeholder = "Add text (optional)...";
+    inputPreview.classList.add('has-items');
     
     // Create emoji indicators
     const gifs = mediaItems.filter(item => item.type === 'GIF');
@@ -1294,33 +1462,22 @@ document.addEventListener('click', function(e) {
         btn.classList.add('active');
         
         input.classList.add('show');
-        input.value = '';
-        input.placeholder = type === 'gifs' ? 'Search GIFs...' : 'Search Stickers...';
+        input.value = 'trending';
         input.focus();
         
         currentMediaType = type;
     }
-});
-
-// Search button handler
-document.getElementById('media-search-btn').addEventListener('click', function() {
-    const picker = document.querySelector('.chat-media-inline');
-    const input = picker.querySelector('.chat-search-input');
-    const resultsPopup = picker.querySelector('.chat-results-popup');
     
-    if (input.classList.contains('show')) {
+    // Search button
+    if (e.target.closest('.chat-search-btn')) {
+        const picker = e.target.closest('.chat-media-inline');
+        const input = picker.querySelector('.chat-search-input');
+        const resultsPopup = picker.querySelector('.chat-results-popup');
+        
         searchChatMedia(input, resultsPopup, currentMediaType, picker);
-    } else {
-        // Show the input first
-        const activeBtn = picker.querySelector('.chat-media-btn.active');
-        if (activeBtn) {
-            activeBtn.click();
-        }
     }
-});
-
-// Close results when clicking outside
-document.addEventListener('click', function(e) {
+    
+    // Close results when clicking outside
     if (!e.target.closest('.chat-media-inline') && !e.target.closest('.chat-results-popup')) {
         document.querySelectorAll('.chat-results-popup').forEach(popup => {
             popup.classList.remove('show');
@@ -1330,9 +1487,12 @@ document.addEventListener('click', function(e) {
 
 // Search chat media
 function searchChatMedia(input, resultsPopup, type, picker) {
-    const query = input.value.trim() || (type === 'gifs' ? 'trending' : 'cute');
+    const query = input.value.trim() || 'trending';
+    const textarea = document.getElementById('message-content');
+    const preview = picker.querySelector('.chat-preview-thumb');
+    const previewImg = preview.querySelector('img');
     
-    resultsPopup.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div><div class="mt-2">Searching...</div></div>';
+    resultsPopup.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div><p class="mt-2 text-muted">Searching...</p></div>';
     resultsPopup.classList.add('show');
     
     fetch(`/search-gifs/?q=${encodeURIComponent(query)}&type=${type}`)
@@ -1344,7 +1504,7 @@ function searchChatMedia(input, resultsPopup, type, picker) {
             if (items.length > 0) {
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
-                closeBtn.className = 'btn btn-sm btn-outline-secondary w-100 mb-2';
+                closeBtn.className = 'btn btn-sm btn-outline-primary w-100 mb-2';
                 closeBtn.innerHTML = '<i class="bi bi-x me-1"></i> Close';
                 closeBtn.onclick = () => {
                     resultsPopup.classList.remove('show');
@@ -1352,88 +1512,71 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                 };
                 resultsPopup.appendChild(closeBtn);
                 
-                // Add category title
-                const title = document.createElement('div');
-                title.className = 'text-muted mb-2 text-center';
-                title.innerHTML = `<small><strong>${type === 'gifs' ? '🎞️ GIFs' : '🏷️ Stickers'}</strong> • ${query}</small>`;
-                resultsPopup.appendChild(title);
-                
                 const grid = document.createElement('div');
+                grid.className = 'media-grid';
                 grid.style.display = 'grid';
                 grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
                 grid.style.gap = '8px';
-                grid.style.padding = '4px';
                 
-                items.slice(0, 15).forEach(url => {
-                    const container = document.createElement('div');
-                    container.style.position = 'relative';
-                    container.style.cursor = 'pointer';
-                    container.style.borderRadius = '8px';
-                    container.style.overflow = 'hidden';
-                    container.style.transition = 'all 0.3s';
-                    
+                items.slice(0, 12).forEach(url => {
                     const img = document.createElement('img');
                     img.src = url;
                     img.style.width = '100%';
                     img.style.height = '80px';
                     img.style.objectFit = 'cover';
-                    img.style.borderRadius = '6px';
+                    img.style.borderRadius = '8px';
+                    img.style.cursor = 'pointer';
                     img.style.border = '2px solid transparent';
+                    img.style.transition = 'all 0.2s';
                     
-                    // Add emoji overlay
-                    const emojiOverlay = document.createElement('div');
-                    emojiOverlay.style.position = 'absolute';
-                    emojiOverlay.style.top = '4px';
-                    emojiOverlay.style.left = '4px';
-                    emojiOverlay.style.background = 'rgba(255, 255, 255, 0.9)';
-                    emojiOverlay.style.borderRadius = '4px';
-                    emojiOverlay.style.padding = '2px 4px';
-                    emojiOverlay.style.fontSize = '10px';
-                    emojiOverlay.textContent = type === 'gifs' ? '🎞️' : '🏷️';
-                    
-                    container.appendChild(img);
-                    container.appendChild(emojiOverlay);
-                    
-                    container.onmouseover = function() {
-                        img.style.borderColor = type === 'gifs' ? '#f97316' : '#8b5cf6';
-                        container.style.transform = 'translateY(-2px)';
-                        container.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
+                    img.onmouseover = function() {
+                        this.style.borderColor = '#3b82f6';
+                        this.style.transform = 'scale(1.05)';
+                        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
                     };
-                    container.onmouseout = function() {
-                        img.style.borderColor = 'transparent';
-                        container.style.transform = 'translateY(0)';
-                        container.style.boxShadow = 'none';
+                    img.onmouseout = function() {
+                        this.style.borderColor = 'transparent';
+                        this.style.transform = 'scale(1)';
+                        this.style.boxShadow = 'none';
                     };
                     
                     img.onerror = function() {
                         this.style.opacity = '0.3';
-                        container.style.pointerEvents = 'none';
+                        this.style.pointerEvents = 'none';
+                        this.style.border = '2px dashed #e5e7eb';
                     };
                     
-                    container.onclick = () => {
+                    img.onclick = () => {
                         const tag = type === 'gifs' ? 'GIF' : 'STICKER';
                         addMediaItem(url, tag);
                         
                         resultsPopup.classList.remove('show');
                         input.value = '';
                         input.classList.remove('show');
-                        
-                        // Focus back to textarea
-                        document.getElementById('message-content').focus();
                     };
                     
-                    grid.appendChild(container);
+                    grid.appendChild(img);
                 });
                 resultsPopup.appendChild(grid);
             } else {
-                resultsPopup.innerHTML = '<p class="text-muted text-center py-4 mb-0">No results found for "' + query + '"</p>';
+                resultsPopup.innerHTML = '<p class="text-muted text-center py-3 mb-0"><i class="bi bi-emoji-frown me-1"></i>No results found</p>';
             }
         })
         .catch(error => {
             console.error('Media search error:', error);
-            resultsPopup.innerHTML = '<p class="text-danger text-center py-4 mb-0">Search failed. Please try again.</p>';
+            resultsPopup.innerHTML = '<p class="text-danger text-center py-3 mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Search failed</p>';
         });
 }
+
+// Enter key in chat search
+document.addEventListener('keypress', function(e) {
+    if (e.target.classList.contains('chat-search-input') && e.key === 'Enter') {
+        e.preventDefault();
+        const picker = e.target.closest('.chat-media-inline');
+        const resultsPopup = picker.querySelector('.chat-results-popup');
+        searchChatMedia(e.target, resultsPopup, currentMediaType, picker);
+    }
+});
 
 // Form submission handler
 document.getElementById('chat-form').addEventListener('submit', function(e) {
@@ -1464,8 +1607,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide emoji bar by default
     quickEmojiBar.classList.remove('show');
     emojiBarVisible = false;
+    emojiToggleBtn.classList.remove('active');
 });
 
 console.log('✅ Professional chat interface loaded successfully');
 </script>
-{% endblock %}
+{% endblock %}  
