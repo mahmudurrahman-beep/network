@@ -189,7 +189,7 @@
     border-top: 1px solid #e5e7eb;
 }
 
-/* MULTI-MEDIA PREVIEW */
+/* MULTI-MEDIA PREVIEW - FIXED FOR CROSS BUTTON */
 .media-previews-container {
     display: flex;
     flex-direction: column;
@@ -207,16 +207,16 @@
     position: relative;
     width: 66px;
     height: 66px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
+    border-radius: 10px;
+    overflow: visible;          /* ✅ lets the close button show fully */
+    flex-shrink: 0;
 }
 
-.media-preview-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.media-preview-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;           /* ✅ clips only the image */
 }
 
 .media-preview-item img {
@@ -240,40 +240,31 @@
 /* PERFECT CIRCLE RED CROSS - FIXED */
 .media-preview-item .remove-preview-item {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 24px !important;
-    height: 24px !important;
-    background: #dc2626 !important;
-    color: white !important;
-    border-radius: 50% !important;
-    border: 3px solid white !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 14px !important;
-    font-weight: bold !important;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
-    transition: all 0.15s;
-    z-index: 2;
+    top: -9px;                  /* ✅ outside corner */
+    right: -9px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;       /* ✅ perfect circle */
+    background: #dc2626;
+    border: 3px solid #ffffff;  /* ✅ clean ring so it pops */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.media-preview-item .remove-preview-item::before {
+    content: "×";
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
     line-height: 1;
-    padding: 0;
-    margin: 0;
 }
 
 .media-preview-item .remove-preview-item:hover {
     background: #b91c1c !important;
     transform: scale(1.1);
     box-shadow: 0 3px 8px rgba(220, 38, 38, 0.5);
-}
-
-.media-preview-item .remove-preview-item::before {
-    content: '×';
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1;
-    margin-top: -1px;
 }
 
 /* CHAT INPUT CONTAINER - IMPROVED DESIGN */
@@ -416,7 +407,7 @@
     border-color: #3b82f6;
 }
 
-/* QUICK EMOJI BAR - IMPROVED DESIGN */
+/* QUICK EMOJI BAR - IMPROVED DESIGN - FIXED FOR RIGHT-HANDED USERS */
 .quick-emoji-bar {
     display: none;
     gap: 6px;
@@ -429,6 +420,7 @@
     max-width: 100%;
     overflow-x: auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    justify-content: flex-end; /* ✅ Right-aligned for right-handed users */
 }
 
 .quick-emoji-bar.show {
@@ -970,7 +962,7 @@
     }
 }
 
-/* Desktop layout */
+/* Desktop layout - FIXED FOR RIGHT-HANDED EMOJI PANEL */
 @media (min-width: 769px) {
     .action-buttons {
         width: 110px;
@@ -983,10 +975,12 @@
     .quick-emoji-bar.show {
         position: absolute;
         bottom: 100%;
-        left: 0;
-        width: 100%;
+        right: 0; /* ✅ Changed from left: 0 to right: 0 for right-handed users */
+        width: auto;
+        min-width: 300px;
         margin-bottom: 8px;
         z-index: 10;
+        justify-content: flex-end; /* ✅ Ensure emojis are right-aligned */
     }
 }
 
@@ -1008,7 +1002,7 @@
 </style>
 
 <div class="chat-container">
-    <!-- Chat Header - FACEBOOK BLUE -->
+    <!-- Chat Header - Argon Custom -->
     <div class="chat-header">
         <div class="d-flex align-items-center">
             <!-- CLICKABLE AVATAR -->
@@ -1141,21 +1135,21 @@
             
             <!-- EMOJI CONTAINER - PROPERLY INTEGRATED -->
             <div class="emoji-container">
-                <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT -->
+                <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT - FIXED FOR RIGHT-HANDED USERS -->
                 <div class="quick-emoji-bar" id="quick-emoji-bar">
                     <!-- Most used emojis -->
-                    <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('😍')">😍</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😉')">😉</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😒')">😒</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😑')">😑</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('🥳')">🥳</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('❤️')">❤️</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('👍')">👍</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('🙏')">🙏</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('😡')">😡</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('😭')">😭</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('😎')">😎</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('🔥')">🔥</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('✨')">✨</button>
-                    <button type="button" class="emoji-btn" onclick="addEmoji('🎉')">🎉</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😔')">😔</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
+                    <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
                 </div>
                 
                 <!-- CHAT INPUT CONTAINER -->
@@ -1305,14 +1299,16 @@ function updateMediaPreviews() {
         return;
     }
     
-    // Create preview list for all items
+    // Create preview list for all items - WITH FIXED HTML STRUCTURE
     mediaItems.forEach((item, index) => {
         const previewItem = document.createElement('div');
         previewItem.className = 'media-preview-item';
         previewItem.innerHTML = `
-            <img src="${item.url}" alt="${item.type} Preview" 
-                 onclick="window.open('${item.url}', '_blank')">
-            <div class="media-item-emoji">${item.emoji}</div>
+            <div class="media-preview-inner">
+                <img src="${item.url}" alt="${item.type} Preview" 
+                     onclick="window.open('${item.url}', '_blank')">
+                <div class="media-item-emoji">${item.emoji}</div>
+            </div>
             <div class="remove-preview-item" onclick="removeMediaItem(${index}); event.stopPropagation();"></div>
         `;
         previewsList.appendChild(previewItem);
@@ -1377,7 +1373,7 @@ function removeThumbPreview() {
     }
 }
 
-// Update input preview with emoji placeholders
+// Update input preview with emoji placeholders (NO URLS IN TEXTAREA - GOOD UX)
 function updateInputPreview() {
     const inputPreview = document.getElementById('input-preview');
     const textarea = document.getElementById('message-content');
@@ -1397,7 +1393,7 @@ function updateInputPreview() {
     textarea.placeholder = "Add text (optional)...";
     inputPreview.classList.add('has-items');
     
-    // Create emoji indicators
+    // Create emoji indicators (NOT showing URLs in textarea)
     const gifs = mediaItems.filter(item => item.type === 'GIF');
     const stickers = mediaItems.filter(item => item.type === 'STICKER');
     
@@ -1427,8 +1423,15 @@ function updateInputPreview() {
         inputPreview.appendChild(badge);
     }
     
-    // Clear textarea (no URLs visible)
-    textarea.value = '';
+    // DO NOT show URLs in textarea - GOOD UX
+    // Keep user's typed text intact
+    const currentText = textarea.value;
+    const hasMediaTags = /\[(GIF|STICKER):[^\]]*\]/.test(currentText);
+    
+    if (!hasMediaTags) {
+        // User hasn't typed any media tags, keep their text as is
+        // Don't modify textarea - let user type normally
+    }
     
     // Update hidden input with clean JSON data
     mediaDataInput.value = JSON.stringify(mediaItems.map(item => ({
@@ -1488,9 +1491,6 @@ document.addEventListener('click', function(e) {
 // Search chat media
 function searchChatMedia(input, resultsPopup, type, picker) {
     const query = input.value.trim() || 'trending';
-    const textarea = document.getElementById('message-content');
-    const preview = picker.querySelector('.chat-preview-thumb');
-    const previewImg = preview.querySelector('img');
     
     resultsPopup.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div><p class="mt-2 text-muted">Searching...</p></div>';
     resultsPopup.classList.add('show');
@@ -1570,7 +1570,7 @@ function searchChatMedia(input, resultsPopup, type, picker) {
 
 // Enter key in chat search
 document.addEventListener('keypress', function(e) {
-    if (e.target.classList.contains('chat-search-input') && e.key === 'Enter') {
+    if (e.target.classList.contains('.chat-search-input') && e.key === 'Enter') {
         e.preventDefault();
         const picker = e.target.closest('.chat-media-inline');
         const resultsPopup = picker.querySelector('.chat-results-popup');
@@ -1578,19 +1578,29 @@ document.addEventListener('keypress', function(e) {
     }
 });
 
-// Form submission handler
+// ✅ CRITICAL FIX: Form submission - Convert media items to parseable tags WITHOUT showing URLs in textarea
 document.getElementById('chat-form').addEventListener('submit', function(e) {
-    // Ensure media items are properly added to hidden input before submission
     const mediaDataInput = document.getElementById('media-data-input');
     const textarea = document.getElementById('message-content');
     
-    // Clear any raw URLs from textarea
-    textarea.value = textarea.value.replace(/\[(GIF|STICKER):[^\]]*\]/g, '').trim();
+    // Get user's typed text
+    const userText = textarea.value.trim();
     
-    // Send JSON data in hidden field
+    // Build tags for parse_media
+    const tags = mediaItems.map(item => {
+        const t = item.type === 'GIF' ? 'GIF' : 'STICKER';
+        return `[${t}:${item.url}]`;
+    }).join(' ');
+    
+    // Append tags at the end (or use only tags if no text)
+    // This happens ONLY on submit, not while typing (GOOD UX)
+    textarea.value = tags ? (userText ? `${userText}\n${tags}` : tags) : userText;
+    
+    // Keep JSON updated (optional, for backward compatibility)
     mediaDataInput.value = JSON.stringify(mediaItems.map(item => ({
         type: item.type,
-        url: item.url
+        url: item.url,
+        emoji: item.emoji
     })));
 });
 
@@ -1612,4 +1622,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 console.log('✅ Professional chat interface loaded successfully');
 </script>
-{% endblock %}  
+{% endblock %}
