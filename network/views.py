@@ -21,7 +21,9 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string 
+from django.views.decorators.http import require_GET
+from django.core.cache import cache
 
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment, Block, PrivacySettings
 
