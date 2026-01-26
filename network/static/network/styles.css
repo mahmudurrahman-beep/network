@@ -303,3 +303,16 @@ textarea {
   .form-alert-wrapper { margin: 0 0 12px 0; }
   .alert { margin: 0 15px; }
 }
+
+/* In your main CSS file */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+#app-root {
+  min-height: 100vh;
+}
