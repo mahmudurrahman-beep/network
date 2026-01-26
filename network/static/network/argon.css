@@ -205,3 +205,38 @@ footer.site-footer {
   .earth-g { animation:none !important; transform:none !important; }
   .clock-r { transition:none !important; }
 }
+/* Fix accidental huge hero button height and restore intended spacing */
+.btn-hero {
+  min-height: 0 !important;        /* remove the 999px override */
+  padding: 10px 20px !important;   /* sensible padding */
+  height: auto !important;
+  line-height: 1.1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  border-radius: 999px !important;
+  z-index: 3 !important;
+}
+
+/* Ensure navbar links remain visible and not washed out */
+.navbar {
+  background: rgba(11,18,32,0.92) !important;
+  backdrop-filter: blur(6px);
+  z-index: 1100 !important;
+}
+.navbar .nav-link {
+  color: rgba(255,255,255,0.92) !important;
+  font-weight: 600 !important;
+}
+.navbar .nav-link.active {
+  color: var(--accent-boost, #38bdf8) !important;
+}
+
+/* Re-assert CTA look from Argon landing */
+.btn-primary, .btn-hero-primary {
+  background: linear-gradient(90deg,#ffffff,#f3f7ff) !important;
+  color: var(--accent-1, #2563eb) !important;
+  border: none !important;
+  box-shadow: 0 12px 36px rgba(56,189,248,0.12) !important;
+}
