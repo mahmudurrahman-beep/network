@@ -914,39 +914,105 @@ def following(request):
     return render(request, "network/following.html", {'page_obj': page_obj})
 
 
-@csrf_exempt
+@require_GET
 def search_gifs(request):
-    query = request.GET.get('q', 'trending').strip().lower()
-    media_type = request.GET.get('type', 'gifs').lower()
+    """
+    Returns GIF/STICKER results for the picker.
+
+    UX improvements:
+    - Uses /trending endpoints when query is empty or "trending" (true trending)
+    - Returns lightweight URLs for grid (fast on mobile)
+    - Also returns full/original URLs so frontend can store best quality on selection
+    - Adds short caching to feel instant and reduce API calls
+    - Keeps placeholder fallback consistent (always returns 12 items if possible)
+    """
+    query = (request.GET.get('q') or '').strip()
+    q_norm = query.lower()
+    media_type = (request.GET.get('type', 'gifs') or 'gifs').lower()
+    media_type = 'stickers' if media_type == 'stickers' else 'gifs'
 
     api_key = os.getenv('GIPHY_API_KEY')
 
+    # Cache for repeated searches (huge speedup)
+    cache_key = f"giphy:v2:{media_type}:{q_norm or 'trending'}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return JsonResponse(cached)
+
+    items = []
+    source = 'local_placeholder'
+
+    def pick_urls(images: dict):
+        """
+        Prefer small/fast for grid, but also return a good full URL for posting.
+        """
+        preview = (
+            images.get('fixed_width_small', {}).get('url') or
+            images.get('preview_gif', {}).get('url') or
+            images.get('fixed_height_small', {}).get('url') or
+            images.get('fixed_height', {}).get('url')
+        )
+        full = (
+            images.get('original', {}).get('url') or
+            images.get('downsized', {}).get('url') or
+            images.get('fixed_height', {}).get('url') or
+            preview
+        )
+        return preview, full
+
+    # ---- GIPHY API ----
     if api_key:
+        is_trending = (q_norm == '' or q_norm == 'trending')
+
         if media_type == 'stickers':
-            endpoint = 'https://api.giphy.com/v1/stickers/search'
+            endpoint = 'https://api.giphy.com/v1/stickers/trending' if is_trending else 'https://api.giphy.com/v1/stickers/search'
         else:
-            endpoint = 'https://api.giphy.com/v1/gifs/search'
+            endpoint = 'https://api.giphy.com/v1/gifs/trending' if is_trending else 'https://api.giphy.com/v1/gifs/search'
 
         params = {
             'api_key': api_key,
-            'q': query or 'trending',
             'limit': 12,
             'rating': 'g',
             'lang': 'en',
-            'bundle': 'messaging_non_clips'
+            'bundle': 'messaging_non_clips',
         }
+        if not is_trending:
+            params['q'] = query
 
         try:
-            response = requests.get(endpoint, params=params, timeout=8)
+            response = requests.get(
+                endpoint,
+                params=params,
+                timeout=8,
+                headers={"User-Agent": "Argon/1.0 (GIF Picker)"}
+            )
             response.raise_for_status()
             data = response.json()
-            gifs = [item['images']['fixed_height']['url'] for item in data.get('data', [])]
+
+            for it in data.get('data', []):
+                images = it.get('images') or {}
+                preview_url, full_url = pick_urls(images)
+                if not preview_url:
+                    continue
+
+                items.append({
+                    "id": it.get("id"),
+                    "title": it.get("title") or "",
+                    "preview_url": preview_url,   # use in picker grid (fast)
+                    "url": full_url,              # store/send this on selection (better quality)
+                    "width": (images.get('fixed_width_small', {}) or {}).get('width'),
+                    "height": (images.get('fixed_width_small', {}) or {}).get('height'),
+                })
+
             source = 'giphy'
         except Exception as e:
             logger.warning(f"Giphy API error: {e}")
-            gifs = []
+            items = []
             source = 'giphy_error'
-    else:
+
+    # ---- PLACEHOLDERS ----
+    if not items:
+        # Simple placeholders: (preview_url == url)
         placeholder_gifs = {
             'hello': ["https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif"],
             'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
@@ -954,7 +1020,7 @@ def search_gifs(request):
             'trending': [
                 "https://media.giphy.com/media/3o7aCTPPm4OHfRLSH6/giphy.gif",
                 "https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif",
-                "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"
+                "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
             ],
         }
         placeholder_stickers = {
@@ -962,13 +1028,33 @@ def search_gifs(request):
             'happy': ["https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"],
             'trending': ["https://media.giphy.com/media/3o7TKSha51ATTx9KzC/giphy.gif"],
         }
-        data_source = placeholder_stickers if media_type == 'stickers' else placeholder_gifs
-        gifs = data_source.get(query, data_source.get('hello', []))
-        source = 'local_placeholder'
 
-    return JsonResponse({
-        "gifs": gifs,
+        data_source = placeholder_stickers if media_type == 'stickers' else placeholder_gifs
+        base = data_source.get(q_norm) or data_source.get('trending') or data_source.get('hello') or []
+
+        # Fill to 12 so UI grid stays consistent
+        urls = []
+        if base:
+            while len(urls) < 12:
+                urls.extend(base)
+            urls = urls[:12]
+
+        items = [{
+            "id": None,
+            "title": "",
+            "preview_url": u,
+            "url": u
+        } for u in urls]
+
+        source = 'local_placeholder' if source != 'giphy_error' else 'giphy_error_fallback'
+
+    payload = {
+        "items": items,           # <-- NEW: richer objects
+        "gifs": [x["preview_url"] for x in items],  # <-- compatibility: your JS already expects "gifs"
         "type": media_type,
-        "count": len(gifs),
+        "count": len(items),
         "source": source
-    })
+    }
+
+    cache.set(cache_key, payload, 60)  # 60s cache
+    return JsonResponse(payload)
