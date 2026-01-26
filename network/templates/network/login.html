@@ -15,11 +15,14 @@
               {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                      role="alert" style="max-width:100%; border:none;">
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center w-100">
                     <div class="flex-grow-1 text-start">
                       {{ message }}
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <!-- Bootstrap 4 close button -->
+                    <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
                   </div>
                 </div>
               {% endfor %}
@@ -28,11 +31,13 @@
             {% if message %}
               <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                    role="alert" style="max-width:100%; border:none;">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center w-100">
                   <div class="flex-grow-1 text-start">
                     {{ message }}
                   </div>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
               </div>
             {% endif %}
@@ -81,24 +86,18 @@
   </div>
 </div>
 
-<!-- Page-scoped CSS (minimal, safe) -->
 <style>
   .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
-  .alert { position:relative; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; margin:0; max-width:100%; box-sizing:border-box; }
-  .alert::before { content:none !important; }
   .alert ul { margin:0; padding:0; list-style:none; }
-
   .card-body input[type="text"],
   .card-body input[type="password"],
   .card-body textarea {
     text-align: left !important;
     direction: ltr !important;
-    text-indent: 0 !important;
     padding-left: 14px !important;
     box-sizing: border-box;
     min-width: 0;
   }
-
   @media (max-width:576px) {
     .card-body { padding:2.5rem 1.5rem !important; }
     .form-alert-wrapper { margin:0 0 12px 0; }
