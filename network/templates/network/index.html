@@ -3,163 +3,23 @@
 
 {% block body %}
 <style>
-  :root{
-    --accent-1: #2563eb;
-    --accent-2: #06b6d4;
-    --muted-light: rgba(255,255,255,0.92);
-    --muted: rgba(255,255,255,0.78);
-    --card-radius: 18px;
-    --max-width: 980px;
-    --footer-bg: #0b1220;
-  }
-
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071428 0%, #081428 40%, #0b1220 100%);color:var(--muted-light);-webkit-font-smoothing:antialiased;}
-  a{color:inherit;text-decoration:none}
-  img{max-width:100%;height:auto;display:block}
-
-  /* Container */
-  .redirect-container{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-    padding:48px 20px;
-  }
-
-  /* subtle animated blobs */
-  .blob {
-    position:absolute;
-    filter: blur(72px) saturate(120%);
-    opacity:0.55;
-    mix-blend-mode: screen;
-    transform-origin:center;
-    animation: floaty 20s ease-in-out infinite;
-    pointer-events:none;
-  }
+  :root{ --accent-1:#0E6196; --muted-dark:#083047; --max-width:980px; }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#e6f8ff 0%, #cfeeff 60%, #f3fbff 100%);color:var(--muted-dark);-webkit-font-smoothing:antialiased;}
+  .redirect-container{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:48px 20px;}
+  .blob{position:absolute;filter:blur(72px) saturate(120%);opacity:0.55;mix-blend-mode:screen;pointer-events:none;}
   .blob.b1{width:700px;height:700px;background:linear-gradient(45deg,rgba(6,182,212,0.18),rgba(37,99,235,0.18));top:-240px;left:-220px;}
   .blob.b2{width:520px;height:520px;background:linear-gradient(45deg,rgba(37,99,235,0.16),rgba(6,182,212,0.14));bottom:-200px;right:-180px;animation-duration:26s;animation-direction:reverse;}
-
-  @keyframes floaty{
-    0%{transform:translate(0,0) scale(1)}
-    33%{transform:translate(36px,-28px) scale(1.03)}
-    66%{transform:translate(-28px,36px) scale(0.99)}
-    100%{transform:translate(0,0) scale(1)}
-  }
-
-  /* Card (dark glass) */
-  .redirect-content{
-    position:relative;
-    z-index:10;
-    width:min(var(--max-width),94%);
-    text-align:center;
-    color:var(--muted-light);
-    padding:40px 32px;
-    border-radius:20px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-    border:1px solid rgba(255,255,255,0.04);
-    box-shadow: 0 20px 60px rgba(2,6,23,0.6);
-    backdrop-filter: blur(8px) saturate(120%);
-    overflow:hidden;
-    animation: fadeInUp 700ms ease-out both;
-  }
-
-  .redirect-content::before{
-    content:'';
-    position:absolute;inset:0;border-radius:inherit;
-    background: linear-gradient(180deg, rgba(4,6,12,0.6), rgba(6,8,16,0.45));
-    z-index:0;
-    pointer-events:none;
-  }
-
-  @keyframes fadeInUp{
-    from{opacity:0; transform:translateY(18px)}
-    to{opacity:1; transform:translateY(0)}
-  }
-
-  /* Title animation (drop) */
-  .redirect-title{
-    position:relative;
-    z-index:2;
-    font-size: clamp(1.8rem, 4.2vw, 2.6rem);
-    font-weight:900;
-    margin:0 0 10px 0;
-    color:#fff;
-    animation: titleDrop 900ms cubic-bezier(.2,.9,.3,1) both;
-  }
-  @keyframes titleDrop{
-    0%{opacity:0; transform:translateY(-120px) scale(0.98)}
-    60%{opacity:1; transform:translateY(12px) scale(1.02)}
-    100%{opacity:1; transform:translateY(0) scale(1)}
-  }
-
-  .redirect-message{
-    position:relative;
-    z-index:2;
-    color:var(--muted);
-    font-size:1rem;
-    margin:10px 0 22px 0;
-    opacity:0;
-    transform:translateY(12px);
-    animation: subtitleUp 700ms ease-out 420ms both;
-  }
-  @keyframes subtitleUp{ to{opacity:1; transform:translateY(0)} }
-
-  /* Spinner (refined to match theme) */
-  .spinner{
-    width:64px;
-    height:64px;
-    border-radius:50%;
-    border:5px solid rgba(255,255,255,0.08);
-    border-top-color:var(--accent-2);
-    animation: spin 1s linear infinite;
-    margin:26px auto;
-    position:relative;
-    z-index:2;
-    box-shadow: 0 8px 30px rgba(6,182,212,0.06);
-  }
+  @keyframes floaty{0%{transform:translate(0,0) scale(1)}33%{transform:translate(36px,-28px) scale(1.03)}66%{transform:translate(-28px,36px) scale(0.99)}100%{transform:translate(0,0) scale(1)}}
+  .redirect-content{position:relative;z-index:10;width:min(var(--max-width),94%);text-align:center;color:var(--muted-dark);padding:40px 32px;border-radius:20px;background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));border:1px solid rgba(2,6,23,0.04);box-shadow: 0 20px 60px rgba(2,6,23,0.04);backdrop-filter: blur(8px) saturate(120%);overflow:hidden;animation: fadeInUp 700ms ease-out both;}
+  @keyframes fadeInUp{ from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:translateY(0)} }
+  .redirect-title{font-size: clamp(1.8rem, 4.2vw, 2.2rem); font-weight:900; margin:0 0 10px 0; color:var(--muted-dark); }
+  .redirect-message{ color:rgba(8,48,71,0.78); font-size:1rem; margin:10px 0 22px 0; opacity:1; }
+  .spinner{ width:64px; height:64px; border-radius:50%; border:5px solid rgba(8,48,71,0.06); border-top-color:var(--accent-1); animation: spin 1s linear infinite; margin:26px auto; position:relative; z-index:2; box-shadow: 0 8px 30px rgba(6,98,150,0.04); }
   @keyframes spin{ to{ transform: rotate(360deg) } }
-
-  /* Primary button (matches landing) */
-  .redirect-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    padding:12px 26px;
-    border-radius:999px;
-    background: linear-gradient(90deg,#ffffff,#f3f7ff);
-    color:var(--accent-1);
-    font-weight:800;
-    text-decoration:none;
-    box-shadow: 0 12px 36px rgba(56,189,248,0.10);
-    transition: transform .18s ease, box-shadow .18s ease;
-    z-index:2;
-  }
-  .redirect-btn:hover{ transform:translateY(-6px); box-shadow: 0 28px 80px rgba(56,189,248,0.14); }
-
-  /* small footer inside page (optional) */
-  .redirect-footer{
-    margin-top:18px;
-    color:rgba(255,255,255,0.7);
-    font-size:0.9rem;
-    z-index:2;
-  }
-
-  /* responsive */
-  @media (max-width:980px){
-    .redirect-content{padding:28px}
-    .redirect-title{font-size:1.6rem}
-  }
-  @media (max-width:520px){
-    .redirect-content{padding:20px}
-    .spinner{width:52px;height:52px;border-width:4px}
-    .redirect-btn{padding:10px 18px;font-size:0.95rem}
-  }
-
-  /* accessibility focus */
-  :focus{outline:3px solid rgba(56,189,248,0.12);outline-offset:3px}
+  .redirect-btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:12px 26px; border-radius:999px; background: linear-gradient(90deg,#ffffff,#f3f7ff); color:var(--accent-1); font-weight:800; text-decoration:none; box-shadow: 0 12px 36px rgba(6,98,150,0.08); transition: transform .18s ease, box-shadow .18s ease; z-index:2; }
+  .redirect-btn:hover{ transform:translateY(-6px); box-shadow: 0 28px 80px rgba(6,98,150,0.12); }
+  .redirect-footer{ margin-top:18px; color:rgba(8,48,71,0.7); font-size:0.9rem; z-index:2; }
+  @media (max-width:520px){ .redirect-content{padding:20px} .spinner{width:52px;height:52px;border-width:4px} .redirect-btn{padding:10px 18px;font-size:0.95rem} }
 </style>
 
 <div class="redirect-container" id="hero">
@@ -175,19 +35,17 @@
     <a href="{% url 'all_posts' %}" class="redirect-btn" role="button">Go to Feed</a>
 
     <div class="redirect-footer">
-      <a href="mailto:mahmudurrahman23yahoo@gmail.com" style="color:rgba(255,255,255,0.9);font-weight:600;">Contact</a>
-      <div style="margin-top:6px;font-size:0.85rem;color:rgba(255,255,255,0.6)">© {{ now.year }} Argon Network</div>
+      <a href="mailto:mahmudurrahman23yahoo@gmail.com" style="color:rgba(8,48,71,0.9);font-weight:600;">Contact</a>
+      <div style="margin-top:6px;font-size:0.85rem;color:rgba(8,48,71,0.6)">© {{ now.year }} Argon Network</div>
     </div>
   </div>
 </div>
 
 <script>
-  // subtle parallax for blobs to match landing behavior
   (function(){
     const hero = document.getElementById('hero');
     const blobs = hero ? hero.querySelectorAll('.blob') : [];
     if(!hero || blobs.length===0) return;
-
     hero.addEventListener('mousemove', e=>{
       const rect = hero.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -197,10 +55,7 @@
         b.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
       });
     });
-
-    hero.addEventListener('mouseleave', ()=>{
-      blobs.forEach(b=> b.style.transform = '');
-    });
+    hero.addEventListener('mouseleave', ()=> blobs.forEach(b=> b.style.transform = ''));
   })();
 
   // Auto-redirect after 2 seconds
