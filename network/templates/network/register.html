@@ -9,117 +9,66 @@
            style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
         <div class="card-body p-5 p-md-5 text-center">
 
-          <!-- Alerts placed inside the card so they appear above the form -->
           <div class="form-alert-wrapper mb-3">
             {% if messages %}
               {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                      role="alert" style="max-width:100%; border:none;">
-                  <div class="d-flex align-items-center">
-                    <div class="flex-grow-1 text-start">
-                      {{ message }}
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  <div class="d-flex align-items-center w-100">
+                    <div class="flex-grow-1 text-start">{{ message }}</div>
+                    <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
                   </div>
                 </div>
               {% endfor %}
             {% endif %}
-
             {% if message %}
               <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                    role="alert" style="max-width:100%; border:none;">
-                <div class="d-flex align-items-center">
-                  <div class="flex-grow-1 text-start">
-                    {{ message }}
-                  </div>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="d-flex align-items-center w-100">
+                  <div class="flex-grow-1 text-start">{{ message }}</div>
+                  <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
               </div>
             {% endif %}
           </div>
-          <!-- /Alerts -->
 
-          <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">
-            Join Argon Network
-          </h2>
-
-          <p class="text-muted mb-4 lead fs-6">
-            Create your account and start connecting today.
-          </p>
+          <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">Join Argon Network</h2>
+          <p class="text-muted mb-4 lead fs-6">Create your account and start connecting today.</p>
 
           <form action="{% url 'register' %}" method="post" novalidate>
             {% csrf_token %}
-
             <div class="mb-4">
-              <input type="text" name="username"
-                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
-                     id="username" placeholder="Username" required autofocus>
+              <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="username" placeholder="Username" required autofocus>
             </div>
-
             <div class="mb-4">
-              <input type="email" name="email"
-                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
-                     id="email" placeholder="Email Address" required>
+              <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="email" placeholder="Email Address" required>
             </div>
-
             <div class="mb-4">
-              <input type="password" name="password"
-                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
-                     id="password" placeholder="Password" required>
+              <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="password" placeholder="Password" required>
             </div>
-
             <div class="mb-4">
-              <input type="password" name="confirmation"
-                     class="form-control form-control-lg rounded-pill shadow-sm text-start"
-                     id="confirmation" placeholder="Confirm Password" required>
+              <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="confirmation" placeholder="Confirm Password" required>
             </div>
-
-            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">
-              Register Now
-            </button>
+            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">Register Now</button>
           </form>
 
-          <div class="mt-4 text-muted">
-            Already have an account?
-            <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">
-              Log in here
-            </a>
-          </div>
+          <div class="mt-4 text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">Log in here</a></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Minimal page-scoped CSS to avoid touching global styles.css -->
 <style>
-  /* Keep alerts in normal flow and remove stray markers */
   .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
-  .alert { position:relative; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; margin:0; max-width:100%; box-sizing:border-box; background-clip:padding-box; }
-  .alert::before { content:none !important; }
   .alert ul { margin:0; padding:0; list-style:none; }
-
-  /* Force left caret and consistent padding for inputs on this page */
-  .card-body input[type="text"],
-  .card-body input[type="email"],
-  .card-body input[type="password"],
-  .card-body textarea {
-    text-align: left !important;
-    direction: ltr !important;
-    text-indent: 0 !important;
-    padding-left: 14px !important;
-    box-sizing: border-box;
-    min-width: 0;
+  .card-body input[type="text"], .card-body input[type="email"], .card-body input[type="password"], .card-body textarea {
+    text-align: left !important; direction: ltr !important; padding-left: 14px !important; box-sizing: border-box; min-width: 0;
   }
-
-  /* Ensure inputs expand correctly inside flex/grid parents */
-  .input-wrapper, .form-row { display:flex; }
-  .input-wrapper input, .form-row input { flex:1 1 auto; width:100%; min-width:0; }
-
-  /* Small responsive tweak */
-  @media (max-width:576px) {
-    .card-body { padding:2.5rem 1.5rem !important; }
-    .form-alert-wrapper { margin:0 0 12px 0; }
-  }
+  @media (max-width:576px) { .card-body { padding:2.5rem 1.5rem !important; } .form-alert-wrapper { margin:0 0 12px 0; } }
 </style>
 {% endblock %}
