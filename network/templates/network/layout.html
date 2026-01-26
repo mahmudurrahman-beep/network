@@ -3,21 +3,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
   <title>{% block title %}Argon{% endblock %}</title>
 
   <!-- Favicons -->
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
   <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
-  
+
   <!-- ========== PWA CONFIGURATION ========== -->
   <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
-  
+
   <!-- iOS Safari PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Argon">
-  
+
   <!-- Theme Colors -->
   <meta name="theme-color" content="#0E6196">
   <meta name="msapplication-TileColor" content="#0E6196">
@@ -45,6 +45,8 @@
       background: linear-gradient(180deg,var(--sky-1) 0%, var(--sky-2) 60%, #f3fbff 100%);
       color:var(--muted-dark);
       -webkit-font-smoothing:antialiased;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .navbar {
@@ -53,6 +55,9 @@
       backdrop-filter: blur(6px) saturate(120%);
       padding: 0.5rem 0;
       height: var(--navbar-height);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
     .navbar .container-fluid { max-width: var(--max-width); display:flex; align-items:center; justify-content:space-between; }
 
@@ -117,24 +122,38 @@
       .nav-link { padding:12px; border-radius:10px; }
     }
 
-    main.container { max-width: var(--max-width); padding-top: 18px; padding-bottom: 36px; }
+    main.container { 
+      max-width: var(--max-width); 
+      padding-top: 18px; 
+      padding-bottom: 36px; 
+      min-height: calc(100vh - var(--navbar-height) - 120px);
+    }
 
-    footer.site-footer { padding:20px; background: linear-gradient(180deg,#dff6ff,#bfeeff); color: var(--muted-dark); text-align:center; border-radius:8px; margin-top:28px; }
+    footer.site-footer { 
+      padding:20px; 
+      background: linear-gradient(180deg,#dff6ff,#bfeeff); 
+      color: var(--muted-dark); 
+      text-align:center; 
+      border-radius:8px; 
+      margin-top:28px; 
+    }
     footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 
     @media (prefers-reduced-motion: reduce) {
       .argon-logo .char { animation: none !important; transform: none !important; }
       * { transition: none !important; }
     }
-    
+
     /* PWA Fullscreen Optimizations */
     @media (display-mode: standalone) {
       body {
-        overflow: hidden;
-        height: 100vh;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
       }
       .navbar {
-        padding-top: env(safe-area-inset-top);
+        padding-top: env(safe-area-inset-top, 0px);
+        height: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
       }
     }
   </style>
