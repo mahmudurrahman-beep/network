@@ -6,162 +6,40 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
   <title>{% block title %}Argon{% endblock %}</title>
 
-  <!-- Favicons -->
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
-  <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
-
-  <!-- ========== PWA CONFIGURATION ========== -->
-  <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
-
-  <!-- iOS Safari PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Argon">
-
-  <!-- Theme Colors -->
-  <meta name="theme-color" content="#0E6196">
-  <meta name="msapplication-TileColor" content="#0E6196">
-  <!-- ========== END PWA CONFIGURATION ========== -->
-
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap 4 CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+
   <!-- Global base styles -->
   <link rel="stylesheet" href="{% static 'network/styles.css' %}">
 
-  <!-- Argon brand styles -->
+  <!-- Argon brand styles (must come after global) -->
   <link rel="stylesheet" href="{% static 'network/argon.css' %}">
 
+  <!-- small page-safe override for Bootstrap 4 close button (Argon look) -->
   <style>
-    :root{
-      --brand-blue:#0E6196;
-      --brand-teal:#06b6d4;
-      --muted-dark:#083047;
-      --sky-1:#e6f8ff;
-      --sky-2:#cfeeff;
-      --max-width:1200px;
-      --navbar-height:64px;
-      --nav-panel-z:999999;
+    /* Make sure Bootstrap 4 close button is visible and matches Argon look */
+    .close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+      box-shadow: 0 6px 18px rgba(6,98,150,0.06);
+      border: none;
+      color: var(--brand-blue, #0E6196);
+      font-size: 18px;
+      line-height: 1;
+      opacity: 0.95;
     }
-
-    html,body{
-      height:100%;
-      margin:0;
-      font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-      background: linear-gradient(180deg,var(--sky-1) 0%, var(--sky-2) 60%, #f3fbff 100%);
-      color:var(--muted-dark);
-      -webkit-font-smoothing:antialiased;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .navbar {
-      background: linear-gradient(90deg, rgba(255,255,255,0.88), rgba(255,255,255,0.84));
-      border-bottom: 1px solid rgba(8,48,71,0.04);
-      backdrop-filter: blur(6px) saturate(120%);
-      padding: 0.5rem 0;
-      height: var(--navbar-height);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .navbar .container-fluid { max-width: var(--max-width); display:flex; align-items:center; justify-content:space-between; }
-
-    .navbar-brand { font-weight:900; letter-spacing:-0.6px; color:var(--brand-blue); display:flex; align-items:center; gap:10px; text-decoration:none; padding-left:8px; }
-    .argon-logo { display:inline-block; font-weight:900; color:var(--brand-blue); font-size:1.05rem; line-height:1; perspective:900px; }
-    .argon-logo .char { display:inline-block; transform-origin:center center; will-change:transform,opacity; -webkit-backface-visibility:hidden; backface-visibility:hidden; }
-
-    .clock-r { display:inline-block; transform-origin: 50% 85%; will-change: transform; }
-
-    @keyframes earthSpin { from{transform:rotateY(0deg)} to{transform:rotateY(360deg)} }
-    .earth-g { display:inline-block; transform-style:preserve-3d; animation: earthSpin 5200ms linear infinite; transform-origin:center center; -webkit-backface-visibility:hidden; backface-visibility:hidden; }
-
-    @keyframes upDown { 0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)} }
-    @keyframes pulse { 0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)} }
-    .argon-logo .char:nth-child(1){ animation: upDown 1600ms ease-in-out infinite; animation-delay:0ms; }
-    .argon-logo .char:nth-child(4){ animation: pulse 1800ms ease-in-out infinite; animation-delay:360ms; }
-    .argon-logo .char:nth-child(5){ animation: upDown 1600ms ease-in-out infinite; animation-delay:480ms; }
-
-    .navbar-nav { align-items:center; gap:8px; }
-    .nav-link {
-      color: rgba(8,48,71,0.9) !important;
-      font-weight:600;
-      padding:0.5rem 0.75rem;
-      border-radius:10px;
-      transition: background .18s ease, box-shadow .18s ease, color .18s ease;
-    }
-    .nav-link:hover, .nav-link:focus {
-      background: linear-gradient(90deg, rgba(6,182,212,0.12), rgba(14,97,150,0.08));
-      color: var(--brand-blue) !important;
-      box-shadow: 0 6px 20px rgba(6,182,212,0.06);
-      text-decoration:none;
-    }
-    .nav-link.active { background: linear-gradient(90deg, var(--brand-teal), var(--brand-blue)); color: white !important; box-shadow: 0 10px 30px rgba(6,182,212,0.14); }
-
-    .navbar-toggler { border:none; background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)); width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(6,98,150,0.06); }
-    .hamburger { width:22px; height:16px; position:relative; display:inline-block; }
-    .hamburger span { position:absolute; left:0; right:0; height:2px; background:var(--brand-blue); border-radius:2px; transition: transform .22s ease, opacity .18s ease; }
-    .hamburger span:nth-child(1){ top:0; } .hamburger span:nth-child(2){ top:7px; } .hamburger span:nth-child(3){ bottom:0; }
-    .hamburger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); } .hamburger.open span:nth-child(2){ opacity:0; transform: scaleX(0); } .hamburger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
-
-    @media (max-width:767.98px) {
-      .navbar .container-fluid { padding-left:12px; padding-right:12px; }
-      .navbar-collapse {
-        position: fixed;
-        top: calc(var(--navbar-height) + 8px);
-        left: 12px;
-        right: 12px;
-        z-index: var(--nav-panel-z);
-        padding:12px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
-        box-shadow: 0 12px 40px rgba(8,48,71,0.12);
-        border-radius:12px;
-        max-height: calc(100vh - (var(--navbar-height) + 32px));
-        overflow:auto;
-        opacity:0;
-        transform: translateY(-8px);
-        transition: opacity 260ms ease, transform 260ms ease;
-        will-change: opacity, transform;
-      }
-      .navbar-collapse.show { opacity:1; transform: translateY(0); }
-      .navbar-nav { flex-direction:column; gap:6px; }
-      .nav-link { padding:12px; border-radius:10px; }
-    }
-
-    main.container { 
-      max-width: var(--max-width); 
-      padding-top: 18px; 
-      padding-bottom: 36px; 
-      min-height: calc(100vh - var(--navbar-height) - 120px);
-    }
-
-    footer.site-footer { 
-      padding:20px; 
-      background: linear-gradient(180deg,#dff6ff,#bfeeff); 
-      color: var(--muted-dark); 
-      text-align:center; 
-      border-radius:8px; 
-      margin-top:28px; 
-    }
-    footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .argon-logo .char { animation: none !important; transform: none !important; }
-      * { transition: none !important; }
-    }
-
-    /* PWA Fullscreen Optimizations */
-    @media (display-mode: standalone) {
-      body {
-        overflow-y: auto;
-        height: auto;
-        min-height: 100vh;
-      }
-      .navbar {
-        padding-top: env(safe-area-inset-top, 0px);
-        height: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
-      }
-    }
+    .close:focus { outline: none; box-shadow: 0 6px 18px rgba(6,98,150,0.12); }
+    /* Keep alerts responsive and remove stray markers */
+    .alert { position:relative; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; margin:0; max-width:100%; box-sizing:border-box; }
+    .alert::before { content:none !important; }
   </style>
+
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <nav class="navbar navbar-expand-lg">
@@ -246,90 +124,32 @@
     {% csrf_token %}
   </form>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap JS + dependencies (Bootstrap 4) -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
-  <!-- Your Custom JS -->
+  <!-- site main JS -->
   <script src="{% static 'network/js/main.js' %}"></script>
 
+  <!-- Small alert helper: auto-fade and remove after 6s (non-intrusive) -->
   <script>
     (function(){
-      const toggler = document.getElementById('navToggler');
-      const hamburger = toggler && toggler.querySelector('.hamburger');
-      const collapse = document.getElementById('navbarNav');
-      const originalParent = collapse && collapse.parentNode;
-      let placeholder = null;
-
-      if (toggler && hamburger && collapse) {
-        toggler.addEventListener('click', function(){
-          hamburger.classList.toggle('open');
-          const expanded = this.getAttribute('aria-expanded') === 'true';
-          this.setAttribute('aria-expanded', String(!expanded));
-        });
-
-        $(collapse).on('shown.bs.collapse', function () {
-          if (!placeholder) {
-            placeholder = document.createElement('div');
-            placeholder.style.display = 'none';
-            originalParent.insertBefore(placeholder, collapse);
-          }
-          document.body.appendChild(collapse);
-          const navHeight = document.querySelector('.navbar').offsetHeight || 64;
-          collapse.style.top = (navHeight + 8) + 'px';
-          collapse.style.left = '12px';
-          collapse.style.right = '12px';
-          collapse.style.zIndex = getComputedStyle(document.documentElement).getPropertyValue('--nav-panel-z') || 999999;
-          collapse.classList.add('show');
-          document.body.style.overflow = 'hidden';
-        });
-
-        $(collapse).on('hidden.bs.collapse', function () {
-          hamburger.classList.remove('open');
-          collapse.classList.remove('show');
-          setTimeout(() => {
-            if (placeholder && originalParent) {
-              originalParent.insertBefore(collapse, placeholder);
-              placeholder.remove();
-              placeholder = null;
-            }
-            collapse.style.top = '';
-            collapse.style.left = '';
-            collapse.style.right = '';
-            collapse.style.zIndex = '';
-            document.body.style.overflow = '';
-          }, 260);
-        });
-
-        window.addEventListener('resize', function(){
-          if (collapse.classList.contains('show')) {
-            const navHeight = document.querySelector('.navbar').offsetHeight || 64;
-            collapse.style.top = (navHeight + 8) + 'px';
-          }
-        });
-      }
-
-      function setupClockTick(selector, direction = 1, stepDeg = 6, tickDuration = 1000, pauseDuration = 2000) {
-        const els = document.querySelectorAll(selector);
-        els.forEach(el => {
-          let angle = 0;
-          function tickOnce() {
-            angle = (angle + stepDeg * direction) % 360;
-            el.style.transition = `transform ${tickDuration}ms ease-in-out`;
-            el.style.transform = `rotate(${angle}deg)`;
+      // Auto-dismiss transient alerts after 6s
+      document.addEventListener('DOMContentLoaded', function(){
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach((a) => {
+          // only auto-dismiss if not marked data-no-autohide
+          if (!a.hasAttribute('data-no-autohide')) {
             setTimeout(() => {
-              el.style.transition = '';
-              setTimeout(tickOnce, pauseDuration);
-            }, tickDuration);
+              $(a).fadeTo(300, 0).slideUp(300, function(){ $(this).alert('close'); });
+            }, 6000);
           }
-          setTimeout(tickOnce, 600);
         });
-      }
-
-      setupClockTick('.navbar .clock-r', +1, 6, 1000, 2000);
-      setupClockTick('.landing-card .clock-r', -1, 6, 1000, 2000);
+      });
     })();
   </script>
+
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>
