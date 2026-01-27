@@ -206,17 +206,6 @@
         successAlerts.forEach(alert => {
           alert.classList.add('alert-auto-dismiss');
           
-          // BOOTSTRAP 4 FIX: Use .close not .btn-close
-          const closeBtn = alert.querySelector('.close');
-          if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-              alert.style.opacity = '0';
-              alert.style.transform = 'translateY(-20px)';
-              setTimeout(() => {
-                alert.style.display = 'none';
-              }, 300);
-            });
-          }
         });
 
         // Remove alerts after animation completes (30 seconds)
