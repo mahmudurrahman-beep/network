@@ -219,14 +219,14 @@
           }
         });
 
-        // Remove alerts after animation completes (6 seconds)
+        // Remove alerts after animation completes (30 seconds)
         setTimeout(() => {
           successAlerts.forEach(alert => {
             if (alert.style.display !== 'none') {
               alert.remove();
             }
           });
-        }, 6500);
+        }, 30500);
       });
       /* ========== END ALERT AUTO-DISMISS ========== */
 
