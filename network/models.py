@@ -17,6 +17,7 @@ class User(AbstractUser):
     timezone = models.CharField(max_length=100, choices=TIMEZONE_CHOICES, default='UTC')
     activation_token = models.CharField(max_length=32, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
+    is_private = models.BooleanField(default=False)  
 
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
