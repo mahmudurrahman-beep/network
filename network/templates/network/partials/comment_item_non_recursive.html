@@ -1,266 +1,216 @@
-<!-- network/templates/network/partials/comment_item_non_recursive.html -->
+{# comment_item_non_recursive.html - FIXED #}
 {% load static %}
+{% load parse_media %}
+{% load comment_filters %}
 
-<div class="comment-item {% if depth > 0 %}reply-item{% endif %} mb-3 p-3 {% if depth == 0 %}bg-light rounded{% else %}bg-white border rounded{% endif %}" 
-     data-comment-id="{{ comment.id }}" data-depth="{{ depth }}">
-    <div class="d-flex align-items-start">
-        {% if comment.user.profile_picture %}
-            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-3" width="{% if depth == 0 %}40{% else %}32{% endif %}" height="{% if depth == 0 %}40{% else %}32{% endif %}" alt="{{ comment.user.username }}" style="object-fit: cover;">
-        {% else %}
-            <img src="{% static 'network/images/default-avatar.png' %}" 
-                 class="rounded-circle me-3" 
-                 width="{% if depth == 0 %}40{% else %}32{% endif %}" 
-                 height="{% if depth == 0 %}40{% else %}32{% endif %}" 
-                 alt="{{ comment.user.username }}"
-                 style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        {% endif %}
+<style>
+.comment-item.reply-item{
+  margin-left: 0 !important;
+}
+.comment-item[data-depth]{
+  --indent: min(calc(var(--depth) * 1rem), 2.5rem);
+  margin-left: var(--indent);
+  width: calc(100% - var(--indent));
+}
+@media (max-width: 576px){
+  .comment-item[data-depth]{
+    --indent: min(calc(var(--depth) * 0.45rem), 1.25rem);
+    margin-left: var(--indent);
+    width: calc(100% - var(--indent));
+  }
+  .comment-item[data-depth]:not([data-depth="0"]){
+    padding: 0.85rem !important;
+  }
+}
 
-        <div class="flex-grow-1 {% if depth > 0 %}reply-content{% else %}comment-content{% endif %}">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                    <strong>
-                        <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
-                            {{ comment.user.username }}
-                        </a>
-                    </strong>
-                    <small class="text-muted ms-2 time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
-                        {{ comment.timestamp|timesince }} ago
-                    </small>
+.comment-text img[alt="GIF"],
+.comment-text img[alt="Sticker"]{
+  display:block;
+  height:auto;
+  max-width:100% !important;
+}
+.comment-text img[alt="GIF"]{ width: min(300px, 100%) !important; }
+.comment-text img[alt="Sticker"]{ width: min(150px, 100%) !important; }
+@media (max-width:576px){
+  .comment-text img[alt="GIF"]{ width: 100% !important; }
+  .comment-text img[alt="Sticker"]{ width: min(220px, 100%) !important; }
+}
+</style>
 
-                    <!-- REPLYING TO (CLICKABLE USERNAME) -->
-                    {% if comment.parent and comment.parent.user %}
-                    <div class="mt-1">
-                        <small class="text-muted">
-                            <i class="bi bi-arrow-return-right"></i> Replying to 
-                            <a href="{% url 'profile' comment.parent.user.username %}" class="text-primary text-decoration-none fw-semibold">
-                                @{{ comment.parent.user.username }}
-                            </a>
-                        </small>
-                    </div>
-                    {% endif %}
-                </div>
+<div class="comment-item {% if depth > 0 %}reply-item{% endif %} mb-3 p-3 {% if depth == 0 %}bg-light rounded{% else %}bg-white border rounded{% endif %}"
+     data-comment-id="{{ comment.id }}" data-depth="{{ depth }}" style="--depth: {{ depth }};">
+  <div class="d-flex align-items-start" style="min-width:0;">
+    {% if comment.user.profile_picture %}
+      <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle mr-3"
+           width="{% if depth == 0 %}40{% else %}32{% endif %}"
+           height="{% if depth == 0 %}40{% else %}32{% endif %}"
+           alt="{{ comment.user.username }}" style="object-fit: cover;">
+    {% else %}
+      <img src="{% static 'network/images/default-avatar.png' %}"
+           class="rounded-circle mr-3"
+           width="{% if depth == 0 %}40{% else %}32{% endif %}"
+           height="{% if depth == 0 %}40{% else %}32{% endif %}"
+           alt="{{ comment.user.username }}"
+           style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    {% endif %}
 
-                {% if request.user == comment.user %}
-                    <button class="btn btn-sm btn-outline-danger delete-comment" data-comment-id="{{ comment.id }}">
-                        Delete
-                    </button>
-                {% endif %}
-            </div>
+    <div class="flex-grow-1" style="min-width:0;">
+      <div class="d-flex justify-content-between align-items-start mb-2" style="gap:10px;">
+        <div style="min-width:0;">
+          <strong>
+            <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
+              {{ comment.user.username }}
+            </a>
+          </strong>
 
-            <div class="comment-text mb-2 mt-1">
-                {{ comment.content|safe|linebreaksbr }}
-            </div>
+          <div class="mt-1">
+            <small class="text-muted d-flex flex-wrap align-items-center" style="gap:8px;">
+              <span class="time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
+                {{ comment.timestamp|timesince }} ago
+              </span>
 
-            <!-- Reply Button (only show if depth < 4) -->
-            {% if user.is_authenticated and depth < 4 %}
-                <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
-                    <i class="bi bi-reply me-1"></i> Reply
-                </button>
-            {% elif user.is_authenticated %}
-                <small class="text-muted max-depth-warning">
-                    <i class="bi bi-info-circle me-1"></i> Maximum reply depth reached
-                </small>
-            {% endif %}
-
-            <!-- Reply Form (hidden by default) -->
-            {% if user.is_authenticated and depth < 4 %}
-                <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
-                    <form method="post" action="{% url 'add_comment' post.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                        
-                        <div class="replying-to-indicator mb-2">
-                            <i class="bi bi-arrow-return-right me-1"></i>
-                            Replying to <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none">@{{ comment.user.username }}</a>
-                        </div>
-                        
-                        <textarea name="content" class="form-control reply-textarea mb-2" 
-                                  rows="2" placeholder="Write your reply..." 
-                                  required data-reply-to="{{ comment.id }}"></textarea>
-                        
-                        <!-- Media Picker for Replies -->
-                        <div class="gif-picker-comment-section reply-media-picker mb-2" data-reply-to="{{ comment.id }}">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <div>
-                                    <span class="badge bg-primary rounded-pill mb-1">
-                                        <i class="bi bi-images me-1"></i> Media
-                                    </span>
-                                    <small class="text-muted d-block">Add GIFs or Stickers</small>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary browse-media-comment" 
-                                        data-reply-to="{{ comment.id }}" title="Browse Media">
-                                    <i class="bi bi-grid me-1"></i> Browse
-                                </button>
-                            </div>
-                            
-                            <div class="btn-group w-100 mb-2" role="group">
-                                <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
-                                        data-reply-to="{{ comment.id }}" data-media-type="gifs">
-                                    GIFs
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
-                                        data-reply-to="{{ comment.id }}" data-media-type="stickers">
-                                    Stickers
-                                </button>
-                            </div>
-                            
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control form-control-sm comment-media-search" 
-                                       placeholder="Search GIFs..." 
-                                       data-reply-to="{{ comment.id }}">
-                                <button type="button" class="btn btn-sm btn-primary comment-media-search-btn" 
-                                        data-reply-to="{{ comment.id }}">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="comment-media-results mt-2" 
-                                 data-reply-to="{{ comment.id }}"
-                                 style="display: none;">
-                                <!-- Media results for reply -->
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm">Reply</button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm cancel-reply">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            {% endif %}
-
-            <!-- SHOW DIRECT REPLIES (ONE LEVEL) -->
-            {% for reply in comment.replies.all %}
-                {% with next_depth=depth|add:1 %}
-                <div class="reply-item mt-3 p-3 bg-white border rounded" data-comment-id="{{ reply.id }}" data-depth="{{ next_depth }}">
-                    <div class="d-flex align-items-start">
-                        {% if reply.user.profile_picture %}
-                            <img src="{{ reply.user.profile_picture.url }}" class="rounded-circle me-3" width="32" height="32" alt="{{ reply.user.username }}" style="object-fit: cover;">
-                        {% else %}
-                            <img src="{% static 'network/images/default-avatar.png' %}" 
-                                 class="rounded-circle me-3" 
-                                 width="32" 
-                                 height="32" 
-                                 alt="{{ reply.user.username }}"
-                                 style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        {% endif %}
-
-                        <div class="flex-grow-1 reply-content">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <strong>
-                                        <a href="{% url 'profile' reply.user.username %}" class="text-dark text-decoration-none">
-                                            {{ reply.user.username }}
-                                        </a>
-                                    </strong>
-                                    <small class="text-muted ms-2 time-ago" data-timestamp="{{ reply.timestamp|date:'c' }}">
-                                        {{ reply.timestamp|timesince }} ago
-                                    </small>
-                                    
-                                    <!-- REPLYING TO FOR NESTED REPLY -->
-                                    <div class="mt-1">
-                                        <small class="text-muted">
-                                            <i class="bi bi-arrow-return-right"></i> Replying to 
-                                            <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none fw-semibold">
-                                                @{{ comment.user.username }}
-                                            </a>
-                                        </small>
-                                    </div>
-                                </div>
-
-                                {% if request.user == reply.user %}
-                                    <button class="btn btn-sm btn-outline-danger delete-comment" data-comment-id="{{ reply.id }}">
-                                        Delete
-                                    </button>
-                                {% endif %}
-                            </div>
-
-                            <div class="comment-text mb-2 mt-1">
-                                {{ reply.content|safe|linebreaksbr }}
-                            </div>
-
-                            <!-- Reply Button for this reply (only show if depth < 4) -->
-                            {% if user.is_authenticated and next_depth < 4 %}
-                                <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ reply.id }}" type="button">
-                                    <i class="bi bi-reply me-1"></i> Reply
-                                </button>
-                            {% elif user.is_authenticated %}
-                                <small class="text-muted max-depth-warning">
-                                    <i class="bi bi-info-circle me-1"></i> Maximum reply depth reached
-                                </small>
-                            {% endif %}
-
-                            <!-- Reply Form for this reply -->
-                            {% if user.is_authenticated and next_depth < 4 %}
-                                <div class="reply-form mt-3 d-none" data-parent-id="{{ reply.id }}">
-                                    <form method="post" action="{% url 'add_comment' post.id %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="parent_id" value="{{ reply.id }}">
-                                        
-                                        <div class="replying-to-indicator mb-2">
-                                            <i class="bi bi-arrow-return-right me-1"></i>
-                                            Replying to <a href="{% url 'profile' reply.user.username %}" class="text-primary text-decoration-none">@{{ reply.user.username }}</a>
-                                        </div>
-                                        
-                                        <textarea name="content" class="form-control reply-textarea mb-2" 
-                                                  rows="2" placeholder="Write your reply..." 
-                                                  required data-reply-to="{{ reply.id }}"></textarea>
-                                        
-                                        <!-- Media Picker for this reply -->
-                                        <div class="gif-picker-comment-section reply-media-picker mb-2" data-reply-to="{{ reply.id }}">
-                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                <div>
-                                                    <span class="badge bg-primary rounded-pill mb-1">
-                                                        <i class="bi bi-images me-1"></i> Media
-                                                    </span>
-                                                    <small class="text-muted d-block">Add GIFs or Stickers</small>
-                                                </div>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary browse-media-comment" 
-                                                        data-reply-to="{{ reply.id }}" title="Browse Media">
-                                                    <i class="bi bi-grid me-1"></i> Browse
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="btn-group w-100 mb-2" role="group">
-                                                <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
-                                                        data-reply-to="{{ reply.id }}" data-media-type="gifs">
-                                                    GIFs
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
-                                                        data-reply-to="{{ reply.id }}" data-media-type="stickers">
-                                                    Stickers
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm comment-media-search" 
-                                                       placeholder="Search GIFs..." 
-                                                       data-reply-to="{{ reply.id }}">
-                                                <button type="button" class="btn btn-sm btn-primary comment-media-search-btn" 
-                                                        data-reply-to="{{ reply.id }}">
-                                                    <i class="bi bi-search"></i>
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="comment-media-results mt-2" 
-                                                 data-reply-to="{{ reply.id }}"
-                                                 style="display: none;">
-                                                <!-- Media results for reply -->
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary btn-sm">Reply</button>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm cancel-reply">Cancel</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endwith %}
-            {% endfor %}
+              {% if comment.parent and comment.parent.user %}
+                <span class="d-inline-flex flex-wrap align-items-center" style="gap:4px;">
+                  <i class="fas fa-reply mr-1"></i>
+                  <span>Replying to</span>
+                  <a href="{% url 'profile' comment.parent.user.username %}" class="text-primary text-decoration-none font-weight-bold">
+                    @{{ comment.parent.user.username }}
+                  </a>
+                </span>
+              {% endif %}
+            </small>
+          </div>
         </div>
+
+        {% if request.user == comment.user %}
+          <div class="action-menu">
+            <button type="button"
+                    class="action-menu-toggle js-action-menu-toggle"
+                    aria-label="Comment actions"
+                    aria-expanded="false">⋮</button>
+
+            <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+              <button type="button"
+                      class="action-menu-item delete-comment"
+                      data-comment-id="{{ comment.id }}">
+                Delete
+              </button>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="comment-text mb-2 mt-1">
+        {{ comment.content|parse_media|safe }}
+      </div>
+
+      {% if user.is_authenticated and depth == 0 %}
+        <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
+          <i class="fas fa-reply mr-1"></i> Reply
+        </button>
+
+        <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
+          <form method="post" action="{% url 'add_comment' post.id %}" class="js-media-form"
+                data-composer-id="reply-nr-{{ comment.id }}">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+
+            <div class="replying-to-indicator mb-2">
+              <i class="fas fa-reply mr-1"></i>
+              Replying to <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none">@{{ comment.user.username }}</a>
+            </div>
+
+            <div class="comment-composer">
+              <div class="composer-preview" data-preview="reply-nr-{{ comment.id }}"></div>
+
+              <textarea name="content" class="form-control reply-textarea mb-2"
+                        rows="2" placeholder="Write your reply..." required></textarea>
+
+              <div class="composer-media-row" data-row="reply-nr-{{ comment.id }}">
+                <button type="button" class="composer-media-btn active" data-type="gifs">🎞️</button>
+                <button type="button" class="composer-media-btn" data-type="stickers">🏷️</button>
+                <input type="text" class="composer-search-input" placeholder="Search GIFs or Stickers...">
+                <button type="button" class="composer-search-btn"><i class="fas fa-search"></i></button>
+                <div class="composer-results" data-results="reply-nr-{{ comment.id }}"></div>
+              </div>
+
+              <input type="hidden" class="media-data-input" value="[]">
+            </div>
+
+            <div class="d-flex" style="gap:8px;">
+              <button type="submit" class="btn btn-primary btn-sm">Reply</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm cancel-reply">Cancel</button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+
+      {% with visible_replies=comment.replies.all|filter_by_privacy:request.user %}
+        {% for reply in visible_replies %}
+          {% with next_depth=depth|add:1 %}
+            <div class="comment-item reply-item mt-3 p-3 bg-white border rounded"
+                 data-comment-id="{{ reply.id }}" data-depth="{{ next_depth }}" style="--depth: {{ next_depth }};">
+              <div class="d-flex align-items-start" style="min-width:0;">
+                {% if reply.user.profile_picture %}
+                  <img src="{{ reply.user.profile_picture.url }}" class="rounded-circle mr-3" width="32" height="32"
+                       alt="{{ reply.user.username }}" style="object-fit: cover;">
+                {% else %}
+                  <img src="{% static 'network/images/default-avatar.png' %}" class="rounded-circle mr-3" width="32" height="32"
+                       alt="{{ reply.user.username }}" style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                {% endif %}
+
+                <div class="flex-grow-1" style="min-width:0;">
+                  <div class="d-flex justify-content-between align-items-start mb-2" style="gap:10px;">
+                    <div style="min-width:0;">
+                      <strong>
+                        <a href="{% url 'profile' reply.user.username %}" class="text-dark text-decoration-none">
+                          {{ reply.user.username }}
+                        </a>
+                      </strong>
+
+                      <div class="mt-1">
+                        <small class="text-muted d-flex flex-wrap align-items-center" style="gap:8px;">
+                          <span class="time-ago" data-timestamp="{{ reply.timestamp|date:'c' }}">
+                            {{ reply.timestamp|timesince }} ago
+                          </span>
+                          <span class="d-inline-flex flex-wrap align-items-center" style="gap:4px;">
+                            <i class="fas fa-reply mr-1"></i>
+                            <span>Replying to</span>
+                            <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none font-weight-bold">
+                              @{{ comment.user.username }}
+                            </a>
+                          </span>
+                        </small>
+                      </div>
+                    </div>
+
+                    {% if request.user == reply.user %}
+                      <div class="action-menu">
+                        <button type="button"
+                                class="action-menu-toggle js-action-menu-toggle"
+                                aria-label="Reply actions"
+                                aria-expanded="false">⋮</button>
+
+                        <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+                          <button type="button"
+                                  class="action-menu-item delete-comment"
+                                  data-comment-id="{{ reply.id }}">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <div class="comment-text mb-2 mt-1">
+                    {{ reply.content|parse_media|safe }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      {% endwith %}
     </div>
+  </div>
 </div>
