@@ -3,71 +3,97 @@
 {% block body %}
 <style>
 /* ===============================
-   Messages Inbox (Argon Theme)
+   Messages Inbox (Argon Theme) - FIXED
    =============================== */
 .messages-container {
     max-width: var(--max-width);
     margin: 0 auto;
 }
 
-.messages-inbox .conversation-item {
+/* Conversation items - with proper visible borders */
+.conversation-item {
     background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
-    border: 1px solid rgba(8,48,71,0.04);
+    border: 2px solid rgba(8,48,71,0.12) !important; /* Made border thicker and more visible */
     border-radius: 16px;
     padding: 18px 20px;
     transition: all 0.2s ease;
     text-decoration: none !important;
     color: var(--muted-dark);
+    margin-bottom: 16px;
+    display: block;
+    box-shadow: 0 4px 20px rgba(2,6,23,0.06);
 }
 
-.messages-inbox .conversation-item:hover {
+.conversation-item:hover {
     background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,0.98));
     transform: translateY(-4px);
-    box-shadow: 0 12px 36px rgba(2,6,23,0.08);
-    border-color: rgba(8,48,71,0.08);
+    box-shadow: 0 12px 36px rgba(2,6,23,0.12);
+    border-color: rgba(8,48,71,0.2) !important;
+    text-decoration: none !important;
 }
 
-.messages-inbox .username {
+.username {
     font-weight: 900;
     color: var(--brand-blue) !important;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 1.1rem;
+    display: inline-block;
+    margin-bottom: 8px;
 }
 
-.messages-inbox .username:hover {
+.username:hover {
     color: var(--brand-teal) !important;
     text-decoration: underline;
 }
 
-.messages-inbox .preview-text {
-    color: rgba(8,48,71,0.78) !important;
+.preview-text {
+    color: rgba(8,48,71,0.85) !important;
     font-size: 0.95rem;
     line-height: 1.5;
     font-family: Inter, system-ui, -apple-system, sans-serif;
+    padding: 8px 0;
+    background: rgba(8,48,71,0.03);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
 }
 
-.messages-inbox .time-text {
+.time-text {
     font-size: 0.85rem;
-    color: rgba(8,48,71,0.65) !important;
+    color: rgba(8,48,71,0.7) !important;
     white-space: nowrap;
     font-weight: 600;
+    background: rgba(8,48,71,0.05);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
 }
 
-.messages-inbox .badge {
+.badge {
     background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)) !important;
     color: white !important;
     font-weight: 800;
     font-size: 0.8rem;
     border-radius: 12px !important;
     padding: 4px 10px !important;
+    margin-left: 8px;
 }
 
+/* Fix for list-group spacing */
+.list-group {
+    gap: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Empty state */
 .messages-empty-state {
     background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
-    border: 1px solid rgba(8,48,71,0.04);
+    border: 2px solid rgba(8,48,71,0.12) !important;
     border-radius: 20px;
     padding: 60px 20px;
-    box-shadow: 0 12px 36px rgba(2,6,23,0.04);
+    box-shadow: 0 12px 36px rgba(2,6,23,0.08);
 }
 
 .messages-empty-state h5 {
@@ -80,9 +106,14 @@
     font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
+/* Responsive */
 @media (max-width: 576px) {
-    .messages-inbox .conversation-item { 
-        padding: 14px 16px; 
+    .conversation-item {
+        padding: 14px 16px;
+    }
+    
+    .preview-text {
+        padding: 6px 10px;
     }
 }
 </style>
@@ -102,34 +133,34 @@
     <h4 class="mb-4" style="color: var(--muted-dark); font-weight: 900;">Messages</h4>
 
     {% if conversations %}
-        <div class="list-group gap-3 d-flex flex-column">
+        <div class="list-group">
             {% for conv in conversations %}
                 <a href="{% url 'conversation' conv.user.username %}"
-                   class="conversation-item text-decoration-none d-flex justify-content-between align-items-start">
+                   class="conversation-item text-decoration-none">
 
-                    <div class="flex-grow-1 pe-2">
-                        <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
                             <strong class="username clickable-username"
                                     data-username="{{ conv.user.username }}">
                                 {{ conv.user.username }}
                             </strong>
-
+                            
                             {% if conv.unread_count > 0 %}
-                                <span class="badge rounded-pill">
+                                <span class="badge">
                                     {{ conv.unread_count }}
                                 </span>
                             {% endif %}
                         </div>
-
-                        <!-- Media-aware preview -->
-                        <div class="preview-text"
-                             data-message="{{ conv.latest_message.content|default:''|escape }}">
-                            Loading…
+                        
+                        <div class="time-text">
+                            {{ conv.latest_message.timestamp|timesince }} ago
                         </div>
                     </div>
 
-                    <div class="time-text">
-                        {{ conv.latest_message.timestamp|timesince }} ago
+                    <!-- Message preview with visible styling -->
+                    <div class="preview-text"
+                         data-message="{{ conv.latest_message.content|default:''|escape }}">
+                        Loading…
                     </div>
 
                 </a>
@@ -190,4 +221,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-{% endblock %}
+{% endblock %} 
