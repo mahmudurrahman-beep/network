@@ -6,15 +6,16 @@
   <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
       <div class="card shadow-xl border-0 rounded-4 overflow-hidden">
-        <div class="card-body p-5 p-md-5 text-center">
+        <div class="card-body p-5 text-center">
 
+          <!-- Alert Messages - Bootstrap 4 Style -->
           <div class="form-alert-wrapper mb-3">
             {% if messages %}
               {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                      role="alert" style="max-width:100%; border:none;">
                   <div class="d-flex align-items-center w-100">
-                    <div class="flex-grow-1 text-start">{{ message }}</div>
+                    <div class="flex-grow-1 text-left">{{ message }}</div>
                     <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -26,7 +27,7 @@
               <div class="alert alert-{{ message_type|default:'danger' }} alert-dismissible fade show mx-auto shadow-sm rounded-4"
                    role="alert" style="max-width:100%; border:none;">
                 <div class="d-flex align-items-center w-100">
-                  <div class="flex-grow-1 text-start">{{ message }}</div>
+                  <div class="flex-grow-1 text-left">{{ message }}</div>
                   <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -36,45 +37,150 @@
           </div>
 
           <h2 class="mb-4 fw-bold text-primary" style="letter-spacing: -0.5px;">Join Argon Network</h2>
-          <p class="text-muted mb-4 lead fs-6">Create your account and start connecting today.</p>
+          <p class="text-muted mb-4 lead" style="font-size: 1rem;">Create your account and start connecting today.</p>
 
-          <form action="{% url 'register' %}" method="post" novalidate>
+          <form action="{% url 'register' %}" method="post" novalidate id="registerForm">
             {% csrf_token %}
+            
             <div class="mb-4">
-              <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="username" placeholder="Username" required autofocus>
+              <input type="text" name="username" class="form-control form-control-lg rounded-pill shadow-sm text-left" 
+                     id="username" placeholder="Username" required autofocus
+                     value="{{ form.username.value|default:'' }}">
+              <small class="form-text text-muted text-left ml-3">3-30 characters, letters, numbers and underscores only</small>
             </div>
+            
             <div class="mb-4">
-              <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="email" placeholder="Email Address" required>
+              <input type="email" name="email" class="form-control form-control-lg rounded-pill shadow-sm text-left" 
+                     id="email" placeholder="Email Address" required
+                     value="{{ form.email.value|default:'' }}">
             </div>
-            <div class="mb-4">
-              <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="password" placeholder="Password" required>
+            
+            <div class="mb-4 position-relative">
+              <input type="password" name="password" class="form-control form-control-lg rounded-pill shadow-sm text-left" 
+                     id="password" placeholder="Password" required>
+              <button type="button" class="btn btn-link position-absolute" 
+                      style="right: 15px; top: 50%; transform: translateY(-50%);"
+                      id="togglePassword">
+                <i class="fas fa-eye"></i>
+              </button>
             </div>
-            <div class="mb-4">
-              <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-start" id="confirmation" placeholder="Confirm Password" required>
+            
+            <div class="mb-4 position-relative">
+              <input type="password" name="confirmation" class="form-control form-control-lg rounded-pill shadow-sm text-left" 
+                     id="confirmation" placeholder="Confirm Password" required>
+              <button type="button" class="btn btn-link position-absolute" 
+                      style="right: 15px; top: 50%; transform: translateY(-50%);"
+                      id="toggleConfirmation">
+                <i class="fas fa-eye"></i>
+              </button>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg">Register Now</button>
+            
+            <!-- Password Requirements Hint -->
+            <div class="text-left small text-muted mb-4 ml-3">
+              <i class="fas fa-info-circle mr-2"></i>Password must be at least 8 characters
+            </div>
+            
+            <!-- Terms Checkbox (Optional) -->
+            <div class="form-check mb-4 text-left">
+              <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+              <label class="form-check-label small" for="terms">
+                I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+              </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-lg" id="submitBtn">
+              <span id="btnText">Register Now</span>
+              <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
           </form>
 
-          <div class="mt-4 text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">Log in here</a></div>
+          <div class="mt-4 text-muted">Already have an account? 
+            <a href="{% url 'login' %}" class="text-primary font-weight-medium text-decoration-none">Log in here</a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password visibility toggle
+  function setupPasswordToggle(passwordId, buttonId) {
+    const passwordInput = document.getElementById(passwordId);
+    const toggleButton = document.getElementById(buttonId);
+    if (passwordInput && toggleButton) {
+      toggleButton.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    }
+  }
+  
+  setupPasswordToggle('password', 'togglePassword');
+  setupPasswordToggle('confirmation', 'toggleConfirmation');
+  
+  // Form submission loading state
+  const form = document.getElementById('registerForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('btnText');
+  const btnSpinner = document.getElementById('btnSpinner');
+  
+  if (form && submitBtn) {
+    form.addEventListener('submit', function() {
+      btnText.textContent = 'Creating Account...';
+      btnSpinner.classList.remove('d-none');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('disabled');
+    });
+  }
+  
+  // Clear form on page load if there were previous errors but keep success messages
+  if (!document.querySelector('.alert-success')) {
+    // Only clear if no success message is present
+    const formInputs = form.querySelectorAll('input[type="text"], input[type="email"]');
+    formInputs.forEach(input => {
+      if (!input.value.trim()) {
+        input.value = '';
+      }
+    });
+  }
+});
+</script>
+
 <style>
-  .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
-  .alert ul { margin:0; padding:0; list-style:none; }
-  .card-body input[type="text"], .card-body input[type="email"], .card-body input[type="password"], .card-body textarea {
+  .form-alert-wrapper { 
+    width:100%; 
+    box-sizing:border-box; 
+    margin-bottom:0.75rem; 
+  }
+  .alert ul { 
+    margin:0; 
+    padding:0; 
+    list-style:none; 
+  }
+  .card-body input[type="text"], 
+  .card-body input[type="email"], 
+  .card-body input[type="password"], 
+  .card-body textarea {
     text-align: left !important;
     direction: ltr !important;
-    padding-left: 14px !important;
+    padding-left: 20px !important;
+    padding-right: 50px !important; /* Space for eye icon */
     box-sizing: border-box;
-    min-width: 0;
+  }
+  .rounded-4 {
+    border-radius: 1rem !important;
+  }
+  .shadow-xl {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
   }
   @media (max-width:576px) {
     .card-body { padding:2.5rem 1.5rem !important; }
     .form-alert-wrapper { margin:0 0 12px 0; }
+    .rounded-4 { border-radius: 0.75rem !important; }
   }
 </style>
 {% endblock %}
