@@ -362,7 +362,8 @@
         <!-- NOTIFICATIONS LIST -->
         <div class="list-group" id="notifications-list">
             {% for notif in notifications %}
-                <div class="notification-item {% if not notif.read %}unread{% endif %}" 
+                <!-- FIXED: Changed notif.read to notif.is_read -->
+                <div class="notification-item {% if not notif.is_read %}unread{% endif %}" 
                      data-notification-id="{{ notif.id }}">
                     <button class="delete-notification-btn" 
                             data-notification-id="{{ notif.id }}"
@@ -481,6 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(result => {
                 if (result.success) {
                     // Remove "unread" styling from all notifications
+                    // This will work now because template uses correct is_read field
                     document.querySelectorAll('.notification-item.unread').forEach(item => {
                         item.classList.remove('unread');
                         item.style.borderLeft = '4px solid var(--brand-blue)';
@@ -622,4 +624,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 });
 </script>
-{% endblock %} 
+{% endblock %}
