@@ -109,6 +109,23 @@
         box-shadow: 0 8px 24px rgba(6,98,150,0.15);
         border-color: transparent;
     }
+    
+    /* Blocked user indicator */
+    .blocked-indicator {
+        background: linear-gradient(90deg, rgba(220, 53, 69, 0.08), rgba(220, 53, 69, 0.05));
+        border: 1px solid rgba(220, 53, 69, 0.15);
+        border-radius: 8px;
+        color: #dc3545;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        margin-top: 10px;
+        display: inline-block;
+    }
+    
+    .blocked-avatar {
+        opacity: 0.7;
+        filter: grayscale(30%);
+    }
 </style>
 
 <div class="discover-container mt-5">
@@ -151,11 +168,11 @@
                             <div class="mb-3">
                                 {% if u.profile_picture %}
                                     <img src="{{ u.profile_picture.url }}" 
-                                         class="rounded-circle discover-avatar" 
+                                         class="rounded-circle discover-avatar {% if u.id in blocked_user_ids or u.id in blocked_by_user_ids %}blocked-avatar{% endif %}" 
                                          width="90" height="90" 
                                          alt="{{ u.username }}'s profile picture">
                                 {% else %}
-                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center discover-avatar"
+                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center discover-avatar {% if u.id in blocked_user_ids or u.id in blocked_by_user_ids %}blocked-avatar{% endif %}"
                                          style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-teal)); color: white; font-size: 32px; font-weight: 900;">
                                         {{ u.username|first|upper }}
                                     </div>
@@ -170,6 +187,17 @@
                                     {{ u.username }}
                                 </a>
                             </h5>
+                            
+                            <!-- Blocked Status Indicator -->
+                            {% if u.id in blocked_user_ids %}
+                                <div class="blocked-indicator mb-2">
+                                    <i class="fas fa-ban mr-1"></i> You've blocked this user
+                                </div>
+                            {% elif u.id in blocked_by_user_ids %}
+                                <div class="blocked-indicator mb-2">
+                                    <i class="fas fa-lock mr-1"></i> You are blocked
+                                </div>
+                            {% endif %}
                             
                             <!-- Bio Preview -->
                             {% if u.bio %}
@@ -215,7 +243,7 @@
                 {% if query %}
                     Try a different search term
                 {% else %}
-                    All discoverable users are either blocked or you've blocked them
+                    There are no other users on the platform yet
                 {% endif %}
             </p>
             {% if query %}
@@ -232,11 +260,11 @@
         </div>
     {% endif %}
     
-    <!-- Info Note -->
+    <!-- Updated Info Note -->
     {% if users %}
         <div class="alert discover-info-note alert-dismissible mt-4">
-            <i class="fas fa-info-circle me-2" style="color: var(--brand-blue);"></i>
-            <strong>Note:</strong> Blocked users and users who have blocked you are not shown here.
+            <i class="fas fa-info-circle mr-2" style="color: var(--brand-blue);"></i>
+            <strong>Note:</strong> All users are discoverable. Blocked relationships limit interactions while keeping public content accessible.
             Manage your blocks in <a href="{% url 'privacy_settings' %}" class="fw-bold" style="color: var(--brand-blue) !important;">Privacy Settings</a>.
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -244,4 +272,4 @@
         </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock %} 
