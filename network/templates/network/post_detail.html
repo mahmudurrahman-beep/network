@@ -4,6 +4,17 @@
 
 {% block body %}
     <div class="container mt-5">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
         <a href="{% url 'all_posts' %}" class="btn btn-outline-secondary mb-4">
             ← Back to Posts
         </a>
@@ -62,14 +73,14 @@
 
             <!-- Post Actions (same as post_list) -->
             <div class="d-flex gap-3 align-items-center flex-wrap">
-                <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}"
-                        data-post="{{ post.id }}" data-value="1">
-                    👍 <span>{{ post.thumbs_up.count }}</span>
-                </button>
-                <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
-                        data-post="{{ post.id }}" data-value="-1">
-                    👎 <span>{{ post.thumbs_down.count }}</span>
-                </button>
+                <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}"
+        data-post="{{ post.id }}" data-value="1">
+    👍 <span>{{ post.thumbs_up.count }}</span>
+</button>
+<button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+        data-post="{{ post.id }}" data-value="-1">
+    👎 <span>{{ post.thumbs_down.count }}</span>
+</button> 
                 {% if request.user == post.user %}
                     <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
                     <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
@@ -102,4 +113,4 @@
             </div>
         </div>
     </div>
-{% endblock %} 
+{% endblock %}
