@@ -1,297 +1,638 @@
+{# post_list.html - COMPLETE FIXED VERSION #}
 {% load static %}
-{% load parse_media %} 
+{% load parse_media %}
+{% load comment_filters %}
+{% load custom_filters %}
+
 <style>
-.comment-item {
-    border-left: 3px solid #e9ecef;
-    padding-left: 12px;
-    transition: border-color 0.2s ease;
+.post-card,
+.post-card * {
+  max-width: 100%;
 }
 
-.comment-item:hover {
-    border-left-color: #667eea;
+.post-card {
+  width: 100%;
 }
 
-.gif-picker-comment-section {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 10px 0;
+.post-card .post-text,
+.post-card .comment-text,
+.post-card .message-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.post-card .comment-item[data-depth]{
+  --indent: min(calc(var(--depth) * 1rem), 2.5rem);
+  margin-left: var(--indent);
+  width: calc(100% - var(--indent));
+}
+
+@media (max-width: 576px){
+  .post-card .comment-item[data-depth]{
+    --indent: min(calc(var(--depth) * 0.45rem), 1.25rem);
+    margin-left: var(--indent);
+    width: calc(100% - var(--indent));
+  }
+}
+
+.post-card .reply-item{
+  margin-left: 0 !important;
+}
+
+.post-card .post-text img[alt="GIF"],
+.post-card .comment-text img[alt="GIF"],
+.post-card .post-text img[alt="Sticker"],
+.post-card .comment-text img[alt="Sticker"]{
+  display: block;
+  height: auto;
+  max-width: 100% !important;
+}
+
+.post-card .post-text img[alt="GIF"],
+.post-card .comment-text img[alt="GIF"]{
+  width: min(300px, 100%) !important;
+}
+.post-card .post-text img[alt="Sticker"],
+.post-card .comment-text img[alt="Sticker"]{
+  width: min(150px, 100%) !important;
+}
+
+@media (max-width: 576px){
+  .post-card .post-text img[alt="GIF"],
+  .post-card .comment-text img[alt="GIF"]{
+    width: 100% !important;
+  }
+  .post-card .post-text img[alt="Sticker"],
+  .post-card .comment-text img[alt="Sticker"]{
+    width: min(220px, 100%) !important;
+  }
+}
+
+@media (max-width: 576px){
+  .post-card .comment-item[data-depth]:not([data-depth="0"]){
+    padding: 0.85rem !important;
+  }
+  .post-card .comment-item[data-depth]:not([data-depth="0"]) img.rounded-circle{
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .post-card .comment-actions{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+.comment-composer {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.composer-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+  min-height: 36px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.composer-preview.has-items {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preview-badge .count {
+  background: rgba(255,255,255,0.9);
+  color: #1e40af;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.composer-media-row {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:10px;
+  position: relative;
+}
+
+.composer-media-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-size: 18px;
+  transition: all .2s;
+}
+
+.composer-media-btn:hover {
+  border-color:#3b82f6;
+  background:#eff6ff;
+  transform: translateY(-1px);
+}
+
+.composer-media-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color:#3b82f6;
+}
+
+.composer-search-input {
+  flex: 1;
+  min-width: 160px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.composer-search-input:focus{
+  outline:none;
+  border-color:#3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.composer-search-btn {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  border: 2px solid #3b82f6;
+  background: white;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.composer-search-btn:hover{
+  background:#3b82f6;
+  color:white;
+  transform: translateY(-1px);
+}
+
+.composer-results {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  width: min(360px, 100%);
+  max-height: 260px;
+  overflow-y: auto;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  padding: 10px;
+  display: none;
+  z-index: 1050;
+}
+
+.composer-results.show { display:block; }
+
+.composer-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.composer-grid img{
+  width:100%;
+  height:80px;
+  object-fit:cover;
+  border-radius: 10px;
+  cursor:pointer;
+  border: 2px solid transparent;
+  transition: all .15s;
+}
+.composer-grid img:hover{
+  border-color:#3b82f6;
+  transform: scale(1.03);
+}
+
+@media (max-width: 576px){
+  .composer-search-input{
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .composer-search-btn{
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .composer-results{
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    top: auto;
+    width: auto;
+    max-width: 560px;
+    margin: 0 auto;
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 1050;
+  }
+
+  .composer-grid{
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  }
+
+  .composer-grid img{
+    height: 92px;
+  }
 }
 </style>
 
 {% if messages %}
 <div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3" style="z-index: 9999;" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3"
+       style="z-index: 9999;" role="alert">
+    <i class="fas fa-check-circle mr-2"></i>
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
 </div>
 {% endif %}
 
 {% for post in page_obj %}
-    <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
-        <div class="d-flex align-items-center mb-3">
-            {% if post.user.profile_picture %}
-                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" style="object-fit: cover;">
-            {% else %}
-                <img src="{% static 'network/images/default-avatar.png' %}" 
-                     class="rounded-circle me-2" width="48" height="48" 
-                     style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            {% endif %}
-            <div>
-                <strong>
-                    <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
-                        {{ post.user.username }}
-                    </a>
-                </strong>
-                <small class="text-muted ms-2">
-                    {% if post.user.gender == 'M' %}♂
-                    {% elif post.user.gender == 'F' %}♀
-                    {% elif post.user.gender == 'O' %}⚧
-                    {% else %}•
-                    {% endif %}
-                </small>
-                <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
-            </div>
-        </div>
+  <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
 
-        <div class="post-content mb-3">
-            <p class="post-text mb-0">{{ post.content|linebreaksbr }}</p>
-        </div>
+    <div class="d-flex align-items-center mb-3" style="gap:10px;">
+      {% if post.user.profile_picture %}
+        <img src="{{ post.user.profile_picture.url }}" class="rounded-circle mr-2"
+             width="48" height="48" style="object-fit: cover;">
+      {% else %}
+        <img src="{% static 'network/images/default-avatar.png' %}"
+             class="rounded-circle mr-2" width="48" height="48"
+             style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      {% endif %}
 
-        <div class="mb-3">
-            {% for media in post.media.all %}
-                <div class="mb-2">
-                    {% if media.media_type == 'image' %}
-                        <img src="{{ media.file.url }}" class="img-fluid rounded" style="max-height: 500px; object-fit: contain;">
-                    {% else %}
-                        <video controls class="w-100 rounded" style="max-height: 500px;">
-                            <source src="{{ media.file.url }}" type="video/mp4">
-                        </video>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+      <div style="min-width:0; flex:1;"> 
+        <strong>
+          <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
+            {{ post.user.username }}
+          </a>
+        </strong>
+        <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
+      </div>
 
-        <div class="d-flex gap-3 align-items-center flex-wrap">
-            <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
-                    data-post="{{ post.id }}" data-value="1">
-                👍 <span>{{ post.thumbs_up.count }}</span>
+      {% if request.user == post.user %}
+        <div class="ml-auto action-menu">
+          <button type="button"
+                  class="action-menu-toggle js-action-menu-toggle"
+                  aria-label="Post actions"
+                  aria-expanded="false">
+            ⋮
+          </button>
+
+          <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+            <button type="button" class="action-menu-item edit-post" data-post="{{ post.id }}">
+              Edit
             </button>
-
-            <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}" 
-                    data-post="{{ post.id }}" data-value="-1">
-                👎 <span>{{ post.thumbs_down.count }}</span>
+            <button type="button" class="action-menu-item delete-post" data-post="{{ post.id }}">
+              Delete
             </button>
-
-            {% if request.user == post.user %}
-                <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
-                <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
-            {% endif %}
+          </div>
         </div>
-
-        <!-- COMMENTS SECTION -->
-        <div class="comments-section mt-4">
-            <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
-
-            <!-- MAIN COMMENT FORM WITH GIF/STICKER PICKER -->
-            {% if user.is_authenticated %}
-                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
-                    {% csrf_token %}
-                    <textarea name="content" class="form-control mb-2" 
-                              rows="2" placeholder="Write a comment..." 
-                              required data-post-id="{{ post.id }}"></textarea>
-                    
-                    <!-- GIF/Sticker Picker -->
-                    <div class="gif-picker-comment-section" data-post-id="{{ post.id }}">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted">🎨 Add GIFs or Stickers</small>
-                            <button type="button" class="btn btn-sm btn-outline-primary browse-media-comment" data-post-id="{{ post.id }}">
-                                Browse Media
-                            </button>
-                        </div>
-                        
-                        <div class="btn-group w-100 mb-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary active comment-media-type" 
-                                    data-post-id="{{ post.id }}" data-media-type="gifs">GIFs</button>
-                            <button type="button" class="btn btn-sm btn-outline-primary comment-media-type" 
-                                    data-post-id="{{ post.id }}" data-media-type="stickers">Stickers</button>
-                        </div>
-                        
-                        <div class="input-group input-group-sm mb-2">
-                            <input type="text" class="form-control" 
-                                   placeholder="Search GIFs..." data-post-id="{{ post.id }}" class="comment-media-search">
-                            <button type="button" class="btn btn-primary comment-media-search-btn" data-post-id="{{ post.id }}">
-                                Search
-                            </button>
-                        </div>
-                        
-                        <div class="comment-media-results" data-post-id="{{ post.id }}" style="display: none;"></div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-sm">Comment</button>
-                </form>
-            {% endif %}
-
-            <!-- ROOT COMMENTS -->
-            {% for comment in post.comments.all %}
-                {% if not comment.parent %}
-                    {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
-                {% endif %}
-            {% empty %}
-                <p class="text-center text-muted py-3">No comments yet. Be the first!</p>
-            {% endfor %}
-        </div>
+      {% endif %}
     </div>
+
+    <div class="post-content mb-3">
+      <div class="post-text mb-0">
+        {{ post.content|parse_media|safe }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      {% for media in post.media.all %}
+        <div class="mb-2">
+          {% if media.media_type == 'image' %}
+            <img src="{{ media.file.url }}" class="img-fluid rounded" style="max-height: 500px; object-fit: contain;">
+          {% else %}
+            <video controls class="w-100 rounded" style="max-height: 500px;">
+              <source src="{{ media.file.url }}" type="video/mp4">
+            </video>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="d-flex align-items-center flex-wrap" style="gap:1rem;">
+      <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}" 
+        data-post="{{ post.id }}" data-value="1">
+        👍 <span>{{ post.thumbs_up.count }}</span>
+      </button>
+
+      <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}" 
+              data-post="{{ post.id }}" data-value="-1">
+        👎 <span>{{ post.thumbs_down.count }}</span>
+      </button> 
+    </div>
+
+    {% with visible_comments=post.comments.all|filter_by_privacy:request.user %}
+      {% with visible_count=visible_comments|length %}
+        {% with hidden_count=post.comments.count|sub:visible_count %}
+          <div class="comments-section mt-4">
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-3" style="gap:8px;">
+              <h6 class="mb-0">
+                Comments ({{ visible_count }})
+                {% if hidden_count|add:0 > 0 %}
+                  <small class="text-muted">({{ hidden_count }} hidden)</small>
+                {% endif %}
+              </h6>
+
+              <button type="button"
+                      class="btn btn-sm btn-outline-secondary js-toggle-comments"
+                      data-post-id="{{ post.id }}"
+                      aria-expanded="false">
+                Show comments
+              </button>
+            </div>
+
+            <div class="js-comments-body d-none" data-post-id="{{ post.id }}">
+
+              {% can_comment_on_post post user as can_comment %}
+              {% if user.is_authenticated and can_comment %}
+                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4 js-media-form"
+                      data-composer-id="post-{{ post.id }}">
+                  {% csrf_token %}
+
+                  <div class="comment-composer">
+                    <div class="composer-preview" data-preview="post-{{ post.id }}"></div>
+
+                    <textarea name="content"
+                              class="form-control"
+                              rows="2"
+                              placeholder="Write a comment..."
+                              required></textarea>
+
+                    <div class="composer-media-row" data-row="post-{{ post.id }}">
+                      <button type="button" class="composer-media-btn active" data-type="gifs" title="GIFs">🎞️</button>
+                      <button type="button" class="composer-media-btn" data-type="stickers" title="Stickers">🏷️</button>
+
+                      <input type="text" class="composer-search-input" placeholder="Search GIFs or Stickers...">
+                      <button type="button" class="composer-search-btn"><i class="fas fa-search"></i></button>
+
+                      <div class="composer-results" data-results="post-{{ post.id }}"></div>
+                    </div>
+
+                    <input type="hidden" class="media-data-input" value="[]">
+                  </div>
+
+                  <button type="submit" class="btn btn-primary btn-sm mt-2">Comment</button>
+                </form>
+              {% elif user.is_authenticated and not can_comment %}
+                <div class="alert alert-light border small mb-3">
+                  You can't comment here.
+                </div>
+              {% endif %}
+
+              {% with root_comments=visible_comments|get_root_comments %}
+                {% for comment in root_comments %}
+                  {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
+                {% empty %}
+                  <p class="text-center text-muted py-3">No comments yet.</p>
+                {% endfor %}
+              {% endwith %}
+
+            </div>
+          </div>
+        {% endwith %}
+      {% endwith %}
+    {% endwith %}
+  </div>
 {% empty %}
-    <p class="text-center text-muted py-5">No posts to show.</p>
+  <p class="text-center text-muted py-5">No posts to show.</p>
 {% endfor %}
 
-<!-- Pagination -->
 {% if page_obj.has_other_pages %}
-    <nav>
-        <ul class="pagination justify-content-center mt-4">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
-            {% endif %}
-            {% for num in page_obj.paginator.page_range %}
-                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                </li>
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+<nav>
+  <ul class="pagination justify-content-center mt-4">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
+    {% endif %}
+  </ul>
+</nav>
 {% endif %}
 
 <script>
-console.log('🚀 POST LIST LOADED');
+/*
+  Media composer:
+  - No URLs shown in textarea while typing
+  - On submit: tags are appended into textarea (same pattern as conversation.html)
+*/
+(function(){
+  const states = {}; // composerId -> {items:[], type:'gifs'}
 
-function getCSRF() {
-    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-}
+  function getState(id){
+    if (!states[id]) states[id] = { items: [], type: 'gifs' };
+    return states[id];
+  }
 
-// GIF/STICKER PICKER
-const mediaTypes = {};
+  function renderPreview(id){
+    const preview = document.querySelector(`[data-preview="${id}"]`);
+    const form = document.querySelector(`form[data-composer-id="${id}"]`);
+    if (!preview || !form) return;
 
-document.querySelectorAll('.gif-picker-comment-section').forEach(section => {
-    const id = section.dataset.postId || section.dataset.replyTo;
-    if (id) mediaTypes[id] = 'gifs';
-});
+    const state = getState(id);
+    preview.innerHTML = '';
+    preview.classList.toggle('has-items', state.items.length > 0);
 
-// Media type toggle
-document.querySelectorAll('.comment-media-type').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const id = this.dataset.postId || this.dataset.replyTo;
-        const type = this.dataset.mediaType;
-        mediaTypes[id] = type;
-        
-        const selector = this.dataset.postId ? `[data-post-id="${id}"]` : `[data-reply-to="${id}"]`;
-        document.querySelectorAll(`.comment-media-type${selector}`).forEach(b => {
-            b.classList.toggle('active', b.dataset.mediaType === type);
-        });
-    });
-});
+    if (state.items.length === 0) return;
 
-// Media search
-function searchMedia(id, isReply = false) {
-    const selector = isReply ? `[data-reply-to="${id}"]` : `[data-post-id="${id}"]`;
-    const input = document.querySelector(`.comment-media-search${selector}`);
-    const results = document.querySelector(`.comment-media-results${selector}`);
-    const textarea = document.querySelector(isReply ? `.reply-textarea${selector}` : `textarea${selector}`);
-    
-    if (!input || !results || !textarea) return;
-    
-    const query = input.value.trim() || 'trending';
-    const type = mediaTypes[id] || 'gifs';
-    
-    results.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
-    results.style.display = 'block';
-    
-    fetch(`/search-gifs/?q=${encodeURIComponent(query)}&type=${type}`)
-        .then(r => r.json())
-        .then(data => {
-            results.innerHTML = '';
-            const items = data.gifs || [];
-            
-            if (items.length > 0) {
-                const close = document.createElement('button');
-                close.type = 'button';
-                close.className = 'btn btn-sm btn-outline-secondary mb-2';
-                close.innerHTML = '✕ Close';
-                close.onclick = () => { results.style.display = 'none'; results.innerHTML = ''; };
-                results.appendChild(close);
-                
-                const grid = document.createElement('div');
-                grid.className = 'd-flex flex-wrap gap-2';
-                grid.style.maxHeight = '200px';
-                grid.style.overflowY = 'auto';
-                
-                items.forEach(url => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.style.width = '80px';
-                    img.style.height = '80px';
-                    img.style.objectFit = 'cover';
-                    img.style.cursor = 'pointer';
-                    img.style.borderRadius = '4px';
-                    img.className = 'border';
-                    img.onclick = () => {
-                        const tag = type === 'gifs' ? 'GIF' : 'STICKER';
-                        textarea.value += `\n[${tag}:${url}]\n`;
-                        textarea.focus();
-                        results.style.display = 'none';
-                        results.innerHTML = '';
-                        input.value = '';
-                    };
-                    grid.appendChild(img);
-                });
-                results.appendChild(grid);
-            } else {
-                results.innerHTML = '<p class="text-muted text-center">No results</p>';
-            }
-        })
-        .catch(() => {
-            results.innerHTML = '<p class="text-danger text-center">Search failed</p>';
-        });
-}
+    const gifs = state.items.filter(x => x.kind === 'GIF').length;
+    const stickers = state.items.filter(x => x.kind === 'STICKER').length;
 
-document.querySelectorAll('.browse-media-comment').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const id = this.dataset.postId || this.dataset.replyTo;
-        searchMedia(id, !!this.dataset.replyTo);
-    });
-});
+    if (gifs){
+      const b = document.createElement('span');
+      b.className = 'preview-badge';
+      b.innerHTML = `<span>🎞️ GIFs</span><span class="count">${gifs}</span>`;
+      preview.appendChild(b);
+    }
+    if (stickers){
+      const b = document.createElement('span');
+      b.className = 'preview-badge';
+      b.innerHTML = `<span>🏷️ Stickers</span><span class="count">${stickers}</span>`;
+      preview.appendChild(b);
+    }
 
-document.querySelectorAll('.comment-media-search-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const id = this.dataset.postId || this.dataset.replyTo;
-        searchMedia(id, !!this.dataset.replyTo);
-    });
-});
+    // keep hidden JSON updated (optional)
+    const hidden = form.querySelector('.media-data-input');
+    if (hidden) hidden.value = JSON.stringify(state.items);
+  }
 
-document.querySelectorAll('.comment-media-search').forEach(input => {
-    input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const id = this.dataset.postId || this.dataset.replyTo;
-            searchMedia(id, !!this.dataset.replyTo);
+  function openResults(id, html){
+    const box = document.querySelector(`[data-results="${id}"]`);
+    if (!box) return;
+    box.innerHTML = html;
+    box.classList.add('show');
+  }
+
+  function closeResults(id){
+    const box = document.querySelector(`[data-results="${id}"]`);
+    if (!box) return;
+    box.classList.remove('show');
+    box.innerHTML = '';
+  }
+
+  function addItem(id, url, kind){
+    const state = getState(id);
+    if (state.items.some(x => x.url === url)) return;
+    state.items.push({ url, kind });
+    renderPreview(id);
+  }
+
+  function search(id, query){
+    const state = getState(id);
+    const type = state.type;
+    openResults(id, `<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>`);
+
+    fetch(`/search-gifs/?q=${encodeURIComponent(query || 'trending')}&type=${encodeURIComponent(type)}`)
+      .then(r => r.json())
+      .then(data => {
+        const items = data.gifs || [];
+        if (!items.length){
+          openResults(id, `<p class="text-muted text-center mb-0">No results</p>`);
+          return;
         }
-    });
-});
 
-// Process media tags
-document.querySelectorAll('.comment-text').forEach(el => {
-    let html = el.innerHTML;
-    html = html.replace(/\[GIF:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:200px;"></div>');
-    html = html.replace(/\[STICKER:(.*?)\]/g, '<div class="my-2"><img src="$1" class="img-fluid rounded" style="max-width:150px;"></div>');
-    el.innerHTML = html;
-});
+        const grid = items.slice(0, 12).map(url => {
+          const safeUrl = String(url).replace(/"/g, '&quot;');
+          return `<img src="${safeUrl}" alt="media" data-url="${safeUrl}">`;
+        }).join('');
 
-console.log('✅ GIF picker ready');
+        openResults(id, `
+          <button type="button" class="btn btn-sm btn-outline-primary w-100 mb-2 js-close-results">Close</button>
+          <div class="composer-grid">${grid}</div>
+        `);
+
+        const box = document.querySelector(`[data-results="${id}"]`);
+        if (!box) return;
+
+        box.querySelector('.js-close-results')?.addEventListener('click', () => closeResults(id));
+
+        box.querySelectorAll('img[data-url]').forEach(img => {
+          img.addEventListener('click', () => {
+            const url = img.getAttribute('data-url');
+            const kind = (state.type === 'gifs') ? 'GIF' : 'STICKER';
+            addItem(id, url, kind);
+            closeResults(id);
+          });
+        });
+      })
+      .catch(() => openResults(id, `<p class="text-danger text-center mb-0">Search failed</p>`));
+  }
+
+  // Media button toggle + search
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.composer-media-btn');
+    if (btn){
+      const row = btn.closest('.composer-media-row');
+      const form = btn.closest('form[data-composer-id]');
+      if (!row || !form) return;
+
+      const id = form.dataset.composerId;
+      const state = getState(id);
+      state.type = btn.dataset.type;
+
+      row.querySelectorAll('.composer-media-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      return;
+    }
+
+    const sbtn = e.target.closest('.composer-search-btn');
+    if (sbtn){
+      const form = sbtn.closest('form[data-composer-id]');
+      const row = sbtn.closest('.composer-media-row');
+      if (!form || !row) return;
+
+      const id = form.dataset.composerId;
+      const input = row.querySelector('.composer-search-input');
+      const q = (input?.value || '').trim() || 'trending';
+      search(id, q);
+      return;
+    }
+
+    // Close results when clicking outside
+    if (!e.target.closest('.composer-media-row') && !e.target.closest('.composer-results')){
+      document.querySelectorAll('.composer-results.show').forEach(x => {
+        x.classList.remove('show');
+        x.innerHTML = '';
+      });
+    }
+  });
+
+  // Enter key for search
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const input = e.target.closest('.composer-search-input');
+    if (!input) return;
+
+    e.preventDefault();
+    const form = input.closest('form[data-composer-id]');
+    const id = form?.dataset?.composerId;
+    if (!id) return;
+
+    const q = (input.value || '').trim() || 'trending';
+    search(id, q);
+  });
+
+  // Submit: append tags ONLY at submit time (no URLs shown while typing)
+  document.addEventListener('submit', (e) => {
+    const form = e.target.closest('form[data-composer-id]');
+    if (!form) return;
+
+    const id = form.dataset.composerId;
+    const state = getState(id);
+    const textarea = form.querySelector('textarea[name="content"]');
+    if (!textarea) return;
+
+    const userText = (textarea.value || '').trim();
+    const tags = state.items.map(item => `[${item.kind}:${item.url}]`).join(' ');
+
+    // Ensure content is not empty if only media selected
+    textarea.value = tags ? (userText ? `${userText}\n${tags}` : tags) : userText;
+  });
+
+  // init previews already on page
+  document.querySelectorAll('form[data-composer-id]').forEach(f => renderPreview(f.dataset.composerId));
+})();
 </script>
