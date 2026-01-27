@@ -4,6 +4,17 @@
 
 {% block body %}
     <div class="container mt-5">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
         <h2>{{ list_type }} of <a href="{% url 'profile' profile_user.username %}">{{ profile_user.username }}</a></h2>
         <a href="{% url 'profile' profile_user.username %}" class="btn btn-outline-secondary mb-3">← Back to Profile</a>
         
@@ -36,11 +47,11 @@
                                 {% if request.user.is_authenticated and request.user != user %}
                                     {% with key=user.id|stringformat:"s" %}
                                         {% if is_following_dict|get_item:key %}
-                                            <button class="btn btn-sm btn-outline-primary follow-btn" data-username="{{ user.username }}">
+                                            <button class="btn btn-sm btn-following follow-btn" data-username="{{ user.username }}">
                                                 Unfollow
                                             </button>
                                         {% else %}
-                                            <button class="btn btn-sm btn-primary follow-btn" data-username="{{ user.username }}">
+                                            <button class="btn btn-sm btn-not-following follow-btn" data-username="{{ user.username }}">
                                                 Follow
                                             </button>
                                         {% endif %}
@@ -94,15 +105,15 @@
                             return;
                         }
                         
-                        // Toggle button text and style
+                        // Toggle button text and style using our CSS classes
                         if (data.action === 'followed') {
                             this.textContent = 'Unfollow';
-                            this.classList.remove('btn-primary');
-                            this.classList.add('btn-outline-primary');
+                            this.classList.remove('btn-not-following');
+                            this.classList.add('btn-following');
                         } else if (data.action === 'unfollowed') {
                             this.textContent = 'Follow';
-                            this.classList.remove('btn-outline-primary');
-                            this.classList.add('btn-primary');
+                            this.classList.remove('btn-following');
+                            this.classList.add('btn-not-following');
                         }
                         
                         // Optional: Update follower count display if on page
