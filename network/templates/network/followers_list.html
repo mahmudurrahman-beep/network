@@ -22,7 +22,7 @@
             <div class="row">
                 {% for user in users %}
                     <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm hover-shadow" style="transition: transform 0.2s, box-shadow 0.2s;">
+                        <div class="card shadow-sm" style="transition: transform 0.2s, box-shadow 0.2s;">
                             <div class="card-body text-center">
                                 {% if user.profile_picture %}
                                     <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="100" height="100" style="object-fit: cover;">
@@ -41,7 +41,7 @@
                                         {{ user.username }}
                                     </a>
                                 </h5>
-                                <p class="text-muted">{{ user.bio|default:"No bio" }}</p>
+                                <p class="text-muted">{{ user.bio|default:"No bio"|truncatechars:100 }}</p>
                                
                                 <!-- Follow/Unfollow button for logged-in users -->
                                 {% if request.user.is_authenticated and request.user != user %}
@@ -68,7 +68,7 @@
     </div>
 
     <script>
-        // JavaScript for follow/unfollow functionality - FIXED URL
+        // JavaScript for follow/unfollow functionality - FIXED with loading states
         document.addEventListener('DOMContentLoaded', function() {
             // Add event listeners to all follow buttons
             document.querySelectorAll('.follow-btn').forEach(button => {
@@ -80,6 +80,13 @@
                         alert('Security error. Please refresh the page.');
                         return;
                     }
+                    
+                    // Prevent multiple clicks
+                    if (this.disabled) return;
+                    this.disabled = true;
+                    
+                    const originalText = this.textContent;
+                    this.textContent = '...';
                     
                     console.log(`Toggling follow for ${username}`);
                     
@@ -102,6 +109,8 @@
                         
                         if (data.error) {
                             alert('Error: ' + data.error);
+                            this.disabled = false;
+                            this.textContent = originalText;
                             return;
                         }
                         
@@ -115,16 +124,19 @@
                             this.classList.remove('btn-following');
                             this.classList.add('btn-not-following');
                         }
-                        
-                        // Optional: Update follower count display if on page
-                        const followersCount = document.querySelector('[data-followers-count]');
-                        if (followersCount && data.followers !== undefined) {
-                            followersCount.textContent = data.followers + ' followers';
-                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Network error. Please try again.');
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    })
+                    .finally(() => {
+                        // Only re-enable if not already updated
+                        if (this.textContent === '...') {
+                            this.disabled = false;
+                            this.textContent = originalText;
+                        }
                     });
                 });
             });
@@ -144,6 +156,29 @@
                 }
                 return cookieValue;
             }
+            
+            // Add hover effect for cards (if not in styles.css)
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                    this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                });
+            });
         });
     </script>
+    
+    <style>
+        /* Add hover effect if not in styles.css */
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        }
+    </style>
 {% endblock %}
