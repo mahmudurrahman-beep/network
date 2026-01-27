@@ -265,7 +265,7 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 
 /* Auto-dismiss animation */
 .alert-auto-dismiss {
-    animation: alertDismiss 30s forwards !important;
+    animation: alertDismiss 30s forwards;
 }
 
 @keyframes alertDismiss {
