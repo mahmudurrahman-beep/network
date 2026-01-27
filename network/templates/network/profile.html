@@ -143,24 +143,42 @@
     <div class="d-flex justify-content-center profile-actions mt-3">
 
         {% if user.is_authenticated and user != profile_user %}
-            <!-- Follow Button - Now using custom classes -->
-            <button class="btn profile-action-btn {% if is_following %}btn-following{% else %}btn-not-following{% endif %}"
-                    id="follow-btn"
-                    data-username="{{ profile_user.username }}">
-                {% if is_following %}Unfollow{% else %}Follow{% endif %}
-            </button>
+            <!-- Follow Button with block check -->
+            {% if can_follow %}
+                <button class="btn profile-action-btn mb-2 {% if is_following %}btn-following{% else %}btn-not-following{% endif %}"
+                        id="follow-btn"
+                        data-username="{{ profile_user.username }}">
+                    {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                </button>
+            {% else %}
+                <button class="btn profile-action-btn mb-2" disabled
+                        style="background: linear-gradient(90deg, rgba(108, 117, 125, 0.1), rgba(108, 117, 125, 0.08)) !important;
+                               color: #6c757d !important;
+                               border: 2px solid #6c757d !important;">
+                    {% if is_blocked %}You blocked{% else %}You are blocked{% endif %}
+                </button>
+            {% endif %}
 
-            <!-- Message Button - Harmonized -->
-            <a href="{% url 'conversation' profile_user.username %}"
-               class="btn profile-action-btn"
-               style="background: linear-gradient(90deg, rgba(14, 97, 150, 0.1), rgba(6, 182, 212, 0.08)) !important;
-                      color: var(--brand-blue) !important;
-                      border: 2px solid var(--brand-blue) !important;">
-                Message
-            </a>
-
-            <!-- Block Button - Harmonized -->
-            <button class="btn profile-action-btn {% if is_blocked %}btn-blocked{% else %}btn-not-blocked{% endif %}"
+            <!-- Message Button with block check -->
+            {% if can_message %}
+                <a href="{% url 'conversation' profile_user.username %}"
+                   class="btn profile-action-btn mb-2"
+                   style="background: linear-gradient(90deg, rgba(14, 97, 150, 0.1), rgba(6, 182, 212, 0.08)) !important;
+                          color: var(--brand-blue) !important;
+                          border: 2px solid var(--brand-blue) !important;">
+                    Message
+                </a>
+            {% else %}
+                <button class="btn profile-action-btn mb-2" disabled
+                        style="background: linear-gradient(90deg, rgba(108, 117, 125, 0.1), rgba(108, 117, 125, 0.08)) !important;
+                               color: #6c757d !important;
+                               border: 2px solid #6c757d !important;">
+                    {% if is_blocked %}You blocked{% else %}You are blocked{% endif %}
+                </button>
+            {% endif %}
+            
+            <!-- Block/Unblock Button -->
+            <button class="btn profile-action-btn mb-2 {% if is_blocked %}btn-blocked{% else %}btn-not-blocked{% endif %}"
                     onclick="handleBlock('{{ profile_user.username }}', this)"
                     style="{% if is_blocked %}
                                background: linear-gradient(90deg, #dc3545, #c82333) !important;
@@ -175,7 +193,7 @@
             </button>
 
             <!-- Report Button - Harmonized -->
-            <button class="btn profile-action-btn"
+            <button class="btn profile-action-btn mb-2"
                     onclick="openReportModal('{{ profile_user.username }}', {{ profile_user.id }})"
                     style="background: linear-gradient(90deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.08)) !important;
                            color: #ffc107 !important;
@@ -187,7 +205,7 @@
         {% if user == profile_user %}
             <!-- Edit Bio Button - Harmonized -->
             <a href="{% url 'edit_profile' %}" 
-               class="btn profile-action-btn"
+               class="btn profile-action-btn mb-2"
                style="background: linear-gradient(90deg, rgba(108, 117, 125, 0.1), rgba(108, 117, 125, 0.08)) !important;
                       color: #6c757d !important;
                       border: 2px solid #6c757d !important;">
@@ -196,7 +214,7 @@
 
             <!-- Settings Button - Harmonized -->
             <a href="{% url 'privacy_settings' %}" 
-               class="btn profile-action-btn"
+               class="btn profile-action-btn mb-2"
                style="background: linear-gradient(90deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.08)) !important;
                       color: #17a2b8 !important;
                       border: 2px solid #17a2b8 !important;">
@@ -326,4 +344,4 @@ document.addEventListener('keyup', function(e) {
 
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}{% endblock %} 
