@@ -223,20 +223,6 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 .alert-success .close {
     color: white !important;
     opacity: 0.8 !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,0.2) !important;
-    transition: opacity .2s ease !important;
-}
-
-.alert-success .close:hover {
-    color: white !important;
-    opacity: 1 !important;
-    transform: scale(1.1);
-}
-
-/* Modern circular close button for Bootstrap 4 */
-.alert-success .close {
-    color: white !important;
-    opacity: 0.8 !important;
     background: rgba(255, 255, 255, 0.15) !important;
     width: 28px;
     height: 28px;
@@ -263,15 +249,31 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
     margin-top: -1px;
 }
 
-/* Auto-dismiss animation */
-.alert-auto-dismiss {
-    animation: alertDismiss 30s forwards;
+/* For other alert types (error, warning) */
+.alert-danger .close,
+.alert-warning .close,
+.alert-info .close {
+    opacity: 0.7 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    margin-top: -2px;
+    margin-right: -2px;
+    transition: all 0.2s ease !important;
 }
 
-@keyframes alertDismiss {
-    0% { opacity: 1; transform: translateY(0); }
-    70% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+.alert-danger .close:hover,
+.alert-warning .close:hover,
+.alert-info .close:hover {
+    opacity: 1 !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    transform: scale(1.05);
 }
 /* ========== END ALERT FIXES ========== */
 
@@ -279,34 +281,37 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 .btn-following {
     background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)) !important;
     color: white !important;
-    border: none !important;
+    border: 2px solid #0a4d7a !important;
     font-weight: 800 !important;
     padding: 8px 20px !important;
     border-radius: 10px !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 12px rgba(6, 98, 150, 0.1) !important;
+    box-shadow: 0 4px 12px rgba(6, 98, 150, 0.15) !important;
 }
 
 .btn-following:hover {
     background: linear-gradient(90deg, #0a4d7a, #05a5c0) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px rgba(6, 98, 150, 0.15) !important;
+    box-shadow: 0 8px 24px rgba(6, 98, 150, 0.2) !important;
+    border-color: var(--brand-blue) !important;
 }
 
 .btn-not-following {
     background: transparent !important;
     color: var(--brand-blue) !important;
-    border: 2px solid var(--brand-blue) !important;
+    border: 2px solid #0a4d7a !important;
     font-weight: 800 !important;
     padding: 8px 20px !important;
     border-radius: 10px !important;
     transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(8, 48, 71, 0.12) !important;
 }
 
 .btn-not-following:hover {
     background: rgba(14, 97, 150, 0.08) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px rgba(6, 98, 150, 0.1) !important;
+    box-shadow: 0 6px 16px rgba(6, 98, 150, 0.18) !important;
+    border-color: var(--brand-blue) !important;
 }
 
 /* Follow button base styling */
@@ -364,7 +369,6 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 @media (prefers-reduced-motion: reduce) {
   .argon-logo .char { animation: none !important; transform: none !important; }
   * { transition: none !important; }
-  .alert-auto-dismiss { animation: none !important; }
 }
 
 /* PWA Fullscreen Optimizations */
@@ -420,18 +424,18 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
     border-radius: 10px !important;
     font-weight: 700 !important;
     transition: all 0.2s ease !important;
-    border: 2px solid transparent !important;
 }
 
 .profile-action-btn:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12) !important;
-} 
+}
+
 /* ========== VOTE BUTTONS - PROPER PILL DESIGN ========== */
 .thumbs-up, .thumbs-down {
-    border-radius: 50px !important; /* Pill shape */
+    border-radius: 50px !important;
     padding: 6px 14px !important;
-    min-width: 85px !important; /* Reduced from 100px */
+    min-width: 85px !important;
     font-weight: 700 !important;
     letter-spacing: 0.2px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -505,4 +509,4 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
         padding: 1px 5px;
         font-size: 12px;
     }
-} 
+}
