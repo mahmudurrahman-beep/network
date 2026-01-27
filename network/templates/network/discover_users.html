@@ -2,127 +2,246 @@
 {% load static %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h2 class="mb-4">Discover Users</h2>
-        
-        <!-- Search Form -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <form method="get" class="mb-0">
-                    <div class="input-group">
-                        <input type="text" name="q" class="form-control" 
-                               placeholder="Search by username..." 
-                               value="{{ query }}"
-                               aria-label="Search users">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i> Search
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<style>
+    .discover-container {
+        max-width: var(--max-width);
+        margin: 0 auto;
+    }
+    
+    .discover-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+        border: 1px solid rgba(8,48,71,0.04);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(2,6,23,0.04);
+        transition: all 0.2s ease;
+        height: 100%;
+        border-left: 4px solid var(--brand-blue);
+    }
+    
+    .discover-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(6,98,150,0.08);
+        border-color: rgba(8,48,71,0.08);
+    }
+    
+    .discover-avatar {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(6,98,150,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .discover-card:hover .discover-avatar {
+        transform: scale(1.05);
+    }
+    
+    .discover-search-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+        border: 1px solid rgba(8,48,71,0.04);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(2,6,23,0.04);
+        padding: 20px;
+    }
+    
+    .discover-search-input {
+        background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.92));
+        border: 1px solid rgba(8,48,71,0.12);
+        border-radius: 12px;
+        color: var(--muted-dark);
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+    }
+    
+    .discover-search-input:focus {
+        border-color: var(--brand-blue);
+        box-shadow: 0 0 0 3px rgba(14, 97, 150, 0.15);
+        outline: none;
+    }
+    
+    .discover-search-btn {
+        background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 800;
+        padding: 12px 24px;
+        transition: all 0.2s ease;
+    }
+    
+    .discover-search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(6,98,150,0.15);
+    }
+    
+    .discover-empty-state {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+        border: 1px solid rgba(8,48,71,0.04);
+        border-radius: 20px;
+        padding: 60px 20px;
+        box-shadow: 0 12px 36px rgba(2,6,23,0.04);
+    }
+    
+    .discover-info-note {
+        background: linear-gradient(90deg, rgba(14, 97, 150, 0.08), rgba(6, 182, 212, 0.06));
+        border: 1px solid rgba(14, 97, 150, 0.12);
+        border-radius: 12px;
+        color: var(--muted-dark);
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+    }
+    
+    .view-profile-btn {
+        background: linear-gradient(90deg, rgba(14, 97, 150, 0.1), rgba(6, 182, 212, 0.08));
+        color: var(--brand-blue);
+        border: 2px solid var(--brand-blue);
+        border-radius: 12px;
+        font-weight: 800;
+        padding: 10px 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .view-profile-btn:hover {
+        background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal));
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(6,98,150,0.15);
+        border-color: transparent;
+    }
+</style>
 
-        <!-- Users Grid -->
-        {% if users %}
-            <div class="row">
-                {% for u in users %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm h-100 hover-card" 
-                             style="transition: transform 0.2s; border-left: 4px solid #667eea;">
-                            <div class="card-body text-center">
-                                <!-- Avatar -->
-                                <div class="mb-3">
-                                    {% if u.profile_picture %}
-                                        <img src="{{ u.profile_picture.url }}" 
-                                             class="rounded-circle" 
-                                             width="90" height="90" 
-                                             style="object-fit: cover; border: 3px solid #f8f9fa; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                                    {% else %}
-                                        <img src="{% static 'network/images/default-avatar.png' %}" 
-                                             class="rounded-circle" 
-                                             width="90" height="90" 
-                                             style="object-fit: cover; border: 3px solid #f8f9fa; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                                             alt="{{ u.username }}">
-                                    {% endif %}
-                                </div>
-                                
-                                <!-- Username -->
-                                <h5 class="card-title mb-2">
-                                    <a href="{% url 'profile' u.username %}" 
-                                       class="text-dark text-decoration-none">
-                                        {{ u.username }}
-                                    </a>
-                                </h5>
-                                
-                                <!-- Bio Preview -->
-                                {% if u.bio %}
-                                    <p class="text-muted small mb-3" style="min-height: 40px;">
-                                        {{ u.bio|truncatechars:60 }}
-                                    </p>
+<div class="discover-container mt-5">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <h2 class="mb-4" style="color: var(--muted-dark); font-weight: 900;">Discover Users</h2>
+    
+    <!-- Search Form -->
+    <div class="discover-search-card mb-4">
+        <form method="get" class="mb-0">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control discover-search-input" 
+                       placeholder="Search by username..." 
+                       value="{{ query }}"
+                       aria-label="Search users">
+                <button type="submit" class="btn discover-search-btn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users Grid -->
+    {% if users %}
+        <div class="row">
+            {% for u in users %}
+                <div class="col-md-4 mb-4">
+                    <div class="card discover-card h-100">
+                        <div class="card-body text-center">
+                            <!-- Avatar -->
+                            <div class="mb-3">
+                                {% if u.profile_picture %}
+                                    <img src="{{ u.profile_picture.url }}" 
+                                         class="rounded-circle discover-avatar" 
+                                         width="90" height="90" 
+                                         alt="{{ u.username }}'s profile picture">
                                 {% else %}
-                                    <p class="text-muted small mb-3" style="min-height: 40px;">
-                                        <em>No bio yet</em>
-                                    </p>
+                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center discover-avatar"
+                                         style="background: linear-gradient(135deg, var(--brand-blue), var(--brand-teal)); color: white; font-size: 32px; font-weight: 900;">
+                                        {{ u.username|first|upper }}
+                                    </div>
                                 {% endif %}
-                                
-                                <!-- Stats -->
-                                <div class="text-muted small mb-3">
-                                    <i class="bi bi-people"></i> {{ u.followers.count }} followers • 
-                                    <i class="bi bi-person-check"></i> {{ u.following.count }} following
-                                </div>
-                                
-                                <!-- Action Button -->
-                                <a href="{% url 'profile' u.username %}" 
-                                   class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-person-circle"></i> View Profile
-                                </a>
                             </div>
+                            
+                            <!-- Username -->
+                            <h5 class="card-title mb-2" style="color: var(--muted-dark); font-weight: 900;">
+                                <a href="{% url 'profile' u.username %}" 
+                                   class="text-decoration-none"
+                                   style="color: var(--brand-blue) !important;">
+                                    {{ u.username }}
+                                </a>
+                            </h5>
+                            
+                            <!-- Bio Preview -->
+                            {% if u.bio %}
+                                <p class="mb-3" style="color: rgba(8,48,71,0.78) !important; min-height: 40px; font-size: 0.95rem; line-height: 1.5;">
+                                    {{ u.bio|truncatechars:60 }}
+                                </p>
+                            {% else %}
+                                <p class="mb-3" style="color: rgba(8,48,71,0.6) !important; min-height: 40px; font-size: 0.95rem; font-style: italic;">
+                                    <em>No bio yet</em>
+                                </p>
+                            {% endif %}
+                            
+                            <!-- Stats -->
+                            <div class="mb-3" style="color: rgba(8,48,71,0.65) !important; font-size: 0.9rem;">
+                                <i class="fas fa-users"></i> {{ u.followers.count }} followers •
+                                <i class="fas fa-user-check"></i> {{ u.following.count }} following
+                            </div>
+                            
+                            <!-- Action Button -->
+                            <a href="{% url 'profile' u.username %}" 
+                               class="btn view-profile-btn">
+                                <i class="fas fa-user-circle"></i> View Profile
+                            </a>
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <!-- Empty State -->
-            <div class="text-center py-5">
-                <div class="mb-4">
-                    <i class="bi bi-people display-1 text-muted"></i>
                 </div>
-                <h4 class="text-muted mb-3">
-                    {% if query %}
-                        No users found for "{{ query }}"
-                    {% else %}
-                        No users to discover
-                    {% endif %}
-                </h4>
-                <p class="text-muted">
-                    {% if query %}
-                        Try a different search term
-                    {% else %}
-                        All discoverable users are either blocked or you've blocked them
-                    {% endif %}
-                </p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5 discover-empty-state">
+            <div class="mb-4">
+                <i class="fas fa-users display-1" style="color: rgba(8,48,71,0.3);"></i>
+            </div>
+            <h4 class="mb-3" style="color: var(--muted-dark); font-weight: 900;">
                 {% if query %}
-                    <a href="{% url 'discover_users' %}" class="btn btn-outline-secondary">
-                        Clear Search
-                    </a>
+                    No users found for "{{ query }}"
+                {% else %}
+                    No users to discover
                 {% endif %}
-            </div>
-        {% endif %}
-        
-        <!-- Info Note -->
-        {% if users %}
-            <div class="alert alert-info mt-4">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Note:</strong> Blocked users and users who have blocked you are not shown here.
-                Manage your blocks in <a href="{% url 'privacy_settings' %}" class="alert-link">Privacy Settings</a>.
-            </div>
-        {% endif %}
-    </div>
+            </h4>
+            <p style="color: rgba(8,48,71,0.78) !important; max-width: 400px; margin: 0 auto;">
+                {% if query %}
+                    Try a different search term
+                {% else %}
+                    All discoverable users are either blocked or you've blocked them
+                {% endif %}
+            </p>
+            {% if query %}
+                <a href="{% url 'discover_users' %}" class="btn mt-3"
+                   style="background: linear-gradient(90deg, rgba(108, 117, 125, 0.1), rgba(108, 117, 125, 0.08)) !important;
+                          color: #6c757d !important;
+                          border: 2px solid #6c757d !important;
+                          border-radius: 12px !important;
+                          font-weight: 800 !important;
+                          padding: 10px 20px !important;">
+                    Clear Search
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
     
-    <style>
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-    </style>
+    <!-- Info Note -->
+    {% if users %}
+        <div class="alert discover-info-note alert-dismissible mt-4">
+            <i class="fas fa-info-circle me-2" style="color: var(--brand-blue);"></i>
+            <strong>Note:</strong> Blocked users and users who have blocked you are not shown here.
+            Manage your blocks in <a href="{% url 'privacy_settings' %}" class="fw-bold" style="color: var(--brand-blue) !important;">Privacy Settings</a>.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
