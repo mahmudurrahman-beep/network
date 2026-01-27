@@ -12,7 +12,7 @@
             color: #1a1a1a;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--brand-blue, #0E6196) 0%, var(--brand-teal, #06b6d4) 100%);
         }
         .container {
             max-width: 600px;
@@ -20,13 +20,15 @@
             background: white;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
         .email-header {
             width: 100%;
             height: 150px;
             overflow: hidden;
             display: block;
+            background: linear-gradient(135deg, var(--brand-blue, #0E6196) 0%, var(--brand-teal, #06b6d4) 100%);
+            text-decoration: none;
         }
         .email-banner {
             width: 100%;
@@ -35,24 +37,26 @@
             display: block;
         }
         .content {
-            padding: 48px 40px;
+            padding: 40px;
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 18px 48px;
+            background: linear-gradient(135deg, var(--brand-blue, #0E6196) 0%, var(--brand-teal, #06b6d4) 100%);
+            color: white !important;
+            padding: 16px 40px;
             text-decoration: none;
             border-radius: 12px;
             font-weight: 600;
             font-size: 16px;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(14, 97, 150, 0.3);
             transition: all 0.3s ease;
             letter-spacing: 0.5px;
+            border: none;
+            cursor: pointer;
         }
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 12px 32px rgba(14, 97, 150, 0.4);
         }
         .footer {
             text-align: center;
@@ -65,44 +69,43 @@
         }
         .code-box {
             background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-            padding: 20px;
-            border-radius: 12px;
+            padding: 16px;
+            border-radius: 10px;
             word-break: break-all;
             font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
-            margin: 30px 0;
-            font-size: 14px;
-            border-left: 5px solid #667eea;
+            margin: 24px 0;
+            font-size: 13px;
+            border-left: 4px solid var(--brand-blue, #0E6196);
             color: #374151;
             font-weight: 500;
+            line-height: 1.5;
         }
         .greeting {
             color: #111827;
-            margin-bottom: 28px;
-            font-size: 28px;
+            margin-bottom: 24px;
+            font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
         .message {
             color: #374151;
-            margin-bottom: 20px;
-            font-size: 16px;
-            line-height: 1.8;
+            margin-bottom: 18px;
+            font-size: 15px;
+            line-height: 1.7;
         }
         .brand {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--brand-blue, #0E6196);
             font-weight: 700;
         }
         .warning {
-            color: #dc2626;
+            color: #dc3545;
             font-weight: 600;
-            margin: 30px 0;
-            padding: 16px;
+            margin: 24px 0;
+            padding: 14px;
             background: #fef2f2;
             border-radius: 8px;
-            border-left: 4px solid #dc2626;
+            border-left: 4px solid #dc3545;
+            font-size: 14px;
         }
         .unsubscribe-footer {
             margin-top: 40px;
@@ -118,7 +121,7 @@
             margin-bottom: 12px;
         }
         .unsubscribe-links a {
-            color: #667eea;
+            color: var(--brand-blue, #0E6196);
             text-decoration: none;
             margin: 0 10px;
             font-weight: 500;
@@ -130,38 +133,51 @@
             font-size: 11px;
             line-height: 1.5;
             margin-top: 16px;
+            color: #6b7280;
+        }
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px auto;
+                border-radius: 12px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .btn {
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+            .greeting {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="https://argon.koyeb.app" class="email-header" style="text-decoration: none;">
-            <img src="https://argon.koyeb.app/static/network/images/email-banner.png" 
-                 alt="Argon Network - Click to visit"
-                 class="email-banner"
-                 width="600" 
-                 height="150"
-                 style="width:100%; max-width:600px; height:auto;">
-            
-            <noscript>
-                <div style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 40px 20px;
-                    text-align: center;
-                    height: 150px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                ">
-                    <h1 style="margin:0; font-size:36px; font-weight:bold;">🌐 ARGON NETWORK</h1>
-                    <p style="margin:10px 0 0 0; font-size:18px;">Social Media Platform</p>
-                </div>
-            </noscript>
-        </a>
+        <div class="email-header">
+            <div style="
+                background: linear-gradient(135deg, var(--brand-blue, #0E6196) 0%, var(--brand-teal, #06b6d4) 100%);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+                height: 150px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            ">
+                <h1 style="margin:0; font-size:36px; font-weight:bold;">🌐 ARGON NETWORK</h1>
+                <p style="margin:10px 0 0 0; font-size:18px; opacity:0.9;">Social Media Platform</p>
+            </div>
+        </div>
         
         <div class="content">
-            <h2 class="greeting">Hi {{ username }}! 👋</h2>
+            <h2 class="greeting">Hi {{ username }}! <span style="color: var(--brand-blue, #0E6196);">👋</span></h2>
             
             <p class="message">
                 Thank you for joining <span class="brand">Argon Network</span> - your new social media platform where you can connect, share, and engage with friends.
@@ -171,8 +187,10 @@
                 To get started, please verify your email address by clicking the button below:
             </p>
             
-            <div style="text-align: center; margin: 48px 0;">
-                <a href="{{ activation_link }}" class="btn">✨ Activate My Account</a>
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ activation_link }}" class="btn">
+                    <span class="icon">✨</span> Activate My Account
+                </a>
             </div>
             
             <p class="message">
@@ -182,7 +200,7 @@
             <div class="code-box">{{ activation_link }}</div>
             
             <div class="warning">
-                ⚠️ This activation link expires in 24 hours.
+                <span class="icon">⚠️</span> This activation link expires in 24 hours.
             </div>
             
             <p class="message">
@@ -190,23 +208,22 @@
             </p>
             
             <p style="margin-top: 36px; font-style: italic; color: #6b7280; font-size: 15px;">
-                Welcome aboard! 🚀<br>
+                Welcome aboard! <span style="color: var(--brand-blue, #0E6196);">🚀</span><br>
                 <strong style="color: #111827;">The Argon Network Team</strong>
             </p>
         </div>
         
-        <!-- UNSUBSCRIBE SECTION ADDED -->
         <div class="unsubscribe-footer">
             <div class="unsubscribe-links">
-                <a href="{{ unsubscribe_link }}">Unsubscribe</a> | 
-                <a href="mailto:{{ support_email }}">Contact Support</a>
+                <a href="{{ unsubscribe_link|default:'#' }}">Unsubscribe</a> | 
+                <a href="mailto:{{ support_email|default:'mahmudurrahman23yahoo@gmail.com' }}">Contact Support</a>
             </div>
             <div class="auto-message">
                 This message was sent to {{ email }} because you registered on Argon Network.<br>
                 If you didn't create this account, please ignore this email.
             </div>
             <div class="auto-message" style="margin-top: 12px;">
-                © {{ current_year }} Argon Network | This is an automated message, please do not reply.
+                © {{ current_year|default:'2024' }} Argon Network | This is an automated message, please do not reply.
             </div>
         </div>
     </div>
