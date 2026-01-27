@@ -1,10 +1,12 @@
 import os
 import json
-import logging
+import logging  
 import pytz
 import requests
 
 from datetime import datetime
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 from django.conf import settings
 from django.contrib import messages
@@ -78,142 +80,6 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("index"))
 
 
-def register(request):
-    if request.method == "POST":
-        username = request.POST.get("username", "").strip()
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
-        confirmation = request.POST.get("confirmation", "")
-
-        errors = []
-
-        if not username:
-            errors.append("Username is required.")
-        elif len(username) < 3:
-            errors.append("Username must be at least 3 characters.")
-        elif len(username) > 30:
-            errors.append("Username cannot exceed 30 characters.")
-        elif not username.replace('_', '').isalnum():
-            errors.append("Username can only contain letters, numbers, and underscores.")
-
-        if not email:
-            errors.append("Email is required.")
-        elif '@' not in email or '.' not in email.split('@')[-1]:
-            errors.append("Please enter a valid email address.")
-
-        if not password:
-            errors.append("Password is required.")
-        elif len(password) < 8:
-            errors.append("Password must be at least 8 characters.")
-
-        if password != confirmation:
-            errors.append("Passwords do not match.")
-
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-            return render(request, "network/register.html")
-
-        try:
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username already taken.")
-                return render(request, "network/register.html")
-
-            if User.objects.filter(email=email).exists():
-                messages.error(request, "Email already registered.")
-                return render(request, "network/register.html")
-
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password
-            )
-            user.is_active = False
-            user.activation_token = get_random_string(32)
-            user.save()
-
-            try:
-                activation_link = request.build_absolute_uri(
-                    reverse('activate', kwargs={'token': user.activation_token})
-                )
-            except Exception:
-                activation_link = f"{request.scheme}://{request.get_host()}/activate/{user.activation_token}/"
-
-            context = {
-                'username': username,
-                'activation_link': activation_link,
-                'email': email,
-                'protocol': 'https' if request.is_secure() else 'http',
-                'domain': request.get_host(),
-                'unsubscribe_link': request.build_absolute_uri(reverse('index')),
-                'support_email': settings.DEFAULT_FROM_EMAIL or 'support@argonnetwork.com',
-                'current_year': datetime.now().year,
-                'site_name': 'Argon Network',
-            }
-
-            try:
-                html_message = render_to_string('network/emails/activation_email.html', context)
-                plain_message = strip_tags(html_message)
-            except Exception as template_error:
-                logger.warning(f"Template render failed, using fallback: {template_error}")
-                html_message = f"""
-                <h2>Welcome to Argon Network, {username}!</h2>
-                <p>Click below to activate:</p>
-                <p><a href="{activation_link}">Activate Account</a></p>
-                <p>Or copy: {activation_link}</p>
-                """
-                plain_message = f"Welcome! Activate: {activation_link}"
-
-            try:
-                email_msg = EmailMultiAlternatives(
-                    subject=f'Activate Your Argon Network Account - {username}',
-                    body=plain_message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[email],
-                    reply_to=[settings.DEFAULT_FROM_EMAIL],
-                    headers={
-                        'X-Priority': '1',
-                        'X-Mailer': 'Django',
-                        'Precedence': 'bulk',
-                        'List-Unsubscribe': f'<mailto:{settings.DEFAULT_FROM_EMAIL}?subject=unsubscribe>',
-                        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-                        'X-Entity-Ref-ID': str(user.id),
-                    }
-                )
-                email_msg.attach_alternative(html_message, "text/html")
-                email_msg.send(fail_silently=False)
-
-                logger.info(f"Registration success for {email}. Activation email sent.")
-                messages.success(
-                    request,
-                    "Registration successful! Check your email (including spam) for activation link."
-                )
-                return render(request, "network/register.html")
-
-            except Exception as email_error:
-                user.delete()
-                logger.error(f"Email send failed for {email}: {str(email_error)}")
-                messages.error(
-                    request,
-                    "Failed to send activation email. Please try again later."
-                )
-                return render(request, "network/register.html")
-
-        except IntegrityError as e:
-            logger.warning(f"IntegrityError during registration: {str(e)}")
-            messages.error(request, "Username or email already taken.")
-            return render(request, "network/register.html")
-
-        except Exception as e:
-            logger.error(f"Unexpected registration error for {email}: {str(e)}", exc_info=True)
-            messages.error(
-                request,
-                "An unexpected error occurred. Please try again later."
-            )
-            return render(request, "network/register.html")
-
-    return render(request, "network/register.html")
-
 
 def activate(request, token):
     try:
@@ -252,7 +118,18 @@ def toggle_follow(request, username):
 
     if request.user == target_user:
         return JsonResponse({"error": "Cannot follow yourself"}, status=400)
-
+    
+    # CHECK: If blocked in either direction, prevent follow
+    is_blocked = Block.objects.filter(blocker=request.user, blocked=target_user).exists()
+    has_blocked_me = Block.objects.filter(blocker=target_user, blocked=request.user).exists()
+    
+    if is_blocked:
+        return JsonResponse({"error": "You have blocked this user. Unblock them first to follow."}, status=403)
+    
+    if has_blocked_me:
+        return JsonResponse({"error": "This user has blocked you. You cannot follow them."}, status=403)
+    
+    # Continue with existing follow logic
     follow, created = Follow.objects.get_or_create(
         follower=request.user,
         followed=target_user
@@ -273,8 +150,8 @@ def toggle_follow(request, username):
         "action": action,
         "followers": target_user.followers.count(),
         "following": target_user.following.count()
-    })
-
+    }) 
+    
 
 @csrf_exempt
 @login_required
@@ -447,6 +324,34 @@ def mark_notifications_read(request):
     return JsonResponse({"error": "POST required"}, status=400)
 
 
+# NEW: Notification clearing views
+@login_required
+@require_POST
+def clear_all_notifications(request):
+    """Delete all notifications for current user"""
+    request.user.notifications.all().delete()
+    return JsonResponse({'success': True, 'message': 'All notifications cleared.'})
+
+@login_required  
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all notifications as read"""
+    request.user.notifications.mark_all_as_read()
+    return JsonResponse({'success': True, 'message': 'All notifications marked as read.'})
+
+@login_required
+@require_POST
+def delete_notification(request, notification_id):
+    """Delete a specific notification"""
+    try:
+        notification = request.user.notifications.get(id=notification_id)
+        notification.delete()
+        return JsonResponse({'success': True, 'message': 'Notification deleted.'})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found.'}, status=404)
+# END NEW
+
+
 @login_required
 def edit_profile(request):
     if request.method == "POST":
@@ -504,6 +409,20 @@ def messages_inbox(request):
 @login_required
 def conversation(request, username):
     other_user = get_object_or_404(User, username=username)
+    
+    # CHECK FOR BLOCKS BEFORE ALLOWING MESSAGING
+    is_blocked = False
+    has_blocked_me = False
+    try:
+        is_blocked = Block.objects.filter(blocker=request.user, blocked=other_user).exists()
+        has_blocked_me = Block.objects.filter(blocker=other_user, blocked=request.user).exists()
+    except (Block.DoesNotExist, AttributeError):
+        pass
+    
+    if is_blocked or has_blocked_me:
+        messages.error(request, "Cannot message this user due to block settings.")
+        return redirect('messages_inbox')
+    
     if request.user == other_user:
         return HttpResponseRedirect(reverse('messages_inbox'))
 
@@ -555,7 +474,7 @@ def conversation(request, username):
     return render(request, "network/messages/conversation.html", {
         'other_user': other_user,
         'messages': msgs
-    })
+    }) 
 
 
 @csrf_exempt
@@ -810,11 +729,17 @@ def profile(request, username):
     profile_user = get_object_or_404(User, username=username)
 
     is_blocked = False
+    has_blocked_me = False
     try:
         is_blocked = Block.objects.filter(blocker=request.user, blocked=profile_user).exists()
+        has_blocked_me = Block.objects.filter(blocker=profile_user, blocked=request.user).exists()
     except (Block.DoesNotExist, AttributeError):
-        is_blocked = False
-
+        pass
+    
+    # FIXED: Add self-check to prevent following/messaging yourself
+    can_follow = not (is_blocked or has_blocked_me) and request.user != profile_user
+    can_message = not (is_blocked or has_blocked_me) and request.user != profile_user
+    
     posts_qs = profile_user.posts.select_related('user').prefetch_related('media', 'thumbs_up', 'thumbs_down', 'comments__user').order_by('-timestamp')
 
     for post in posts_qs:
@@ -835,31 +760,32 @@ def profile(request, username):
         'page_obj': page_obj,
         'is_following': is_following,
         'is_blocked': is_blocked,
+        'has_blocked_me': has_blocked_me,
+        'can_follow': can_follow,          # FIXED: Now correct
+        'can_message': can_message,        # FIXED: Now correct
         'privacy_settings': privacy_settings,
         'followers_count': profile_user.followers.count(),
         'following_count': profile_user.following.count(),
-    })
-
+    }) 
 
 @login_required
 def discover_users(request):
     query = request.GET.get('q', '').strip()
     users = User.objects.exclude(id=request.user.id)
 
-    try:
-        blocked_user_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
-        users = users.exclude(id__in=blocked_user_ids)
-    except (Block.DoesNotExist, AttributeError):
-        pass
-
     if query:
         users = users.filter(username__icontains=query)
 
+    # Get block status for template context
+    blocked_user_ids = set(Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True))
+    blocked_by_user_ids = set(Block.objects.filter(blocked=request.user).values_list('blocker_id', flat=True))
+    
     return render(request, "network/discover_users.html", {
         'users': users,
-        'query': query
-    })
-
+        'query': query,
+        'blocked_user_ids': blocked_user_ids,
+        'blocked_by_user_ids': blocked_by_user_ids,
+    }) 
 
 @login_required
 def followers_list(request, username):
@@ -942,6 +868,141 @@ def following(request):
 
     return render(request, "network/following.html", {'page_obj': page_obj})
 
+def register(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
+        confirmation = request.POST.get("confirmation", "")
+
+        errors = []
+
+        if not username:
+            errors.append("Username is required.")
+        elif len(username) < 3:
+            errors.append("Username must be at least 3 characters.")
+        elif len(username) > 30:
+            errors.append("Username cannot exceed 30 characters.")
+        elif not username.replace('_', '').isalnum():
+            errors.append("Username can only contain letters, numbers, and underscores.")
+
+        if not email:
+            errors.append("Email is required.")
+        elif '@' not in email or '.' not in email.split('@')[-1]:
+            errors.append("Please enter a valid email address.")
+
+        if not password:
+            errors.append("Password is required.")
+        elif len(password) < 8:
+            errors.append("Password must be at least 8 characters.")
+
+        if password != confirmation:
+            errors.append("Passwords do not match.")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, "network/register.html")
+
+        try:
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already taken.")
+                return render(request, "network/register.html")
+
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already registered.")
+                return render(request, "network/register.html")
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            user.is_active = False
+            user.activation_token = get_random_string(32)
+            user.save()
+
+            try:
+                activation_link = request.build_absolute_uri(
+                    reverse('activate', kwargs={'token': user.activation_token})
+                )
+            except Exception:
+                activation_link = f"{request.scheme}://{request.get_host()}/activate/{user.activation_token}/"
+
+            context = {
+                'username': username,
+                'activation_link': activation_link,
+                'email': email,
+                'protocol': 'https' if request.is_secure() else 'http',
+                'domain': request.get_host(),
+                'unsubscribe_link': request.build_absolute_uri(reverse('index')),
+                'support_email': settings.DEFAULT_FROM_EMAIL or 'support@argonnetwork.com',
+                'current_year': datetime.now().year,
+                'site_name': 'Argon Network',
+            }
+
+            try:
+                html_message = render_to_string('network/emails/activation_email.html', context)
+                plain_message = strip_tags(html_message)
+            except Exception as template_error:
+                logger.warning(f"Template render failed, using fallback: {template_error}")
+                html_message = f"""
+                <h2>Welcome to Argon Network, {username}!</h2>
+                <p>Click below to activate:</p>
+                <p><a href="{activation_link}">Activate Account</a></p>
+                <p>Or copy: {activation_link}</p>
+                """
+                plain_message = f"Welcome! Activate: {activation_link}"
+
+            try:
+                email_msg = EmailMultiAlternatives(
+                    subject=f'Activate Your Argon Network Account - {username}',
+                    body=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[email],
+                    reply_to=[settings.DEFAULT_FROM_EMAIL],
+                    headers={
+                        'X-Priority': '1',
+                        'X-Mailer': 'Django',
+                        'Precedence': 'bulk',
+                        'List-Unsubscribe': f'<mailto:{settings.DEFAULT_FROM_EMAIL}?subject=unsubscribe>',
+                        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                        'X-Entity-Ref-ID': str(user.id),
+                    }
+                )
+                email_msg.attach_alternative(html_message, "text/html")
+                email_msg.send(fail_silently=False)
+
+                logger.info(f"Registration success for {email}. Activation email sent.")
+                messages.success(
+                    request,
+                    "Registration successful! Check your email (including spam) for activation link."
+                )
+                return render(request, "network/register.html")
+
+            except Exception as email_error:
+                user.delete()
+                logger.error(f"Email send failed for {email}: {str(email_error)}")
+                messages.error(
+                    request,
+                    "Failed to send activation email. Please try again later."
+                )
+                return render(request, "network/register.html")
+
+        except IntegrityError as e:
+            logger.warning(f"IntegrityError during registration: {str(e)}")
+            messages.error(request, "Username or email already taken.")
+            return render(request, "network/register.html")
+
+        except Exception as e:
+            logger.error(f"Unexpected registration error for {email}: {str(e)}", exc_info=True)
+            messages.error(
+                request,
+                "An unexpected error occurred. Please try again later."
+            )
+            return render(request, "network/register.html")
+
+    return render(request, "network/register.html") 
 
 @require_GET
 def search_gifs(request):
@@ -1087,3 +1148,22 @@ def search_gifs(request):
 
     cache.set(cache_key, payload, 60)  # 60s cache
     return JsonResponse(payload)
+
+
+
+# NEW API View for Interaction Check
+@login_required
+def check_interaction(request, username):
+    target_user = get_object_or_404(User, username=username)
+    
+    is_blocked = Block.objects.filter(blocker=request.user, blocked=target_user).exists()
+    has_blocked_me = Block.objects.filter(blocker=target_user, blocked=request.user).exists()
+    
+    can_interact = not (is_blocked or has_blocked_me)
+    
+    return JsonResponse({
+        'can_interact': can_interact,
+        'message': 'Cannot interact with this user due to block settings.' if not can_interact else ''
+    })      
+    
+    
