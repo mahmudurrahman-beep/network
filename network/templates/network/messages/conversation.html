@@ -14,9 +14,9 @@
     overflow: hidden;
 }
 
-/* CHAT HEADER - FACEBOOK BLUE */
+/* CHAT HEADER - ARGON THEME BLUE */
 .chat-header {
-    background: #5E72E4; /* Facebook-like blue */
+    background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)) !important;
     color: white;
     padding: 20px;
     display: flex;
@@ -1026,17 +1026,17 @@
                     </a>
                 </h5>
                 <small style="opacity: 0.9;">
-                    <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i> Active now
+                    <i class="fas fa-circle text-success" style="font-size: 8px;"></i> Active now {# Changed from bi to fas #}
                 </small>
             </div>
         </div>
         <div class="d-flex gap-2">
             <a href="{% url 'messages_inbox' %}" class="btn btn-light btn-sm" style="border-radius: 8px;">
-                <i class="bi bi-arrow-left me-1"></i>Back
+                <i class="fas fa-arrow-left me-1"></i>Back {# Changed from bi to fas #}
             </a>
             <button class="btn btn-light btn-sm delete-conversation" data-other="{{ other_user.username }}" 
                     style="border-radius: 8px;">
-                <i class="bi bi-eye-slash me-1"></i>Hide
+                <i class="fas fa-eye-slash me-1"></i>Hide {# Changed from bi to fas #}
             </button>
         </div>
     </div>
@@ -1071,7 +1071,7 @@
                             {{ msg.timestamp|date:"g:i A" }}
                             {% if msg.sender == user and msg.is_read %}
                                 <span class="seen-indicator">
-                                    <i class="bi bi-check-all"></i> Seen
+                                    <i class="fas fa-check-double"></i> Seen {# Changed from bi to fas #}
                                 </span>
                             {% endif %}
                         </div>
@@ -1080,7 +1080,7 @@
                         {% if msg.sender == user %}
                             <div class="delete-message-container">
                                 <button class="delete-message" data-message-id="{{ msg.id }}">
-                                    <i class="bi bi-trash"></i> Delete
+                                    <i class="fas fa-trash"></i> Delete {# Changed from bi to fas #}
                                 </button>
                             </div>
                         {% endif %}
@@ -1092,6 +1092,17 @@
 
     <!-- Chat Input Area -->
     <div class="chat-input-area">
+        {% if messages_django %} {# Added Django messages display #}
+            {% for message in messages_django %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="post" enctype="multipart/form-data" id="chat-form">
             {% csrf_token %}
             
@@ -1113,11 +1124,11 @@
                 <div class="chat-preview-thumb">
                     <img src="" alt="Preview" />
                     <div class="remove-thumb" onclick="removeThumbPreview()">
-                        <i class="bi bi-x"></i>
+                        <i class="fas fa-times"></i> {# Changed from bi to fas #}
                     </div>
                 </div>
                 <button type="button" class="chat-search-btn">
-                    <i class="bi bi-search"></i>
+                    <i class="fas fa-search"></i> {# Changed from bi to fas #}
                 </button>
                 
                 <!-- Results popup -->
@@ -1126,10 +1137,10 @@
 
             <!-- File Selected Indicator -->
             <div class="file-selected-indicator" id="file-indicator">
-                <i class="bi bi-paperclip"></i>
+                <i class="fas fa-paperclip"></i> {# Changed from bi to fas #}
                 <span id="file-name"></span>
                 <button type="button" class="remove-file" onclick="removeFile()">
-                    <i class="bi bi-x-lg me-1"></i> Remove
+                    <i class="fas fa-times me-1"></i> Remove {# Changed from bi to fas #}
                 </button>
             </div>
             
@@ -1165,19 +1176,19 @@
                     <div class="action-buttons">
                         <!-- EMOJI TOGGLE BUTTON -->
                         <button type="button" class="emoji-toggle-btn" id="emoji-toggle-btn">
-                            <i class="bi bi-emoji-smile"></i>
+                            <i class="far fa-smile"></i> {# Changed from bi to far #}
                             <span>Emojis</span>
                         </button>
                         
                         <label class="attach-btn" for="message-media-input" title="Attach file">
-                            <i class="bi bi-paperclip"></i>
+                            <i class="fas fa-paperclip"></i> {# Changed from bi to fas #}
                             <span class="d-none d-sm-inline">Attach</span>
                         </label>
                         <input type="file" name="media" class="d-none" accept="image/*,video/*,.gif" 
                                id="message-media-input" onchange="showFilePreview(this)">
                         
                         <button type="submit" class="send-btn">
-                            <i class="bi bi-send-fill"></i>
+                            <i class="fas fa-paper-plane"></i> {# Changed from bi to fas #}
                             <span>Send</span>
                         </button>
                     </div>
@@ -1207,9 +1218,9 @@ emojiToggleBtn.addEventListener('click', function() {
     
     // Update button text and icon
     if (emojiBarVisible) {
-        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile-fill"></i> <span>Hide</span>';
+        emojiToggleBtn.innerHTML = '<i class="fas fa-smile"></i> <span>Hide</span>'; {# Changed from bi to fas #}
     } else {
-        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile"></i> <span>Emojis</span>';
+        emojiToggleBtn.innerHTML = '<i class="far fa-smile"></i> <span>Emojis</span>'; {# Changed from bi to far #}
     }
 });
 
@@ -1219,7 +1230,7 @@ document.addEventListener('click', function(e) {
         emojiBarVisible = false;
         quickEmojiBar.classList.remove('show');
         emojiToggleBtn.classList.remove('active');
-        emojiToggleBtn.innerHTML = '<i class="bi bi-emoji-smile"></i> <span>Emojis</span>';
+        emojiToggleBtn.innerHTML = '<i class="far fa-smile"></i> <span>Emojis</span>'; {# Changed from bi to far #}
     }
 });
 
@@ -1335,7 +1346,7 @@ function updateMediaPreviews() {
         
         if (mediaItems.length > 0) {
             statsHTML += `<button class="clear-media-btn" onclick="clearAllMedia()">
-                <i class="bi bi-x me-1" style="font-size: 10px;"></i>Clear All
+                <i class="fas fa-times me-1" style="font-size: 10px;"></i>Clear All {# Changed from bi to fas #}
             </button>`;
         }
         
@@ -1505,7 +1516,7 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
                 closeBtn.className = 'btn btn-sm btn-outline-primary w-100 mb-2';
-                closeBtn.innerHTML = '<i class="bi bi-x me-1"></i> Close';
+                closeBtn.innerHTML = '<i class="fas fa-times me-1"></i> Close'; {# Changed from bi to fas #}
                 closeBtn.onclick = () => {
                     resultsPopup.classList.remove('show');
                     input.value = '';
@@ -1559,12 +1570,12 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                 });
                 resultsPopup.appendChild(grid);
             } else {
-                resultsPopup.innerHTML = '<p class="text-muted text-center py-3 mb-0"><i class="bi bi-emoji-frown me-1"></i>No results found</p>';
+                resultsPopup.innerHTML = '<p class="text-muted text-center py-3 mb-0"><i class="fas fa-frown me-1"></i>No results found</p>'; {# Changed from bi to fas #}
             }
         })
         .catch(error => {
             console.error('Media search error:', error);
-            resultsPopup.innerHTML = '<p class="text-danger text-center py-3 mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Search failed</p>';
+            resultsPopup.innerHTML = '<p class="text-danger text-center py-3 mb-0"><i class="fas fa-exclamation-triangle me-1"></i>Search failed</p>'; {# Changed from bi to fas #}
         });
 }
 
