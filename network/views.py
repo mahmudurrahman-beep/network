@@ -335,8 +335,9 @@ def clear_all_notifications(request):
 @login_required  
 @require_POST
 def mark_all_notifications_read(request):
-    """Mark all notifications as read"""
-    request.user.notifications.mark_all_as_read()
+    """Mark all notifications as read - FIXED"""
+    # Use update() on the queryset instead of non-existent method
+    request.user.notifications.all().update(is_read=True)
     return JsonResponse({'success': True, 'message': 'All notifications marked as read.'})
 
 @login_required
