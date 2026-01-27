@@ -1,87 +1,185 @@
 {% extends "network/layout.html" %}
+{% load static %}
+{% load parse_media %}
 
 {% block body %}
-    <h2 class="mb-4">Following</h2>
 
-    <!-- New Post Box (optional but recommended - same as All Posts) -->
-    {% if user.is_authenticated %}
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Share something...</h5>
-                <form id="new-post-form" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <textarea name="content" class="form-control mb-3" rows="3" placeholder="What's on your mind?" required></textarea>
-                    
-                    <!-- Optional media upload -->
-                    <div class="mb-3">
-                        <label for="media_files" class="form-label">Add photos/videos (optional)</label>
-                        <input type="file" name="media_files" id="media_files" class="form-control" multiple accept="image/*,video/*">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Post</button>
-                </form>
+<style>
+/* ===============================
+   Post Composer (Scoped & Safe)
+   =============================== */
+.post-composer .file-indicator{
+  display:none;
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#f8fafc;
+  align-items:center;
+  gap:10px;
+}
 
-                <!-- Feedback message -->
-                <div id="post-message" class="mt-3 alert d-none"></div>
-            </div>
+.post-composer .file-indicator.show{
+  display:flex;
+}
+
+.post-composer .remove-files{
+  margin-left:auto;
+  border:1px solid #f87171;
+  background:#fff;
+  color:#dc2626;
+  padding:6px 10px;
+  border-radius:10px;
+  font-weight:600;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.post-composer .remove-files:hover{
+  background:#fee2e2;
+}
+
+.post-composer .attach-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:2px solid #e5e7eb;
+  background:#fff;
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+  color:#6b7280;
+}
+
+.post-composer .attach-btn:hover{
+  border-color:#3b82f6;
+  color:#3b82f6;
+  background:#eff6ff;
+}
+
+.post-composer textarea{
+  min-height:90px;
+}
+
+@media (max-width:576px){
+  .post-composer textarea{
+    min-height:80px;
+  }
+}
+</style>
+
+<div class="container my-4">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <div class="card mb-4 shadow-sm post-composer">
+      <div class="card-body">
+        <h5 class="card-title">Share something...</h5>
+
+        <form id="new-post-form" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <textarea name="content"
+                    class="form-control mb-3"
+                    rows="3"
+                    placeholder="Post something..."
+                    required></textarea>
+
+          <!-- Attach Button -->
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <label class="attach-btn" for="media_files">
+              <i class="fas fa-paperclip"></i>
+              <span>Attach photos/videos</span>
+            </label>
+
+            <input type="file"
+                   name="media_files"
+                   id="media_files"
+                   class="d-none"
+                   multiple
+                   accept="image/*,video/*">
+          </div>
+
+          <!-- File Indicator -->
+          <div class="file-indicator" id="post-file-indicator">
+            <i class="fas fa-check-circle text-success"></i>
+            <span id="post-file-name"></span>
+            <button type="button"
+                    class="remove-files"
+                    id="post-remove-files">
+              <i class="fas fa-times me-1"></i>Remove
+            </button>
+          </div>
+
+          <button type="submit" class="btn btn-primary mt-3">
+            Post
+          </button>
+        </form>
+
+        <div id="post-message" class="mt-3 alert alert-dismissible d-none">
+          <span id="post-message-text"></span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-    {% endif %}
+      </div>
+    </div>
+  {% endif %}
 
-    <!-- Post List -->
+  <h4>All Posts</h4>
+
+  {% if page_obj %}
     {% include "network/partials/post_list.html" %}
-{% endblock %}
+  {% else %}
+    <div class="text-center py-5">
+      <h5 class="text-muted">No posts to show</h5>
+    </div>
+  {% endif %}
+</div>
 
-{% block script %}
-    <script>
-        // New Post Form Submission (if you need it here)
-        const newPostForm = document.getElementById('new-post-form');
-        if (newPostForm) {
-            newPostForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                const messageDiv = document.getElementById('post-message');
-                
-                if (messageDiv) {
-                    messageDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
-                    messageDiv.classList.add('alert-info');
-                    messageDiv.textContent = 'Posting...';
-                }
-                
-                fetch('/new-post/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        if (messageDiv) {
-                            messageDiv.classList.remove('alert-info');
-                            messageDiv.classList.add('alert-danger');
-                            messageDiv.textContent = data.error;
-                        }
-                    } else {
-                        if (messageDiv) {
-                            messageDiv.classList.remove('alert-info');
-                            messageDiv.classList.add('alert-success');
-                            messageDiv.textContent = 'Posted successfully!';
-                        }
-                        newPostForm.reset();
-                        setTimeout(() => location.reload(), 1500);
-                    }
-                })
-                .catch(error => {
-                    console.error('Post error:', error);
-                    if (messageDiv) {
-                        messageDiv.classList.remove('alert-info');
-                        messageDiv.classList.add('alert-danger');
-                        messageDiv.textContent = 'Failed to post. Try again.';
-                    }
-                });
-            });
-        }
-    </script>
+<script>
+/* ===============================
+   File Indicator Logic (Safe)
+   =============================== */
+(function () {
+  const input = document.getElementById('media_files');
+  const indicator = document.getElementById('post-file-indicator');
+  const nameEl = document.getElementById('post-file-name');
+  const removeBtn = document.getElementById('post-remove-files');
+
+  if (!input || !indicator || !nameEl || !removeBtn) return;
+
+  input.addEventListener('change', () => {
+    const files = Array.from(input.files || []);
+    if (!files.length) {
+      indicator.classList.remove('show');
+      nameEl.textContent = '';
+      return;
+    }
+
+    const count = files.length;
+    nameEl.textContent =
+      count === 1 ? files[0].name : `${count} files selected`;
+
+    indicator.classList.add('show');
+  });
+
+  removeBtn.addEventListener('click', () => {
+    input.value = '';
+    indicator.classList.remove('show');
+    nameEl.textContent = '';
+  });
+})();
+</script>
+
 {% endblock %}
