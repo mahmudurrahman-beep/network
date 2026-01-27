@@ -199,27 +199,7 @@
       setupClockTick('.navbar .clock-r', +1, 6, 1000, 2000);
       setupClockTick('.landing-card .clock-r', -1, 6, 1000, 2000);
 
-      /* ========== ALERT AUTO-DISMISS - BOOTSTRAP 4 FIXED ========== */
-      document.addEventListener('DOMContentLoaded', function() {
-        // Find all success alerts and add auto-dismiss class
-        const successAlerts = document.querySelectorAll('.alert-success');
-        successAlerts.forEach(alert => {
-          alert.classList.add('alert-auto-dismiss');
-          
-        });
-
-        // Remove alerts after animation completes (30 seconds)
-        setTimeout(() => {
-          successAlerts.forEach(alert => {
-            if (alert.style.display !== 'none') {
-              alert.remove();
-            }
-          });
-        }, 30500);
-      });
-      /* ========== END ALERT AUTO-DISMISS ========== */
-
     })();
   </script>
 </body>
-</html> 
+</html>
