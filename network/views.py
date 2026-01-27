@@ -24,8 +24,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string 
 from django.views.decorators.http import require_GET
 from django.core.cache import cache
-
 from .models import User, Post, PostMedia, Follow, Notification, Message, Comment, Block, PrivacySettings
+
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -391,26 +391,27 @@ def edit_post(request, post_id):
         return JsonResponse({"message": "Post updated"})
     return JsonResponse({"error": "PUT request required"}, status=400)
 
-
 @csrf_exempt
 @login_required
 def toggle_vote(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     data = json.loads(request.body)
-    value = data.get('value')  # 1 for up, -1 for down
-
+    value = data['value']  # 1 for up, -1 for down
+    
     if value == 1:
         field = post.thumbs_up
         opposite = post.thumbs_down
     else:
         field = post.thumbs_down
         opposite = post.thumbs_up
-
+    
+    # Toggle vote
     if request.user in field.all():
-        field.remove(request.user)
+        field.remove(request.user)  # Undo vote
     else:
-        opposite.remove(request.user)
+        opposite.remove(request.user)  # Remove opposite vote if present
         field.add(request.user)
+        # Notification
         if request.user != post.user:
             Notification.objects.create(
                 user=post.user,
@@ -418,12 +419,17 @@ def toggle_vote(request, post_id):
                 verb="voted on your post",
                 post=post
             )
-
+    
+    # Refresh the post object to get updated counts
+    post.refresh_from_db()
+    
+    # Return ALL the data JavaScript expects (matching post_detail view)
     return JsonResponse({
         "up": post.thumbs_up.count(),
-        "down": post.thumbs_down.count()
-    })
-
+        "down": post.thumbs_down.count(),
+        "user_up": request.user in post.thumbs_up.all(),  # ADD THIS
+        "user_down": request.user in post.thumbs_down.all()  # ADD THIS
+    }) 
 
 @login_required
 def notifications_view(request):
@@ -618,35 +624,45 @@ def edit_comment(request, comment_id):
 @login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+
     if request.method == "POST":
         content = request.POST.get('content', '').strip()
         parent_id = request.POST.get('parent_id')
         media_url = request.POST.get('media_url', '')
         media_type = request.POST.get('media_type', 'text')
+
         if not content and not media_url:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({"error": "Comment cannot be empty"}, status=400)
             messages.error(request, "Comment cannot be empty.")
             return redirect('all_posts')
+
         parent = None
         if parent_id:
             try:
                 parent = Comment.objects.get(id=parent_id, post=post)
+
+                # ✅ MAX DEPTH = 1
+                # parent is allowed only if it's a root comment (parent.parent must be None)
+                # i.e. you can reply to root, but cannot reply to a reply
                 depth = 0
                 current = parent
                 while current.parent:
                     depth += 1
                     current = current.parent
-                if depth >= 4:
+
+                if depth >= 1:
                     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                         return JsonResponse({"error": "Maximum reply depth reached"}, status=400)
                     messages.error(request, "Maximum reply depth reached.")
                     return redirect('all_posts')
+
             except Comment.DoesNotExist:
                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                     return JsonResponse({"error": "Invalid parent comment"}, status=400)
                 messages.error(request, "Invalid parent comment.")
                 return redirect('all_posts')
+
         comment = Comment.objects.create(
             post=post,
             user=request.user,
@@ -655,6 +671,7 @@ def add_comment(request, post_id):
             media_url=media_url,
             media_type=media_type
         )
+
         if post.user != request.user:
             Notification.objects.create(
                 user=post.user,
@@ -662,6 +679,7 @@ def add_comment(request, post_id):
                 verb="commented on your post",
                 post=post
             )
+
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({
                 "status": "success",
@@ -674,8 +692,10 @@ def add_comment(request, post_id):
                 "timestamp": comment.timestamp.strftime("%b %d, %Y • %I:%M %p"),
                 "parent_id": parent_id or None
             })
+
         messages.success(request, "Comment added!")
         return redirect('all_posts')
+
     return redirect('all_posts')
 
 
@@ -687,7 +707,6 @@ def delete_conversation(request, username):
         request.user.hidden_conversations.add(other_user)
         return JsonResponse({"message": "Conversation hidden"})
     return JsonResponse({"error": "POST required"}, status=400)
-
 
 @login_required
 def all_posts(request):
@@ -703,7 +722,10 @@ def all_posts(request):
         except (Block.DoesNotExist, AttributeError):
             pass
 
-        privacy_settings, _ = PrivacySettings.objects.get_or_create(user=post.user, defaults={'post_visibility': 'universal'})
+        privacy_settings, _ = PrivacySettings.objects.get_or_create(
+            user=post.user,
+            defaults={'post_visibility': 'universal'}
+        )
         visibility = privacy_settings.post_visibility
 
         if visibility == 'universal':
@@ -732,12 +754,14 @@ def all_posts(request):
 
     return render(request, "network/all_posts.html", {'page_obj': page_obj})
 
-
 @login_required
 def post_detail(request, post_id):
-    post = get_object_or_404(Post.objects.select_related('user').prefetch_related(
-        'media', 'thumbs_up', 'thumbs_down', 'comments__user', 'comments__parent'
-    ), id=post_id)
+    post = get_object_or_404(
+        Post.objects.select_related('user').prefetch_related(
+            'media', 'thumbs_up', 'thumbs_down', 'comments__user', 'comments__parent'
+        ),
+        id=post_id
+    )
 
     try:
         if Block.objects.filter(blocker=request.user, blocked=post.user).exists():
@@ -746,8 +770,12 @@ def post_detail(request, post_id):
     except (Block.DoesNotExist, AttributeError):
         pass
 
-    privacy_settings, _ = PrivacySettings.objects.get_or_create(user=post.user, defaults={'post_visibility': 'universal'})
+    privacy_settings, _ = PrivacySettings.objects.get_or_create(
+        user=post.user,
+        defaults={'post_visibility': 'universal'}
+    )
     visibility = privacy_settings.post_visibility
+
     allowed = False
     if visibility == 'universal':
         allowed = True
@@ -776,7 +804,6 @@ def post_detail(request, post_id):
         'is_downvoted': request.user in post.thumbs_down.all(),
     }
     return render(request, "network/post_detail.html", context)
-
 
 @login_required
 def profile(request, username):
