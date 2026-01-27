@@ -21,6 +21,11 @@ urlpatterns = [
     path("vote/<int:post_id>/", views.toggle_vote, name="toggle_vote"),
     path("notifications", views.notifications_view, name="notifications"),
     path("api/mark-notifications-read", views.mark_notifications_read, name="mark_notifications_read"),
+    # NEW: Notification clearing URLs
+    path("clear-notifications/", views.clear_all_notifications, name="clear_notifications"),
+    path("mark-notifications-read/", views.mark_all_notifications_read, name="mark_notifications_read"),
+    path("delete-notification/<int:notification_id>/", views.delete_notification, name="delete_notification"),
+    # END NEW
     path("messages/", views.messages_inbox, name="messages_inbox"),
     path("messages/<str:username>/", views.conversation, name="conversation"),
     path("quick-upload-picture/", views.quick_upload_picture, name="quick_upload_picture"),
@@ -37,6 +42,7 @@ urlpatterns = [
     path('toggle-block/<str:username>/', views.toggle_block, name='toggle_block'), 
     path('submit-report/', views.submit_report, name='submit_report'), 
     path('post/<int:post_id>/', views.post_detail, name='post_detail'), 
+    path('api/check-interaction/<str:username>/', views.check_interaction, name='check_interaction'),
 ]
 
 # Password Reset URLs (from production)
@@ -57,4 +63,4 @@ urlpatterns += [
         template_name='network/password_reset_complete.html'
     ), name='password_reset_complete'),
     path("new-post/", views.new_post, name="new_post"),
-]
+] 
