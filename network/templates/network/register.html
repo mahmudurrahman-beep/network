@@ -5,8 +5,7 @@
 <div class="container mt-5 mb-5">
   <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
-      <div class="card shadow-xl border-0 rounded-4 overflow-hidden bg-white/85"
-           style="backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);">
+      <div class="card shadow-xl border-0 rounded-4 overflow-hidden">
         <div class="card-body p-5 p-md-5 text-center">
 
           <div class="form-alert-wrapper mb-3">
@@ -67,8 +66,15 @@
   .form-alert-wrapper { width:100%; box-sizing:border-box; margin-bottom:0.75rem; }
   .alert ul { margin:0; padding:0; list-style:none; }
   .card-body input[type="text"], .card-body input[type="email"], .card-body input[type="password"], .card-body textarea {
-    text-align: left !important; direction: ltr !important; padding-left: 14px !important; box-sizing: border-box; min-width: 0;
+    text-align: left !important;
+    direction: ltr !important;
+    padding-left: 14px !important;
+    box-sizing: border-box;
+    min-width: 0;
   }
-  @media (max-width:576px) { .card-body { padding:2.5rem 1.5rem !important; } .form-alert-wrapper { margin:0 0 12px 0; } }
+  @media (max-width:576px) {
+    .card-body { padding:2.5rem 1.5rem !important; }
+    .form-alert-wrapper { margin:0 0 12px 0; }
+  }
 </style>
 {% endblock %}
