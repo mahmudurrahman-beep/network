@@ -8,76 +8,103 @@ function getCsrfToken() {
   return token.value;
 }
 
-// Follow / Unfollow - FIXED VERSION
+// NEW: Check if user can interact with another user
+function checkCanInteract(username, callback) {
+    fetch(`/api/check-interaction/${username}/`, {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.can_interact) {
+            callback();
+        } else {
+            alert(data.message || 'Cannot interact with this user.');
+        }
+    })
+    .catch(err => {
+        console.error('Interaction check failed:', err);
+        callback(); // Proceed anyway for now
+    });
+}
+
+// Follow / Unfollow - UPDATED WITH BLOCK CHECK
 const followBtn = document.getElementById('follow-btn');
 if (followBtn) {
   followBtn.addEventListener('click', () => {
     const username = followBtn.dataset.username;
-    const csrfToken = getCsrfToken();
+    
+    // Check if interaction is allowed
+    checkCanInteract(username, () => {
+      const csrfToken = getCsrfToken();
 
-    if (!csrfToken) {
-      alert('CSRF token missing. Reload the page.');
-      return;
-    }
+      if (!csrfToken) {
+        alert('CSRF token missing. Reload the page.');
+        return;
+      }
 
-    // Immediate UI feedback
-    followBtn.disabled = true;
-    const originalText = followBtn.textContent;
-    followBtn.textContent = '...';
+      // Immediate UI feedback
+      followBtn.disabled = true;
+      const originalText = followBtn.textContent;
+      followBtn.textContent = '...';
 
-    fetch(`/toggle-follow/${username}/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json'
-      },
-      credentials: 'same-origin'
-    })
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
+      fetch(`/toggle-follow/${username}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
       })
-      .then(data => {
-        // Remove ALL button styling classes
-        const buttonClasses = ['btn-primary', 'btn-outline-primary', 'btn-secondary', 
-                               'btn-outline-secondary', 'btn-success', 'btn-danger',
-                               'btn-warning', 'btn-info', 'btn-light', 'btn-dark',
-                               'btn-following', 'btn-not-following'];
-        
-        buttonClasses.forEach(cls => followBtn.classList.remove(cls));
-        
-        // Add base button class
-        followBtn.classList.add('btn');
-        
-        // Apply correct state
-        if (data.action === 'followed') {
-          followBtn.textContent = 'Unfollow';
-          followBtn.classList.add('btn-following');
-        } else {
-          followBtn.textContent = 'Follow';
-          followBtn.classList.add('btn-not-following');
-        }
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(data => {
+          // Remove ALL button styling classes
+          const buttonClasses = ['btn-primary', 'btn-outline-primary', 'btn-secondary', 
+                                'btn-outline-secondary', 'btn-success', 'btn-danger',
+                                'btn-warning', 'btn-info', 'btn-light', 'btn-dark',
+                                'btn-following', 'btn-not-following'];
+          
+          buttonClasses.forEach(cls => followBtn.classList.remove(cls));
+          
+          // Add base button class
+          followBtn.classList.add('btn');
+          
+          // Apply correct state
+          if (data.action === 'followed') {
+            followBtn.textContent = 'Unfollow';
+            followBtn.classList.add('btn-following');
+          } else {
+            followBtn.textContent = 'Follow';
+            followBtn.classList.add('btn-not-following');
+          }
 
-        // Update follower counts
-        const followersEl = document.querySelector('[data-followers-count]');
-        if (followersEl) {
-          const followersLink = followersEl.querySelector('a');
-          if (followersLink) followersLink.textContent = `${data.followers} followers`;
-        }
+          // Update follower counts
+          const followersEl = document.querySelector('[data-followers-count]');
+          if (followersEl) {
+            const followersLink = followersEl.querySelector('a');
+            if (followersLink) followersLink.textContent = `${data.followers} followers`;
+          }
 
-        const followingEl = document.querySelector('#following-count');
-        if (followingEl && data.following !== undefined) {
-          const followingLink = followingEl.querySelector('a');
-          if (followingLink) followingLink.textContent = `${data.following} following`;
-        }
-      })
-      .catch(error => {
-        console.error('Follow failed:', error);
-        alert('Could not follow/unfollow. Please try again.');
-      })
-      .finally(() => {
-        followBtn.disabled = false;
-      });
+          const followingEl = document.querySelector('#following-count');
+          if (followingEl && data.following !== undefined) {
+            const followingLink = followingEl.querySelector('a');
+            if (followingLink) followingLink.textContent = `${data.following} following`;
+          }
+        })
+        .catch(error => {
+          console.error('Follow failed:', error);
+          alert('Could not follow/unfollow. Please try again.');
+        })
+        .finally(() => {
+          followBtn.disabled = false;
+        });
+    });
   });
 } 
 
@@ -170,6 +197,15 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
   btn.addEventListener('click', function() {
     const postId = this.dataset.post;
     const value = parseInt(this.dataset.value);
+
+    // Check if we can interact with this post's owner
+    const postCard = this.closest('.post-card');
+    const username = postCard ? postCard.dataset.username : null;
+    
+    if (username) {
+      // Optional: Add block check for voting
+      // For now, proceed with vote
+    }
 
     const upBtn = document.querySelector(`.thumbs-up[data-post="${postId}"]`);
     const downBtn = document.querySelector(`.thumbs-down[data-post="${postId}"]`);
@@ -682,4 +718,26 @@ document.addEventListener('click', function (e) {
       setTimeout(() => el.remove(), 600);
     });
   }, 3000);
-})();
+})(); 
+
+// Add this section to your main.js file
+// Notification badge auto-update (if you have a notification badge in navbar)
+
+function updateNotificationBadge() {
+    const badge = document.querySelector('.notification-badge'); // If you have one
+    if (badge) {
+        fetch('/get-notification-count/')
+            .then(r => r.json())
+            .then(data => {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+    }
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', updateNotificationBadge);  
