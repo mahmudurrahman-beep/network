@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'network.middleware.TimezoneMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'network.middleware.UpdateLastSeenMiddleware',  
 ]
 
 # ==================== TEMPLATES ====================
