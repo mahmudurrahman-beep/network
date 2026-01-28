@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'network.middleware.UpdateLastSeenMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'network.middleware.TimezoneMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
