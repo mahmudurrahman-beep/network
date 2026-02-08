@@ -84,15 +84,16 @@
   {% if user.is_authenticated %}
     <div class="card mb-4 shadow-sm post-composer">
       <div class="card-body">
-        <h5 class="card-title">Share something...</h5>
+        <h5 class="card-title">📭New Post</h5>
 
         <form id="new-post-form" enctype="multipart/form-data">
           {% csrf_token %}
 
+          <!-- FIXED: Added js-mention-input class -->
           <textarea name="content"
-                    class="form-control mb-3"
+                    class="form-control mb-3 js-mention-input" data-mention-scope="global"
                     rows="3"
-                    placeholder="Post something..."
+                    placeholder="Grass is greener and why not?"
                     required></textarea>
 
           <!-- Attach Button -->
@@ -182,4 +183,4 @@
 })();
 </script>
 
-{% endblock %}
+{% endblock %} 
