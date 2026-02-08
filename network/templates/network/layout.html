@@ -1,3 +1,15 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - BASE LAYOUT TEMPLATE
+================================================================================
+@file        layout.html
+@author      Argon Admin
+@date        February 2026
+FEATURES: Navigation, authentication, notifications, PWA support
+BLOCKS: title, body (child templates override these)
+================================================================================
+-->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -64,10 +76,6 @@
             </li>
 
             <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'new_post' %}active{% endif %}" href="{% url 'new_post' %}">New Post</a>
-            </li>
-
-            <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'all_posts' %}active{% endif %}" href="{% url 'all_posts' %}">All Posts</a>
             </li>
 
@@ -78,7 +86,7 @@
             <li class="nav-item position-relative">
               <a class="nav-link {% if request.resolver_match.url_name == 'messages_inbox' %}active{% endif %}" href="{% url 'messages_inbox' %}">Messages
                 {% if unread_messages_count > 0 %}
-                  <span class="badge badge-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1">{{ unread_messages_count }}</span>
+                  <span class="badge badge-danger badge-pill nav-badge">{{ unread_messages_count }}</span>
                 {% endif %}
               </a>
             </li>
@@ -86,7 +94,7 @@
             <li class="nav-item position-relative">
               <a class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}">Notifications
                 {% if unread_notifications_count > 0 %}
-                  <span class="badge badge-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1">{{ unread_notifications_count }}</span>
+                  <span class="badge badge-danger badge-pill nav-badge">{{ unread_notifications_count }}</span>
                 {% endif %}
               </a>
             </li>
@@ -114,7 +122,10 @@
   <form style="display: none;">
     {% csrf_token %}
   </form>
-
+  <script>
+  // Set authentication state for main.js
+  window.userAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+</script> 
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
@@ -199,7 +210,47 @@
       setupClockTick('.navbar .clock-r', +1, 6, 1000, 2000);
       setupClockTick('.landing-card .clock-r', -1, 6, 1000, 2000);
 
+      /* ========== ALERT AUTO-DISMISS - BOOTSTRAP 4 FIXED ========== */
+      document.addEventListener('DOMContentLoaded', function() {
+        // Find all success alerts and add auto-dismiss class
+        const successAlerts = document.querySelectorAll('.alert-success');
+        successAlerts.forEach(alert => {
+          alert.classList.add('alert-auto-dismiss');
+          
+        });
+
+        // Remove alerts after animation completes (30 seconds)
+        setTimeout(() => {
+          successAlerts.forEach(alert => {
+            if (alert.style.display !== 'none') {
+              alert.remove();
+            }
+          });
+        }, 30500);
+      });
+      /* ========== END ALERT AUTO-DISMISS ========== */
+
     })();
   </script>
+<!-- Service Worker Registration for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+          .then(registration => {
+            console.log('✅ SW registered:', registration.scope);
+          })
+          .catch(error => {
+            console.log('❌ SW registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
-</html>
+</html> 
+
+<!--
+================================================================================
+END OF layout.html - Author: Argon Admin
+================================================================================
+-->
