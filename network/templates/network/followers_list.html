@@ -3,182 +3,232 @@
 {% load custom_filters %}
 
 {% block body %}
-    <div class="container mt-5">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
-              {{ message }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-          {% endfor %}
-        {% endif %}
+<div class="container mt-5">
 
-        <h2>{{ list_type }} of <a href="{% url 'profile' profile_user.username %}">{{ profile_user.username }}</a></h2>
-        <a href="{% url 'profile' profile_user.username %}" class="btn btn-outline-secondary mb-3">← Back to Profile</a>
-        
-        {% if users %}
-            <div class="row">
-                {% for user in users %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm" style="transition: transform 0.2s, box-shadow 0.2s;">
-                            <div class="card-body text-center">
-                                {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="100" height="100" style="object-fit: cover;">
-                                {% else %}
-                                    <!-- Default Argon Avatar -->
-                                    <img src="{% static 'network/images/default-avatar.png' %}"
-                                         class="rounded-circle mb-3"
-                                         width="100"
-                                         height="100"
-                                         alt="{{ user.username }}"
-                                         style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                {% endif %}
-                                
-                                <h5>
-                                    <a href="{% url 'profile' user.username %}" class="text-dark text-decoration-none">
-                                        {{ user.username }}
-                                    </a>
-                                </h5>
-                                <p class="text-muted">{{ user.bio|default:"No bio"|truncatechars:100 }}</p>
-                               
-                                <!-- Follow/Unfollow button for logged-in users -->
-                                {% if request.user.is_authenticated and request.user != user %}
-                                    {% with key=user.id|stringformat:"s" %}
-                                        {% if is_following_dict|get_item:key %}
-                                            <button class="btn btn-sm btn-following follow-btn" data-username="{{ user.username }}">
-                                                Unfollow
-                                            </button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-not-following follow-btn" data-username="{{ user.username }}">
-                                                Follow
-                                            </button>
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="text-center text-muted py-5">No {{ list_type|lower }} yet.</p>
-        {% endif %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between mb-4" style="gap: 12px;">
+    <div class="pr-md-3">
+      <h2 class="mb-1" style="color: var(--muted-dark); font-weight: 900; letter-spacing: -0.3px;">
+        {{ list_type }} of
+        <a href="{% url 'profile' profile_user.username %}"
+           class="text-decoration-none"
+           style="color: var(--brand-blue);">
+          {{ profile_user.username }}
+        </a>
+      </h2>
+      <div class="text-muted small">
+        <i class="fas fa-user-friends mr-1" style="color: rgba(8,48,71,0.65);"></i>
+        People in this list
+      </div>
     </div>
 
-    <script>
-        // JavaScript for follow/unfollow functionality - FIXED with loading states
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to all follow buttons
-            document.querySelectorAll('.follow-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const username = this.dataset.username;
-                    const csrfToken = getCookie('csrftoken');
-                    
-                    if (!csrfToken) {
-                        alert('Security error. Please refresh the page.');
-                        return;
-                    }
-                    
-                    // Prevent multiple clicks
-                    if (this.disabled) return;
-                    this.disabled = true;
-                    
-                    const originalText = this.textContent;
-                    this.textContent = '...';
-                    
-                    console.log(`Toggling follow for ${username}`);
-                    
-                    // Use CORRECT URL - NOT /api/toggle-follow/
-                    fetch(`/toggle-follow/${username}/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Follow response:', data);
-                        
-                        if (data.error) {
-                            alert('Error: ' + data.error);
-                            this.disabled = false;
-                            this.textContent = originalText;
-                            return;
-                        }
-                        
-                        // Toggle button text and style using our CSS classes
-                        if (data.action === 'followed') {
-                            this.textContent = 'Unfollow';
-                            this.classList.remove('btn-not-following');
-                            this.classList.add('btn-following');
-                        } else if (data.action === 'unfollowed') {
-                            this.textContent = 'Follow';
-                            this.classList.remove('btn-following');
-                            this.classList.add('btn-not-following');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Network error. Please try again.');
-                        this.disabled = false;
-                        this.textContent = originalText;
-                    })
-                    .finally(() => {
-                        // Only re-enable if not already updated
-                        if (this.textContent === '...') {
-                            this.disabled = false;
-                            this.textContent = originalText;
-                        }
-                    });
-                });
-            });
+    <a href="{% url 'profile' profile_user.username %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left mr-1"></i> Back to Profile
+    </a>
+  </div>
 
-            // Function to get CSRF token
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
-            
-            // Add hover effect for cards (if not in styles.css)
-            document.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-4px)';
-                    this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                });
-            });
+  {% if users %}
+    <div class="row">
+      {% for user in users %}
+        <div class="col-12 col-sm-6 col-lg-4 mb-4">
+          <div class="card h-100 user-card">
+            <div class="card-body text-center d-flex flex-column">
+
+              <!-- Avatar -->
+              <div class="mb-3">
+                {% if user.profile_picture %}
+                  <img src="{{ user.profile_picture.url }}"
+                       class="rounded-circle user-avatar"
+                       width="92"
+                       height="92"
+                       style="object-fit: cover;"
+                       alt="{{ user.username }}">
+                {% else %}
+                  <img src="{% static 'network/images/default-avatar.png' %}"
+                       class="rounded-circle user-avatar"
+                       width="92"
+                       height="92"
+                       style="object-fit: cover;"
+                       alt="{{ user.username }}">
+                {% endif %}
+              </div>
+
+              <!-- Username -->
+              <h5 class="mb-1" style="font-weight: 900; letter-spacing: -0.2px;">
+                <a href="{% url 'profile' user.username %}"
+                   class="text-decoration-none"
+                   style="color: var(--muted-dark);">
+                  {{ user.username }}
+                </a>
+              </h5>
+
+              <!-- Bio -->
+              <p class="text-muted mb-3" style="min-height: 44px;">
+                {{ user.bio|default:"No bio yet."|truncatechars:100 }}
+              </p>
+
+              <!-- Actions -->
+              <div class="mt-auto">
+                {% if request.user.is_authenticated and request.user != user %}
+                  {% with key=user.id|stringformat:"s" %}
+                    {% if is_following_dict|get_item:key %}
+                      <button class="btn btn-sm btn-following follow-btn"
+                              data-username="{{ user.username }}"
+                              data-state="following">
+                        <i class="fas fa-user-check mr-1"></i> Unfollow
+                      </button>
+                    {% else %}
+                      <button class="btn btn-sm btn-not-following follow-btn"
+                              data-username="{{ user.username }}"
+                              data-state="not-following">
+                        <i class="fas fa-user-plus mr-1"></i> Follow
+                      </button>
+                    {% endif %}
+                  {% endwith %}
+                {% else %}
+                  <a href="{% url 'profile' user.username %}"
+                     class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-user mr-1"></i> View Profile
+                  </a>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <div class="mb-2">
+          <i class="fas fa-user-friends fa-2x" style="color: rgba(8,48,71,0.55);"></i>
+        </div>
+        <div class="text-muted" style="font-weight: 700;">
+          No {{ list_type|lower }} yet.
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.follow-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const username = this.dataset.username;
+        const csrfToken = getCookie('csrftoken');
+
+        if (!csrfToken) {
+          alert('Security error. Please refresh the page.');
+          return;
+        }
+
+        if (this.disabled) return;
+        this.disabled = true;
+
+        const originalHTML = this.innerHTML;
+
+        // Loading state
+        this.innerHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Working';
+
+        fetch(`/toggle-follow/${username}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          if (data.error) {
+            alert('Error: ' + data.error);
+            this.disabled = false;
+            this.innerHTML = originalHTML;
+            return;
+          }
+
+          // Update UI based on response
+          if (data.action === 'followed') {
+            this.innerHTML = '<i class="fas fa-user-check mr-1"></i> Unfollow';
+            this.classList.remove('btn-not-following');
+            this.classList.add('btn-following');
+            this.dataset.state = 'following';
+          } else if (data.action === 'unfollowed') {
+            this.innerHTML = '<i class="fas fa-user-plus mr-1"></i> Follow';
+            this.classList.remove('btn-following');
+            this.classList.add('btn-not-following');
+            this.dataset.state = 'not-following';
+          }
+
+          this.disabled = false;
+        })
+        .catch(() => {
+          alert('Network error. Please try again.');
+          this.disabled = false;
+          this.innerHTML = originalHTML;
         });
-    </script>
-    
-    <style>
-        /* Add hover effect if not in styles.css */
-        .card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      });
+    });
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
         }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-        }
-    </style>
-{% endblock %} 
+      }
+      return cookieValue;
+    }
+  });
+</script>
+
+<style>
+  /* Congruent, minimal additions on top of your global styles.css */
+  .user-card {
+    border-radius: 20px; /* matches global .card radius */
+    overflow: hidden;
+  }
+
+  .user-avatar {
+    box-shadow: 0 10px 28px rgba(2,6,23,0.10);
+    border: 3px solid rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.6);
+  }
+
+  /* Gentle lift without overpowering your global shadows */
+  .user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 26px 70px rgba(2,6,23,0.06) !important;
+  }
+
+  .user-card {
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+
+  @media (max-width: 576px) {
+    h2 { font-size: 1.35rem; }
+  }
+</style>
+{% endblock %}
+ 
