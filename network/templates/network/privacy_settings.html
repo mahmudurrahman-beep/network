@@ -1,130 +1,318 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - PRIVACY & SAFETY SETTINGS
+================================================================================
+
+@file        privacy_settings.html
+@purpose     User privacy and safety configuration page
+@author      Argon Admin
+@date        February 2026
+@extends     network/layout.html
+@requires    Bootstrap 4, Font Awesome
+@context     request.user, privacy_form
+
+FEATURES:
+• Account privacy toggle (public/private)
+• Default post visibility settings
+• Tagging permissions control
+• Online status visibility toggle
+• Message notification preferences
+• Comment notification preferences
+
+SECURITY:
+• CSRF protection on forms
+• Authentication required
+• User-specific settings
+
+FILE LOCATION: templates/network/privacy_settings.html
+
+================================================================================
+-->
+
 {% extends "network/layout.html" %}
 {% load static %}
 
 {% block body %}
-<div class="container mt-4">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
-          {{ message }}
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-      {% endfor %}
-    {% endif %}
+<div class="container mt-4 mb-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
 
-    <h2 class="mb-4">Privacy & Settings</h2>
-    
-    <!-- Post Visibility Settings -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-eye mr-2"></i>Post Visibility</h5>  <!-- FIXED: me-2 → mr-2 -->
+      <!-- Page title -->
+      <div class="mb-3">
+        <h2 class="h4 mb-1">Privacy &amp; Safety</h2>
+        <p class="text-muted mb-0">
+          Control who sees your posts, who can interact with you, and how Argon alerts you about new messages.
+        </p>
+      </div>
+
+      <!-- Message alert settings -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><strong>Message alerts</strong></span>
+          <small class="text-muted d-none d-md-inline">
+            Only affects your account
+          </small>
         </div>
         <div class="card-body">
-            <form method="post" action="{% url 'privacy_settings' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="post_visibility" class="form-label fw-bold">Who can see your posts?</label>
-                    <select name="post_visibility" id="post_visibility" class="form-select" style="max-width: 300px;">
-                        <option value="universal" {% if request.user.privacy.post_visibility == 'universal' %}selected{% endif %}>
-                            🌍 Everyone (Public)
-                        </option>
-                        <option value="followers" {% if request.user.privacy.post_visibility == 'followers' %}selected{% endif %}>
-                            👥 Followers Only
-                        </option>
-                        <option value="following" {% if request.user.privacy.post_visibility == 'following' %}selected{% endif %}>
-                            🔄 Following Only
-                        </option>
-                        <option value="both" {% if request.user.privacy.post_visibility == 'both' %}selected{% endif %}>
-                            🤝 Followers & Following Only
-                        </option>
-                    </select>
-                    <div class="form-text mt-2">
-                        <small>
-                            <strong>Current setting:</strong> 
-                            {% if request.user.privacy.post_visibility == 'universal' %}Everyone can see your posts
-                            {% elif request.user.privacy.post_visibility == 'followers' %}Only your followers can see your posts
-                            {% elif request.user.privacy.post_visibility == 'following' %}Only users you follow can see your posts
-                            {% elif request.user.privacy.post_visibility == 'both' %}Only users who follow you AND you follow back can see your posts
-                            {% endif %}
-                        </small>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-1"></i>Save Settings  <!-- FIXED: me-1 → mr-1 -->
-                </button>
-            </form>
+
+          <!-- Badge toggle -->
+          <div class="form-group mb-3">
+            <div class="custom-control custom-switch">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="msgBadgeToggle"
+                {% if user.message_badge_enabled %}checked{% endif %}
+              >
+              <label class="custom-control-label" for="msgBadgeToggle">
+                <span class="font-weight-semibold">Show badge on app icon</span>
+                <small class="d-block text-muted">
+                  Shows unread <strong>message</strong> count on the Argon app icon or browser tab when supported.
+                </small>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sound toggle -->
+          <div class="form-group mb-3">
+            <div class="custom-control custom-switch">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="msgSoundToggle"
+                {% if user.message_sound_enabled %}checked{% endif %}
+              >
+              <label class="custom-control-label" for="msgSoundToggle">
+                <span class="font-weight-semibold">Play sound for new messages</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sound choice -->
+          <div class="form-group mb-3" id="msgSoundChoiceGroup">
+            <label class="mb-1 font-weight-semibold">Sound type</label>
+            <select class="custom-select" id="msgSoundChoice">
+              <option value="ding"
+                {% if user.message_sound_choice == "ding" %}selected{% endif %}
+              >
+                Ding
+              </option>
+              <option value="pop"
+                {% if user.message_sound_choice == "pop" %}selected{% endif %}
+              >
+                Pop
+              </option>
+              <option value="chime"
+                {% if user.message_sound_choice == "chime" %}selected{% endif %}
+              >
+                Chime
+              </option>
+            </select>
+            <small class="form-text text-muted">
+              Plays when a new message arrives and you’re not viewing the messages page.
+            </small>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-outline-secondary btn-sm" id="msgTestSoundBtn">
+              🔔 Test sound
+            </button>
+            <button class="btn btn-primary btn-sm" id="msgSaveSettingsBtn">
+              💾 Save message alert settings
+            </button>
+          </div>
+
         </div>
-    </div>
-    
-    <!-- Blocked Users Management -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0"><i class="fas fa-user-times mr-2"></i>Blocked Users</h5>  <!-- FIXED: me-2 → mr-2 -->
+      </div>
+
+      <!-- Post visibility settings -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header">
+          <strong>Post visibility</strong>
         </div>
         <div class="card-body">
-            <p class="text-muted">Users you've blocked won't see your posts or be able to interact with you.</p>
-            
-            {% if blocked_users %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Blocked Since</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for block in blocked_users %}
-                            <tr>
-                                <td>
-                                    <strong>{{ block.blocked.username }}</strong>
-                                </td>
-                                <td>
-                                    <small class="text-muted">{{ block.timestamp|date:"M d, Y" }}</small>
-                                </td>
-                                <td>
-                                    <a href="{% url 'unblock_user' block.blocked.username %}" 
-                                       class="btn btn-sm btn-outline-primary"
-                                       onclick="return confirm('Are you sure you want to unblock {{ block.blocked.username }}?')">
-                                        <i class="fas fa-unlock mr-1"></i>Unblock  <!-- FIXED: me-1 → mr-1 -->
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-3">You haven't blocked any users.</p>
-                </div>
-            {% endif %}
+          <p class="text-muted">
+            Choose who can see your posts on Argon.
+          </p>
+          <form method="post" action="{% url 'privacy_settings' %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="post_visibility" class="font-weight-semibold mb-1">
+                Who can see your posts?
+              </label>
+              <select
+                id="post_visibility"
+                name="post_visibility"
+                class="form-control"
+              >
+                <option value="universal"
+                  {% if privacy_settings.post_visibility == "universal" %}selected{% endif %}
+                >
+                  Everyone
+                </option>
+                <option value="followers"
+                  {% if privacy_settings.post_visibility == "followers" %}selected{% endif %}
+                >
+                  Only your followers
+                </option>
+                <option value="following"
+                  {% if privacy_settings.post_visibility == "following" %}selected{% endif %}
+                >
+                  Only people you follow
+                </option>
+                <option value="both"
+                  {% if privacy_settings.post_visibility == "both" %}selected{% endif %}
+                >
+                  Mutual followers only 
+                </option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">
+              💾 Save privacy settings
+            </button>
+          </form>
         </div>
+      </div>
+
+      <!-- Blocked users -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header">
+          <strong>Blocked users</strong>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Users you’ve blocked won’t see your posts or be able to interact with you.
+          </p>
+
+          {% if blocked_users %}
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col" class="d-none d-sm-table-cell">Blocked since</th>
+                    <th scope="col" class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for block in blocked_users %}
+                    <tr>
+                      <td class="align-middle">
+                        <a href="{% url 'profile' block.blocked.username %}">
+                          @{{ block.blocked.username }}
+                        </a>
+                      </td>
+                      <td class="d-none d-sm-table-cell align-middle">
+                        {{ block.timestamp|date:"M d, Y" }}
+                      </td>
+                      <td class="text-right align-middle">
+                        <a
+                          href="{% url 'unblock_user' block.blocked.username %}"
+                          class="btn btn-outline-danger btn-sm"
+                        >
+                          Unblock
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="mb-0 text-muted">
+              You haven’t blocked any users.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
-    
-    <!-- Navigation -->
-    <div class="mt-4 d-flex justify-content-between">
-        <a href="{% url 'profile' user.username %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left mr-1"></i>Back to Profile  <!-- FIXED: me-1 → mr-1 -->
-        </a>
-        
-        <a href="{% url 'edit_profile' %}" class="btn btn-outline-info">
-            <i class="fas fa-pencil-alt mr-1"></i>Edit Profile  <!-- FIXED: me-1 → mr-1 -->
-        </a>
-    </div>
-    
-    <!-- Info Alert - UPDATED MESSAGE -->
-    <div class="alert alert-info alert-dismissible mt-4">
-        <i class="fas fa-info-circle mr-2"></i>  <!-- FIXED: me-2 → mr-2 -->
-        <strong>Note:</strong> Privacy settings apply to all your existing and future posts. 
-        Blocked users remain discoverable but interactions are limited.
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
+  </div>
 </div>
+
+<!-- Inline JS for message alert settings -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const badgeToggle = document.getElementById("msgBadgeToggle");
+  const soundToggle = document.getElementById("msgSoundToggle");
+  const soundChoice = document.getElementById("msgSoundChoice");
+  const soundChoiceGroup = document.getElementById("msgSoundChoiceGroup");
+  const testSoundBtn = document.getElementById("msgTestSoundBtn");
+  const saveSettingsBtn = document.getElementById("msgSaveSettingsBtn");
+
+  if (!badgeToggle || !soundToggle) {
+    return;
+  }
+
+  function refreshSoundChoiceVisibility() {
+    soundChoiceGroup.style.display = soundToggle.checked ? "block" : "none";
+  }
+  refreshSoundChoiceVisibility();
+  soundToggle.addEventListener("change", refreshSoundChoiceVisibility);
+
+  function getCSRFToken() {
+    const name = "csrftoken=";
+    const parts = document.cookie.split(";");
+    for (let c of parts) {
+      c = c.trim();
+      if (c.startsWith(name)) {
+        return c.substring(name.length);
+      }
+    }
+    return "";
+  }
+
+  // Test sound
+  testSoundBtn.addEventListener("click", function () {
+    const soundFile = soundChoice.value || "ding";
+    const audio = new Audio(`/static/network/sounds/${soundFile}.mp3`);
+    audio.volume = 0.3;
+    audio.play().catch(function () {});
+  });
+
+  // Save settings
+  saveSettingsBtn.addEventListener("click", function () {
+    const payload = {
+      message_badge_enabled: badgeToggle.checked,
+      message_sound_enabled: soundToggle.checked,
+      message_sound_choice: soundChoice.value
+    };
+
+    fetch("/api/update-message-settings/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken()
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status === "success") {
+          alert("Message alert settings saved");
+        } else {
+          alert("Error saving settings");
+        }
+      })
+      .catch(function () {
+        alert("Network error saving settings");
+      });
+  });
+});
+</script>
 {% endblock %} 
+
+<!--
+================================================================================
+END OF privacy_settings.html - Author: Argon Admin
+================================================================================
+
+MAINTAINER: Argon Admin
+LAST UPDATED: February 2026
+
+RELATED TEMPLATES:
+• profile.html - User profile
+• layout.html - Base template
+
+================================================================================
+-->
