@@ -1,3 +1,31 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - USER PROFILE PAGE
+================================================================================
+
+@file        profile.html
+@purpose     Display user profile with posts, stats, and actions
+@author      Argon Admin
+@date        February 2026
+@extends     network/layout.html
+@requires    Bootstrap 4, Font Awesome, parse_media
+@context     profile_user, posts, is_following, is_blocked
+
+FEATURES:
+• User avatar and bio
+• Follower/following statistics
+• Follow/unfollow button
+• Block/unblock functionality
+• Edit profile button (own profile)
+• User's post feed
+• Zodiac sign display
+
+FILE LOCATION: templates/network/profile.html
+INCLUDES: network/partials/post_list.html
+
+================================================================================
+-->
+
 {% extends "network/layout.html" %}
 {% load static %}
 
@@ -59,6 +87,32 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
     }
+
+    .profile-meta { line-height: 1; }
+    .profile-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+        border: 1px solid rgba(8, 48, 71, 0.06);
+        background: rgba(255, 255, 255, 0.65);
+        color: rgba(8, 48, 71, 0.78);
+        box-shadow: 0 6px 18px rgba(8, 48, 71, 0.06);
+        white-space: nowrap;
+    }
+    .profile-meta-pill i { color: var(--brand-blue); }
+    .profile-pill-label { font-weight: 900; margin-right: 4px; color: rgba(8, 48, 71, 0.72); }
+    .profile-pill-m { background: rgba(14, 97, 150, 0.10); }
+    .profile-pill-f { background: rgba(236, 72, 153, 0.10); color: #8b1d7a; }
+    .profile-pill-f i { color: #c026d3; }
+    .profile-pill-o { background: rgba(108, 117, 125, 0.10); color: #6c757d; }
+    .profile-pill-o i { color: #6c757d; }
+    .profile-pill-n { background: rgba(108, 117, 125, 0.10); color: #6c757d; }
+    .profile-pill-n i { color: #6c757d; }
+    .profile-pill-birth { background: rgba(6, 98, 150, 0.08); white-space: normal; text-align: center; }
+    .profile-pill-zodiac { background: rgba(6, 182, 212, 0.12); color: var(--brand-blue); font-weight: 900; }
+
 </style>
 
 <div class="container my-4">
@@ -108,20 +162,54 @@
             </form>
         {% endif %}
     </div>
-
+    
     <h3 class="mb-2" style="color: var(--muted-dark); font-weight: 900;">{{ profile_user.username }}</h3>
 
     {% if profile_user.bio %}
         <p class="text-muted mb-3" style="max-width: 500px; margin: 0 auto; color: rgba(8,48,71,0.78) !important;">{{ profile_user.bio }}</p>
     {% endif %}
 
-    <p class="text-muted mb-4">
-        {% if profile_user.gender == 'M' %}♂ Male
-        {% elif profile_user.gender == 'F' %}♀ Female
-        {% elif profile_user.gender == 'O' %}⚧ Other
-        {% else %}• Prefer not to say
+    <div class="mb-4">
+  <div class="profile-meta d-flex flex-column flex-sm-row align-items-center justify-content-center">
+    {# Gender (show only if set) #}
+    {% if profile_user.gender == 'M' %}
+      <span class="profile-meta-pill mb-2 mb-sm-0 mr-sm-2 profile-pill-m">
+        <i class="fas fa-mars mr-1"></i>Male
+      </span>
+    {% elif profile_user.gender == 'F' %}
+      <span class="profile-meta-pill mb-2 mb-sm-0 mr-sm-2 profile-pill-f">
+        <i class="fas fa-venus mr-1"></i>Female
+      </span>
+    {% elif profile_user.gender == 'O' %}
+      <span class="profile-meta-pill mb-2 mb-sm-0 mr-sm-2 profile-pill-o">
+        <i class="fas fa-transgender-alt mr-1"></i>Other
+      </span>
+    {% elif profile_user.gender == 'N' %}
+      <span class="profile-meta-pill mb-2 mb-sm-0 mr-sm-2 profile-pill-n">
+        <i class="fas fa-user-shield mr-1"></i>Prefer not to say
+      </span>
+    {% endif %}
+
+    {# Birthdate (show only if set and not hidden) #}
+    {% if profile_user.birth_date and not profile_user.birth_date_hidden %}
+      <span class="profile-meta-pill mb-2 mb-sm-0 mr-sm-2 profile-pill-birth">
+        <i class="fas fa-birthday-cake mr-1"></i>
+        <span class="profile-pill-label">Born:</span>
+        {% if profile_user.birth_year_hidden %}
+          {{ profile_user.birth_date|date:"M j" }}
+        {% else %}
+          {{ profile_user.birth_date|date:"M j, Y" }}
         {% endif %}
-    </p>
+      </span>
+
+      {% if birth.birth_zodiac %}
+        <span class="profile-meta-pill mb-2 mb-sm-0 profile-pill-zodiac">
+          <i class="fas fa-star mr-1"></i>{{ birth.birth_zodiac }}
+        </span>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
 
     <p class="mb-4">
         <strong data-followers-count>
@@ -345,3 +433,9 @@ document.addEventListener('keyup', function(e) {
 {% endblock %}
 
 {% block script %}{% endblock %} 
+
+<!--
+================================================================================
+END OF profile.html - Author: Argon Admin
+================================================================================
+-->
