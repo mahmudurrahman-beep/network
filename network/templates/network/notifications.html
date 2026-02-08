@@ -362,8 +362,7 @@
         <!-- NOTIFICATIONS LIST -->
         <div class="list-group" id="notifications-list">
             {% for notif in notifications %}
-                <!-- FIXED: Changed notif.read to notif.is_read -->
-                <div class="notification-item {% if not notif.is_read %}unread{% endif %}" 
+                <div class="notification-item {% if not notif.read %}unread{% endif %}" 
                      data-notification-id="{{ notif.id }}">
                     <button class="delete-notification-btn" 
                             data-notification-id="{{ notif.id }}"
@@ -385,6 +384,13 @@
                                 <a href="{% url 'post_detail' notif.post.id %}"
                                    class="notification-post-link">
                                     "{{ notif.post.content|truncatewords:8 }}"
+                                </a>
+                            {% elif notif.conversation %}
+                                <!-- NEW: Group mention notification -->
+                                in group: 
+                                <a href="{% url 'conversation_room' notif.conversation.id %}"
+                                   class="notification-post-link">
+                                    "{{ notif.conversation.name|default:"Group Chat" }}"
                                 </a>
                             {% endif %}
                         </h6>
@@ -482,7 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(result => {
                 if (result.success) {
                     // Remove "unread" styling from all notifications
-                    // This will work now because template uses correct is_read field
                     document.querySelectorAll('.notification-item.unread').forEach(item => {
                         item.classList.remove('unread');
                         item.style.borderLeft = '4px solid var(--brand-blue)';
@@ -609,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Add CSS for toast animations
+    // CSS for toast animations
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideIn {
@@ -624,4 +629,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 });
 </script>
-{% endblock %}
+{% endblock %} 
