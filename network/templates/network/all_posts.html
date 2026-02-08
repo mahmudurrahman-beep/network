@@ -1,3 +1,33 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - ALL POSTS PAGE
+================================================================================
+
+@file        all_posts.html
+@purpose     Main posts feed page with post composer and pagination
+@author      Argon Admin
+@date        February 2026
+@extends     network/layout.html
+@requires    parse_media template tag, Bootstrap 4, Font Awesome
+@context     posts (QuerySet), page_obj (Paginator object)
+
+FEATURES:
+• Post composer with image upload (authenticated users only)
+• Paginated post feed display
+• File attachment preview
+• Responsive mobile-first design
+
+SECURITY:
+• CSRF protection on forms
+• Authentication checks
+• File type validation (images only)
+
+FILE LOCATION: templates/network/all_posts.html
+INCLUDES: network/partials/post_list.html
+
+================================================================================
+-->
+
 {# network/templates/network/all_posts.html #}
 {% extends "network/layout.html" %}
 {% load static %}
@@ -69,19 +99,19 @@
   {% if user.is_authenticated %}
     <div class="card mb-4 shadow-sm post-composer">
       <div class="card-body">
-        <h5 class="card-title">Create New Post</h5>
+        <h5 class="card-title">📭New Post</h5>
 
         <form id="new-post-form" enctype="multipart/form-data">
           {% csrf_token %}
 
           <textarea name="content"
-                    class="form-control mb-3"
+                    class="form-control mb-3 js-mention-input" data-mention-scope="global"
                     rows="3"
-                    placeholder="Post something..."
+                    placeholder="Grass is greener and why not?"
                     required></textarea>
 
           {# Keep file input functional, but use attach button for mobile-friendly UI #}
-          <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div class="d-flex flex-wrap align-items-center" style="gap:10px;">
             <label class="attach-btn" for="media_files">
               <i class="fas fa-paperclip"></i>
               <span>Attach photos/videos</span>
@@ -158,3 +188,10 @@
 })();
 </script>
 {% endblock %}
+
+
+<!--
+================================================================================
+END OF all_posts.html - Author: Argon Admin
+================================================================================
+-->
