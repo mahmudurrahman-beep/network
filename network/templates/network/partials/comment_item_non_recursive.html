@@ -1,4 +1,31 @@
-{# comment_item_non_recursive.html - FIXED #}
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - COMMENT ITEM (NON-RECURSIVE)
+================================================================================
+
+@file        comment_item_non_recursive.html
+@purpose     Flat comment display without nested threading
+@author      Argon Admin
+@date        February 2026
+@extends     None (included template)
+@requires    parse_media, comment_filters, Bootstrap 4, Font Awesome
+@context     comment, request.user
+
+FEATURES:
+• Flat comment structure (no nesting)
+• Inline edit with modal
+• Delete with confirmation
+• Media parsing (GIFs, @mentions)
+• User profile picture
+• Timestamp (relative)
+• Vote system
+
+FILE LOCATION: templates/network/partials/comment_item_non_recursive.html
+
+================================================================================
+-->
+
+{# network/partials/comment_item_non_recursive.html #}
 {% load static %}
 {% load parse_media %}
 {% load comment_filters %}
@@ -14,14 +41,16 @@
 }
 @media (max-width: 576px){
   .comment-item[data-depth]{
-    --indent: min(calc(var(--depth) * 0.45rem), 1.25rem);
+    --indent: min(calc(var(--depth) * 0.5rem), 1.4rem);
     margin-left: var(--indent);
     width: calc(100% - var(--indent));
   }
   .comment-item[data-depth]:not([data-depth="0"]){
-    padding: 0.85rem !important;
+    padding: 0.7rem 0.75rem !important;
   }
 }
+
+/* INLINE GIF/STICKER */
 
 .comment-text img[alt="GIF"],
 .comment-text img[alt="Sticker"]{
@@ -29,22 +58,165 @@
   height:auto;
   max-width:100% !important;
 }
-.comment-text img[alt="GIF"]{ width: min(300px, 100%) !important; }
-.comment-text img[alt="Sticker"]{ width: min(150px, 100%) !important; }
+.comment-text img[alt="GIF"]{ width: min(280px, 100%) !important; }
+.comment-text img[alt="Sticker"]{ width: min(140px, 100%) !important; }
 @media (max-width:576px){
   .comment-text img[alt="GIF"]{ width: 100% !important; }
-  .comment-text img[alt="Sticker"]{ width: min(220px, 100%) !important; }
+  .comment-text img[alt="Sticker"]{ width: min(200px, 100%) !important; }
+}
+
+/* USERNAME TRUNCATION */
+
+.comment-submeta .text-primary,
+.comment-submeta .font-weight-bold {
+  display: inline-block !important;
+  max-width: min(120px, 30vw) !important;
+  min-width: 50px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  vertical-align: bottom !important;
+}
+
+@media (max-width: 380px) {
+  .comment-submeta .text-primary,
+  .comment-submeta .font-weight-bold {
+    max-width: min(80px, 22vw) !important;
+  }
+  .comment-submeta {
+    font-size: 0.85rem;
+  }
+}
+
+.comment-submeta {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* ACTION MENU */
+
+.comment-actions .action-menu {
+  position: relative;
+}
+
+.comment-actions .action-menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.comment-actions .action-menu-toggle:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.comment-actions .action-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 100px;
+  background: white;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  margin-top: 5px;
+}
+
+.comment-actions .action-menu-dropdown.show {
+  display: block;
+}
+
+.comment-actions .action-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #212529;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.comment-actions .action-menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 576px) {
+  .comment-item .d-flex.justify-content-between {
+    position: relative !important;
+    padding-right: 40px !important;
+  }
+
+  .comment-actions {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .comment-item[data-depth="1"] .comment-actions {
+    top: -4px !important;
+    right: -4px !important;
+  }
+
+  .comment-item[data-depth="2"] .comment-actions,
+  .comment-item[data-depth="3"] .comment-actions {
+    top: -2px !important;
+    right: -2px !important;
+  }
+
+  .comment-actions .action-menu-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    z-index: 9999;
+  }
+
+  .comment-actions .action-menu-item {
+    padding: 1rem;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  .comment-submeta .text-primary,
+  .comment-submeta .font-weight-bold {
+    max-width: min(100px, 25vw) !important;
+  }
 }
 </style>
 
-<div class="comment-item {% if depth > 0 %}reply-item{% endif %} mb-3 p-3 {% if depth == 0 %}bg-light rounded{% else %}bg-white border rounded{% endif %}"
-     data-comment-id="{{ comment.id }}" data-depth="{{ depth }}" style="--depth: {{ depth }};">
+<div class="comment-item {% if depth > 0 %}reply-item{% endif %}
+            mb-3 p-3 {% if depth == 0 %}bg-light rounded{% else %}bg-white border rounded{% endif %}"
+     data-comment-id="{{ comment.id }}"
+     data-depth="{{ depth }}"
+     style="--depth: {{ depth }}">
   <div class="d-flex align-items-start" style="min-width:0;">
     {% if comment.user.profile_picture %}
       <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle mr-3"
            width="{% if depth == 0 %}40{% else %}32{% endif %}"
            height="{% if depth == 0 %}40{% else %}32{% endif %}"
-           alt="{{ comment.user.username }}" style="object-fit: cover;">
+           alt="{{ comment.user.username }}"
+           style="object-fit: cover;"
+           onerror="this.src='{% static 'network/images/default-avatar.png' %}'">
     {% else %}
       <img src="{% static 'network/images/default-avatar.png' %}"
            class="rounded-circle mr-3"
@@ -55,25 +227,25 @@
     {% endif %}
 
     <div class="flex-grow-1" style="min-width:0;">
-      <div class="d-flex justify-content-between align-items-start mb-2" style="gap:10px;">
+      <div class="d-flex justify-content-between align-items-start mb-1" style="gap:10px;">
         <div style="min-width:0;">
           <strong>
-            <a href="{% url 'profile' comment.user.username %}" class="text-dark text-decoration-none">
+            <a href="{% url 'profile' comment.user.username %}"
+               class="text-dark text-decoration-none">
               {{ comment.user.username }}
             </a>
           </strong>
 
           <div class="mt-1">
             <small class="text-muted d-flex flex-wrap align-items-center" style="gap:8px;">
-              <span class="time-ago" data-timestamp="{{ comment.timestamp|date:'c' }}">
-                {{ comment.timestamp|timesince }} ago
-              </span>
+              <span>{{ comment.timestamp|timesince }} ago</span>
 
               {% if comment.parent and comment.parent.user %}
                 <span class="d-inline-flex flex-wrap align-items-center" style="gap:4px;">
                   <i class="fas fa-reply mr-1"></i>
                   <span>Replying to</span>
-                  <a href="{% url 'profile' comment.parent.user.username %}" class="text-primary text-decoration-none font-weight-bold">
+                  <a href="{% url 'profile' comment.parent.user.username %}"
+                     class="text-primary text-decoration-none font-weight-bold">
                     @{{ comment.parent.user.username }}
                   </a>
                 </span>
@@ -83,18 +255,22 @@
         </div>
 
         {% if request.user == comment.user %}
-          <div class="action-menu">
-            <button type="button"
-                    class="action-menu-toggle js-action-menu-toggle"
-                    aria-label="Comment actions"
-                    aria-expanded="false">⋮</button>
-
-            <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+          <div class="comment-actions">
+            <div class="action-menu">
               <button type="button"
-                      class="action-menu-item delete-comment"
-                      data-comment-id="{{ comment.id }}">
-                Delete
+                      class="action-menu-toggle js-action-menu-toggle"
+                      aria-label="Comment actions"
+                      aria-expanded="false">
+                <i class="fas fa-ellipsis-v"></i>
               </button>
+
+              <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+                <button type="button"
+                        class="action-menu-item delete-comment"
+                        data-comment-id="{{ comment.id }}">
+                  <i class="fas fa-trash mr-2"></i>Delete
+                </button>
+              </div>
             </div>
           </div>
         {% endif %}
@@ -104,36 +280,65 @@
         {{ comment.content|parse_media|safe }}
       </div>
 
+      {% if comment.media %}
+        <div class="mb-2">
+          {% if comment.media_type == 'image' %}
+            <img src="{{ comment.media.url }}" alt="Comment image"
+                 class="img-fluid rounded" style="max-height:400px;object-fit:contain;">
+          {% elif comment.media_type == 'video' %}
+            <video controls class="w-100 rounded" style="max-height:400px;">
+              <source src="{{ comment.media.url }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          {% endif %}
+        </div>
+      {% endif %}
+
       {% if user.is_authenticated and depth == 0 %}
-        <button class="btn btn-sm btn-link text-primary reply-btn p-0" data-comment-id="{{ comment.id }}" type="button">
+        <button class="btn btn-sm btn-link text-primary reply-btn p-0"
+                data-comment-id="{{ comment.id }}" type="button">
           <i class="fas fa-reply mr-1"></i> Reply
         </button>
 
         <div class="reply-form mt-3 d-none" data-parent-id="{{ comment.id }}">
           <form method="post" action="{% url 'add_comment' post.id %}" class="js-media-form"
-                data-composer-id="reply-nr-{{ comment.id }}">
+                data-composer-id="reply-nr-{{ comment.id }}" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="parent_id" value="{{ comment.id }}">
 
             <div class="replying-to-indicator mb-2">
               <i class="fas fa-reply mr-1"></i>
-              Replying to <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none">@{{ comment.user.username }}</a>
+              Replying to
+              <a href="{% url 'profile' comment.user.username %}"
+                 class="text-primary text-decoration-none">@{{ comment.user.username }}</a>
             </div>
 
             <div class="comment-composer">
-              <div class="composer-preview" data-preview="reply-nr-{{ comment.id }}"></div>
+              <div class="media-previews-container">
+                <div class="media-previews-list" data-preview="reply-nr-{{ comment.id }}"></div>
+                <div class="media-stats" data-stats="reply-nr-{{ comment.id }}"></div>
+              </div>
 
-              <textarea name="content" class="form-control reply-textarea mb-2"
-                        rows="2" placeholder="Write your reply..." required></textarea>
+              <textarea name="content"
+                        class="form-control auto-expand-textarea reply-textarea mb-2"
+                        rows="1"
+                        placeholder="Write your reply..."
+                        required></textarea>
 
               <div class="composer-media-row" data-row="reply-nr-{{ comment.id }}">
-                <button type="button" class="composer-media-btn active" data-type="gifs">🎞️</button>
+                <button type="button" class="composer-media-btn" data-type="gifs">🎞️</button>
                 <button type="button" class="composer-media-btn" data-type="stickers">🏷️</button>
-                <input type="text" class="composer-search-input" placeholder="Search GIFs or Stickers...">
-                <button type="button" class="composer-search-btn"><i class="fas fa-search"></i></button>
+                <button type="button" class="composer-media-btn composer-file-btn" data-file-kind="image" title="Attach image">📷</button>
+                <button type="button" class="composer-media-btn composer-file-btn" data-file-kind="video" title="Attach video">🎥</button>
+
+                <input type="text" class="composer-search-input" placeholder="Search GIFs or stickers...">
+                <button type="button" class="composer-search-btn">
+                  <i class="fas fa-search"></i>
+                </button>
                 <div class="composer-results" data-results="reply-nr-{{ comment.id }}"></div>
               </div>
 
+              <input type="file" name="media" class="js-composer-file-input d-none" accept="image/*,video/*">
               <input type="hidden" class="media-data-input" value="[]">
             </div>
 
@@ -149,34 +354,41 @@
         {% for reply in visible_replies %}
           {% with next_depth=depth|add:1 %}
             <div class="comment-item reply-item mt-3 p-3 bg-white border rounded"
-                 data-comment-id="{{ reply.id }}" data-depth="{{ next_depth }}" style="--depth: {{ next_depth }};">
+                 data-comment-id="{{ reply.id }}"
+                 data-depth="{{ next_depth }}"
+                 style="--depth: {{ next_depth }}">
               <div class="d-flex align-items-start" style="min-width:0;">
                 {% if reply.user.profile_picture %}
-                  <img src="{{ reply.user.profile_picture.url }}" class="rounded-circle mr-3" width="32" height="32"
-                       alt="{{ reply.user.username }}" style="object-fit: cover;">
+                  <img src="{{ reply.user.profile_picture.url }}" class="rounded-circle mr-3"
+                       width="32" height="32"
+                       alt="{{ reply.user.username }}"
+                       style="object-fit: cover;"
+                       onerror="this.src='{% static 'network/images/default-avatar.png' %}'">
                 {% else %}
-                  <img src="{% static 'network/images/default-avatar.png' %}" class="rounded-circle mr-3" width="32" height="32"
-                       alt="{{ reply.user.username }}" style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                  <img src="{% static 'network/images/default-avatar.png' %}" class="rounded-circle mr-3"
+                       width="32" height="32"
+                       alt="{{ reply.user.username }}"
+                       style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 {% endif %}
 
                 <div class="flex-grow-1" style="min-width:0;">
-                  <div class="d-flex justify-content-between align-items-start mb-2" style="gap:10px;">
+                  <div class="d-flex justify-content-between align-items-start mb-1" style="gap:10px;">
                     <div style="min-width:0;">
                       <strong>
-                        <a href="{% url 'profile' reply.user.username %}" class="text-dark text-decoration-none">
+                        <a href="{% url 'profile' reply.user.username %}"
+                           class="text-dark text-decoration-none">
                           {{ reply.user.username }}
                         </a>
                       </strong>
 
                       <div class="mt-1">
                         <small class="text-muted d-flex flex-wrap align-items-center" style="gap:8px;">
-                          <span class="time-ago" data-timestamp="{{ reply.timestamp|date:'c' }}">
-                            {{ reply.timestamp|timesince }} ago
-                          </span>
+                          <span>{{ reply.timestamp|timesince }} ago</span>
                           <span class="d-inline-flex flex-wrap align-items-center" style="gap:4px;">
                             <i class="fas fa-reply mr-1"></i>
                             <span>Replying to</span>
-                            <a href="{% url 'profile' comment.user.username %}" class="text-primary text-decoration-none font-weight-bold">
+                            <a href="{% url 'profile' comment.user.username %}"
+                               class="text-primary text-decoration-none font-weight-bold">
                               @{{ comment.user.username }}
                             </a>
                           </span>
@@ -185,18 +397,22 @@
                     </div>
 
                     {% if request.user == reply.user %}
-                      <div class="action-menu">
-                        <button type="button"
-                                class="action-menu-toggle js-action-menu-toggle"
-                                aria-label="Reply actions"
-                                aria-expanded="false">⋮</button>
-
-                        <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+                      <div class="comment-actions">
+                        <div class="action-menu">
                           <button type="button"
-                                  class="action-menu-item delete-comment"
-                                  data-comment-id="{{ reply.id }}">
-                            Delete
+                                  class="action-menu-toggle js-action-menu-toggle"
+                                  aria-label="Reply actions"
+                                  aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
                           </button>
+
+                          <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+                            <button type="button"
+                                    class="action-menu-item delete-comment"
+                                    data-comment-id="{{ reply.id }}">
+                              <i class="fas fa-trash mr-2"></i>Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     {% endif %}
@@ -205,6 +421,20 @@
                   <div class="comment-text mb-2 mt-1">
                     {{ reply.content|parse_media|safe }}
                   </div>
+
+                  {% if reply.media %}
+                    <div class="mb-2">
+                      {% if reply.media_type == 'image' %}
+                        <img src="{{ reply.media.url }}" alt="Reply image"
+                             class="img-fluid rounded" style="max-height:400px;object-fit:contain;">
+                      {% elif reply.media_type == 'video' %}
+                        <video controls class="w-100 rounded" style="max-height:400px;">
+                          <source src="{{ reply.media.url }}" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      {% endif %}
+                    </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
@@ -214,3 +444,10 @@
     </div>
   </div>
 </div>
+
+
+<!--
+================================================================================
+END OF comment_item_non_recursive.html - Author: Argon Admin
+================================================================================
+-->
