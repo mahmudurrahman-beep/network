@@ -1,224 +1,347 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - MESSAGES INBOX
+================================================================================
+
+@file        messages_inbox.html
+@purpose     Messaging inbox with conversation list and search
+@author      Argon Admin
+@date        February 2026
+@extends     network/layout.html
+@requires    Bootstrap 4, Font Awesome
+@context     conversations, unread_count, request.user
+
+FEATURES:
+• Real-time conversation search
+• Unread message indicators
+• Profile picture previews
+• Last message timestamp
+• Empty state handling
+• GIF and Sticker rendering in previews
+
+FILE LOCATION: templates/network/messages/messages_inbox.html
+
+================================================================================
+-->
+
 {% extends "network/layout.html" %}
+{% load static %}
+{% load humanize %}
+{% load message_filters %}
 
 {% block body %}
+<div class="container py-4">
+  <form style="display:none;">{% csrf_token %}</form>
+
+  <div class="d-flex justify-content-between align-items-center mb-3"> 
+    <h4 class="mb-0">Messages</h4>
+
+    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#createGroupModal">
+      <i class="fas fa-users mr-1"></i> New Group
+    </button>
+  </div>
+
+  {% if conversations %}
+    <div class="list-group">
+      {% for item in conversations %}
+        {% with conv=item.conversation %}
+        <a href="{% url 'conversation_room' conv.id %}"
+           class="list-group-item list-group-item-action conversation-card">
+
+          <div class="d-flex align-items-center">
+
+            {% if item.is_group %}
+              {% if conv.group_avatar %}
+                <img src="{{ conv.group_avatar.url }}" class="rounded-circle mr-3 inbox-avatar" style="width:48px;height:48px;object-fit:cover;" alt="Group avatar" onerror="this.onerror=null;this.style.display='none';">
+              {% else %}
+                <div class="mr-3 d-flex align-items-center justify-content-center inbox-avatar"
+                     style="width:48px;height:48px;border-radius:50%;background:#f1f3f5;">
+                  <i class="fas fa-users"></i>
+                </div>
+              {% endif %}
+            {% else %}
+              <img
+                src="{% if item.other_user.profile_picture %}{{ item.other_user.profile_picture.url }}{% else %}{% static 'network/images/default-avatar.png' %}{% endif %}" onerror="this.onerror=null;this.src='{% static 'network/images/default-avatar.png' %}'"
+                class="rounded-circle mr-3 inbox-avatar"
+                style="width:48px;height:48px;object-fit:cover;"
+                alt="Profile"
+              >
+            {% endif %}
+
+            <div class="flex-grow-1" style="min-width:0;"> 
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="font-weight-bold">
+                  {{ item.title }}
+                  {% if item.is_group %}
+                    <span class="badge badge-light ml-2">Group</span>
+                  {% endif %}
+                </div>
+
+                <div class="text-muted small">
+                  {% if item.latest_message %}
+                    {{ item.latest_message.timestamp|naturaltime }}
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mt-1">
+                <div class="text-muted text-truncate flex-grow-1" style="max-width: 100%;">
+                  {% if item.latest_message %}
+                    {% if item.latest_message.sender == request.user %}
+                      You: {{ item.latest_message.content|parse_inbox_media|truncatechars_html:60 }}
+                    {% else %}
+                      {{ item.latest_message.sender.username }}: {{ item.latest_message.content|parse_inbox_media|truncatechars_html:60 }}
+                    {% endif %}
+                  {% else %}
+                    <span class="text-muted">No messages yet</span>
+                  {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center flex-wrap mt-2 mt-sm-0 inbox-actions" style="gap:8px;">
+                  {% if item.unread_count and item.unread_count > 0 %}
+                    <span class="badge badge-primary badge-pill">{{ item.unread_count }}</span>
+                  {% endif %}
+
+                  <button type="button"
+                          class="btn btn-sm btn-outline-danger delete-conversation inbox-hide-btn"
+                          data-conversation-id="{{ conv.id }}"
+                          {% if item.other_user %}data-other="{{ item.other_user.username }}"{% endif %}
+                          onclick="event.preventDefault(); event.stopPropagation();">
+                    <i class="fas fa-eye-slash"></i><span class="d-none d-sm-inline ml-1">Hide</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </a>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light border">No conversations yet.</div>
+  {% endif %}
+
+</div>
+
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createGroupModalLabel">Create a group</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Group name</label>
+          <input type="text" class="form-control" id="groupName" placeholder="e.g., Project Team">
+        </div>
+
+        <div class="form-group">
+          <label>Group avatar (optional)</label>
+          <div class="d-flex align-items-center" style="gap:12px;">
+            <img id="groupAvatarPreview" src="{% static 'network/images/default-group.jpeg' %}" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;" alt="Preview">
+            <div class="flex-grow-1">
+              <input type="file" class="form-control-file" id="groupAvatar" accept="image/*">
+              <small class="text-muted">You can skip this now and add/change later in production (Cloudinary will handle storage).</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group position-relative">
+          <label>Add members</label>
+          <input type="text" class="form-control" id="groupUserSearch" placeholder="Type @username to add..." autocomplete="off">
+          <div id="groupUserSuggest" class="list-group position-absolute w-100 d-none" style="z-index:1051; max-height:220px; overflow:auto;"></div>
+          <div id="groupUserChips" class="mt-2"></div>
+          <small class="text-muted">Tip: you can add members later from inside the chat.</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" type="button" id="createGroupBtn">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <style>
-/* ===============================
-   Messages Inbox (Argon Theme) - FIXED
-   =============================== */
-.messages-container {
-    max-width: var(--max-width);
-    margin: 0 auto;
+/* Inbox media preview styling */
+.inbox-media-preview {
+  display: inline-block;
+  max-height: 18px;
+  object-fit: contain;
+  border-radius: 3px;
 }
 
-/* Conversation items - with proper visible borders */
-.conversation-item {
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
-    border: 2px solid rgba(8,48,71,0.12) !important; /* Made border thicker and more visible */
-    border-radius: 16px;
-    padding: 18px 20px;
-    transition: all 0.2s ease;
-    text-decoration: none !important;
-    color: var(--muted-dark);
-    margin-bottom: 16px;
-    display: block;
-    box-shadow: 0 4px 20px rgba(2,6,23,0.06);
-}
-
-.conversation-item:hover {
-    background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,0.98));
-    transform: translateY(-4px);
-    box-shadow: 0 12px 36px rgba(2,6,23,0.12);
-    border-color: rgba(8,48,71,0.2) !important;
-    text-decoration: none !important;
-}
-
-.username {
-    font-weight: 900;
-    color: var(--brand-blue) !important;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1.1rem;
-    display: inline-block;
-    margin-bottom: 8px;
-}
-
-.username:hover {
-    color: var(--brand-teal) !important;
-    text-decoration: underline;
-}
-
-.preview-text {
-    color: rgba(8,48,71,0.85) !important;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-    padding: 8px 0;
-    background: rgba(8,48,71,0.03);
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin: 8px 0;
-}
-
-.time-text {
-    font-size: 0.85rem;
-    color: rgba(8,48,71,0.7) !important;
-    white-space: nowrap;
-    font-weight: 600;
-    background: rgba(8,48,71,0.05);
-    padding: 4px 10px;
-    border-radius: 20px;
-    display: inline-block;
-}
-
-.badge {
-    background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)) !important;
-    color: white !important;
-    font-weight: 800;
-    font-size: 0.8rem;
-    border-radius: 12px !important;
-    padding: 4px 10px !important;
-    margin-left: 8px;
-}
-
-/* Fix for list-group spacing */
-.list-group {
-    gap: 16px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Empty state */
-.messages-empty-state {
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
-    border: 2px solid rgba(8,48,71,0.12) !important;
-    border-radius: 20px;
-    padding: 60px 20px;
-    box-shadow: 0 12px 36px rgba(2,6,23,0.08);
-}
-
-.messages-empty-state h5 {
-    color: var(--muted-dark);
-    font-weight: 900;
-}
-
-.messages-empty-state p {
-    color: rgba(8,48,71,0.78) !important;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-    .conversation-item {
-        padding: 14px 16px;
-    }
-    
-    .preview-text {
-        padding: 6px 10px;
-    }
+/* Ensure media doesn't break layout */
+.text-truncate .inbox-media-preview {
+  vertical-align: middle;
 }
 </style>
 
-<div class="container my-4 messages-container">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <h4 class="mb-4" style="color: var(--muted-dark); font-weight: 900;">Messages</h4>
-
-    {% if conversations %}
-        <div class="list-group">
-            {% for conv in conversations %}
-                <a href="{% url 'conversation' conv.user.username %}"
-                   class="conversation-item text-decoration-none">
-
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <strong class="username clickable-username"
-                                    data-username="{{ conv.user.username }}">
-                                {{ conv.user.username }}
-                            </strong>
-                            
-                            {% if conv.unread_count > 0 %}
-                                <span class="badge">
-                                    {{ conv.unread_count }}
-                                </span>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="time-text">
-                            {{ conv.latest_message.timestamp|timesince }} ago
-                        </div>
-                    </div>
-
-                    <!-- Message preview with visible styling -->
-                    <div class="preview-text"
-                         data-message="{{ conv.latest_message.content|default:''|escape }}">
-                        Loading…
-                    </div>
-
-                </a>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-light messages-empty-state text-center">
-            <h5>No messages yet</h5>
-            <p class="mb-0">Send a message from a profile to start a conversation.</p>
-        </div>
-    {% endif %}
-</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    /* Username → profile */
-    document.querySelectorAll('.clickable-username').forEach(el => {
-        el.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.href = `/profile/${this.dataset.username}`;
+(function() {
+  const btn = document.getElementById("createGroupBtn");
+  const avatarInput = document.getElementById("groupAvatar");
+  const avatarPreview = document.getElementById("groupAvatarPreview");
+
+  const input = document.getElementById("groupUserSearch");
+  const dropdown = document.getElementById("groupUserSuggest");
+  const chipsWrap = document.getElementById("groupUserChips");
+
+  const selected = new Map(); // id -> {id, username}
+
+  if (avatarInput && avatarPreview) {
+    avatarInput.addEventListener("change", () => {
+      const f = avatarInput.files && avatarInput.files[0];
+      if (!f) return;
+      avatarPreview.src = URL.createObjectURL(f);
+    });
+  }
+
+  function getCsrf() {
+    const el = document.querySelector("[name=csrfmiddlewaretoken]");
+    return el ? el.value : "";
+  }
+
+  function renderChips() {
+    if (!chipsWrap) return;
+    chipsWrap.innerHTML = "";
+    selected.forEach(u => {
+      const chip = document.createElement("span");
+      chip.className = "badge badge-pill badge-light mr-2 mb-2";
+      chip.style.cursor = "pointer";
+      chip.title = "Remove";
+      chip.textContent = "@" + u.username + " ×";
+      chip.addEventListener("click", () => {
+        selected.delete(String(u.id));
+        renderChips();
+      });
+      chipsWrap.appendChild(chip);
+    });
+  }
+
+  function closeDropdown() {
+    if (!dropdown) return;
+    dropdown.classList.add("d-none");
+    dropdown.innerHTML = "";
+  }
+
+  async function searchUsers(q) {
+    const cleaned = (q || "").trim().replace(/^@+/, "");
+    if (!cleaned) return [];
+    const res = await fetch(`/users/search/?q=${encodeURIComponent(cleaned)}`, {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin"
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data && data.results) ? data.results : [];
+  }
+
+  function addSelected(u) {
+    if (!u || !u.id) return;
+    selected.set(String(u.id), { id: u.id, username: u.username });
+    renderChips();
+  }
+
+  // Autocomplete: type @username
+  let t = null;
+  if (input) {
+    input.addEventListener("input", () => {
+      const raw = (input.value || "").trim();
+      if (t) clearTimeout(t);
+
+      if (raw.length < 2) return closeDropdown();
+
+      t = setTimeout(async () => {
+        const results = await searchUsers(raw);
+        if (!results.length) return closeDropdown();
+
+        dropdown.innerHTML = results.map(u =>
+          `<button type="button" class="list-group-item list-group-item-action py-2" data-id="${u.id}" data-username="${u.username}">
+            <span class="font-weight-bold">@${u.username}</span>
+          </button>`
+        ).join("");
+
+        dropdown.classList.remove("d-none");
+
+        dropdown.querySelectorAll("button").forEach(b => {
+          b.addEventListener("click", () => {
+            addSelected({ id: b.dataset.id, username: b.dataset.username });
+            input.value = "";
+            closeDropdown();
+            input.focus();
+          });
         });
+      }, 180);
     });
 
-    /* Media detection */
-    document.querySelectorAll('.preview-text[data-message]').forEach(el => {
-        const msg = el.dataset.message;
-
-        if (!msg) {
-            el.textContent = 'No messages yet';
-            return;
-        }
-
-        const output = [];
-        const tokens = msg.split(/\s+/);
-
-        tokens.forEach(token => {
-            const t = token.toLowerCase();
-
-            // ✅ STICKER — exclusive match
-            if (t.includes('sticker')) {
-                output.push('🏷️ Sticker');
-                return;
-            }
-
-            // ✅ GIF — only if NOT sticker
-            if (t.includes('.gif') || t.includes('giphy.com')) {
-                output.push('🎞️ GIF');
-            }
-        });
-
-        if (output.length > 0) {
-            el.textContent = output.join(' ');
-        } else {
-            el.textContent = msg.split(/\s+/).slice(0, 10).join(' ');
-        }
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") return closeDropdown();
+      if (e.key === "Enter") {
+        // Prevent form submit; if dropdown open pick the first result
+        if (!dropdown || dropdown.classList.contains("d-none")) return;
+        e.preventDefault();
+        const first = dropdown.querySelector("button");
+        if (first) first.click();
+      }
     });
-});
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown || dropdown.classList.contains("d-none")) return;
+    if (e.target === input || dropdown.contains(e.target)) return;
+    closeDropdown();
+  });
+
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const name = (document.getElementById("groupName").value || "").trim();
+
+    const form = new FormData();
+    form.append("name", name);
+
+    // Send usernames (backward-safe: server also accepts ids)
+    Array.from(selected.values()).forEach(u => form.append("users", u.username));
+
+    if (avatarInput && avatarInput.files && avatarInput.files[0]) {
+      form.append("group_avatar", avatarInput.files[0]);
+    }
+
+    fetch("{% url 'create_group' %}", {
+      method: "POST",
+      headers: { "X-CSRFToken": getCsrf(), "X-Requested-With": "XMLHttpRequest" },
+      body: form,
+      credentials: "same-origin"
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.conversation_id) {
+        window.location.href = `/messages/room/${data.conversation_id}/`;
+      } else {
+        alert(data.error || "Could not create group.");
+      }
+    })
+    .catch(() => alert("Could not create group."));
+  });
+})();
 </script>
 
-{% endblock %} 
+{% endblock %}
+
+
+<!--
+================================================================================
+END OF messages_inbox.html - Author: Argon Admin
+================================================================================
+--> 
