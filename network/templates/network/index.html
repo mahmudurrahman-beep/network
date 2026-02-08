@@ -1,5 +1,101 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - HOME FEED TEMPLATE
+================================================================================
+
+@file        index.html
+@description Main feed page showing posts from all users or followed users
+@version     2.0.0
+@author      Argon admin 
+@date        February 2026
+@copyright   Copyright (c) 2026 Argon Social Network
+
+TEMPLATE PURPOSE
+================================================================================
+This template displays the main social feed with:
+- New post creation form (authenticated users only)
+- Feed toggle (All Posts / Following)
+- Paginated post list
+- Post cards with voting, comments, actions
+- Responsive grid layout
+- Real-time interactions (voting, commenting)
+
+TEMPLATE INHERITANCE
+================================================================================
+Extends: network/layout.html
+Block: {% block body %}
+
+CONTEXT VARIABLES REQUIRED
+================================================================================
+- request.user: Current authenticated user
+- request.user.is_authenticated: Boolean authentication state
+- page_obj: Django paginator page object
+- posts: QuerySet of Post objects (paginated)
+- is_following_feed: Boolean indicating feed type
+- MEDIA_URL: Django media files URL
+
+FEATURES
+================================================================================
+- Create new posts (text + optional media)
+- View all posts or followed users' posts only
+- Vote on posts (thumbs up/down)
+- Comment on posts
+- Edit/delete own posts
+- Pagination controls
+- Author profile links
+- Timestamp display
+
+DEPENDENCIES
+================================================================================
+- Bootstrap 4 grid system
+- Django pagination
+- Custom template tags (if any)
+- main.js (post interactions)
+
+BROWSER SUPPORT
+================================================================================
+- Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
+- Responsive: Mobile-first design
+
+ACCESSIBILITY
+================================================================================
+- Semantic post structure
+- ARIA labels for interactive elements
+- Keyboard navigation
+- Screen reader friendly
+
+================================================================================
+-->
+
+<!-- 
+    ========================================================================
+    SECTION 1: NEW POST CREATION FORM
+    ========================================================================
+    
+    Form for authenticated users to create new posts with:
+    - Text content (required)
+    - Optional media upload
+    - Submit button
+    - CSRF protection
+    ========================================================================
+-->
+
 {% extends "network/layout.html" %}
 {% load static %}
+
+
+<!-- 
+    ========================================================================
+    END OF HOME FEED TEMPLATE
+    ========================================================================
+    
+    Main feed functionality complete.
+    JavaScript in main.js handles post interactions.
+    
+    Maintainer: Argon admin 
+    Last updated: February 2026
+    ========================================================================
+-->
 
 {% block title %}Home{% endblock %}
 
@@ -203,4 +299,18 @@
   */
 </script>
 {% endif %}
+
+<!-- 
+    ========================================================================
+    END OF HOME FEED TEMPLATE
+    ========================================================================
+    
+    Main feed functionality complete.
+    JavaScript in main.js handles post interactions.
+    
+    Maintainer: Argon admin 
+    Last updated: February 2026
+    ========================================================================
+-->
+
 {% endblock %}
