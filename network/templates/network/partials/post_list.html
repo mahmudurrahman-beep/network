@@ -1,10 +1,44 @@
-{# post_list.html - COMPLETE FIXED VERSION #}
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - POST LIST (MAIN FEED)
+================================================================================
+
+@file        post_list.html
+@purpose     Main post feed rendering with full functionality
+@author      Argon Admin
+@date        February 2026
+@extends     None (included template)
+@requires    parse_media, comment_filters, Bootstrap 4, Font Awesome, jQuery
+@context     posts, page_obj, request.user
+
+FEATURES:
+• Complete post card display
+• Voting system (thumbs up/down)
+• Comment section with nested threading
+• Edit/delete post functionality
+• Image lightbox/modal
+• AJAX voting and commenting
+• @mention parsing in posts
+• GIF/sticker embedding
+• Responsive design
+
+COMPLEXITY: VERY HIGH (1000+ lines of code)
+
+FILE LOCATION: templates/network/partials/post_list.html
+INCLUDES: network/partials/comment_item.html
+
+================================================================================
+-->
+
+{# network/partials/post_list.html #}
 {% load static %}
 {% load parse_media %}
 {% load comment_filters %}
 {% load custom_filters %}
 
 <style>
+/* === GENERAL POST CARD / TEXT === */
+
 .post-card,
 .post-card * {
   max-width: 100%;
@@ -21,179 +55,448 @@
   word-break: break-word;
 }
 
-.post-card .comment-item[data-depth]{
+/* === COMMENT INDENTATION (DESKTOP & MOBILE) === */
+
+.post-card .comment-item[data-depth] {
   --indent: min(calc(var(--depth) * 1rem), 2.5rem);
   margin-left: var(--indent);
   width: calc(100% - var(--indent));
 }
 
-@media (max-width: 576px){
-  .post-card .comment-item[data-depth]{
-    --indent: min(calc(var(--depth) * 0.45rem), 1.25rem);
+@media (max-width: 576px) {
+  .post-card .comment-item[data-depth] {
+    --indent: min(calc(var(--depth) * 0.5rem), 1.4rem);
     margin-left: var(--indent);
     width: calc(100% - var(--indent));
   }
+  .post-card .comment-item[data-depth]:not([data-depth="0"]) {
+    padding: 0.7rem 0.75rem !important;
+    border-radius: 10px !important;
+  }
 }
 
-.post-card .reply-item{
+/* Replies included as children already handle visual nesting */
+.post-card .reply-item {
   margin-left: 0 !important;
 }
+
+/* === INLINE GIF/STICKER IMAGES === */
 
 .post-card .post-text img[alt="GIF"],
 .post-card .comment-text img[alt="GIF"],
 .post-card .post-text img[alt="Sticker"],
-.post-card .comment-text img[alt="Sticker"]{
+.post-card .comment-text img[alt="Sticker"] {
   display: block;
   height: auto;
   max-width: 100% !important;
 }
 
 .post-card .post-text img[alt="GIF"],
-.post-card .comment-text img[alt="GIF"]{
+.post-card .comment-text img[alt="GIF"] {
   width: min(300px, 100%) !important;
 }
 .post-card .post-text img[alt="Sticker"],
-.post-card .comment-text img[alt="Sticker"]{
+.post-card .comment-text img[alt="Sticker"] {
   width: min(150px, 100%) !important;
 }
 
-@media (max-width: 576px){
+@media (max-width: 576px) {
   .post-card .post-text img[alt="GIF"],
-  .post-card .comment-text img[alt="GIF"]{
+  .post-card .comment-text img[alt="GIF"] {
     width: 100% !important;
   }
   .post-card .post-text img[alt="Sticker"],
-  .post-card .comment-text img[alt="Sticker"]{
+  .post-card .comment-text img[alt="Sticker"] {
     width: min(220px, 100%) !important;
   }
 }
 
-@media (max-width: 576px){
-  .post-card .comment-item[data-depth]:not([data-depth="0"]){
-    padding: 0.85rem !important;
+/* === ACTION MENUS (POSTS) === */
+
+.action-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.action-menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.action-menu-toggle:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.action-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 120px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  margin-top: 5px;
+}
+
+.action-menu-dropdown.show {
+  display: block;
+}
+
+.action-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #212529;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.action-menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* === USERNAME TRUNCATION IN COMMENT META === */
+
+.comment-submeta .text-primary,
+.comment-submeta .font-weight-bold {
+  display: inline-block !important;
+  max-width: min(120px, 30vw) !important;
+  min-width: 50px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  vertical-align: bottom !important;
+}
+
+@media (max-width: 380px) {
+  .comment-submeta .text-primary,
+  .comment-submeta .font-weight-bold {
+    max-width: min(80px, 22vw) !important;
   }
-  .post-card .comment-item[data-depth]:not([data-depth="0"]) img.rounded-circle{
-    width: 36px !important;
-    height: 36px !important;
-  }
-  .post-card .comment-actions{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+  .comment-submeta {
+    font-size: 0.85rem;
   }
 }
+
+.comment-submeta {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* === POST ATTACHED MEDIA === */
+
+.post-media-container {
+  margin: 1rem 0;
+}
+
+.post-media-container .media-item {
+  margin-bottom: 0.5rem;
+}
+
+.post-media-container img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* BROKEN IMAGE FALLBACK */
+
+.image-fallback {
+  display: none;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.image-fallback i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* === MOBILE ACTION MENUS / MEDIA SIZING (POST HEADER ONLY) === */
+
+@media (max-width: 576px) {
+  .post-card > .d-flex.align-items-center {
+    position: relative;
+    padding-right: 40px;
+  }
+
+  .post-card > .d-flex.align-items-center .ml-auto.action-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    z-index: 10;
+  }
+
+  /* Bottom-sheet menus ONLY for post header actions */
+  .post-card > .d-flex.align-items-center .action-menu-dropdown {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    z-index: 9999;
+  }
+
+  .post-card > .d-flex.align-items-center .action-menu-item {
+    padding: 1rem;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .post-media-container video,
+  .post-media-container img {
+    max-height: 300px !important;
+  }
+}
+
+/* === COMMENT COMPOSER (SHARED) === */
 
 .comment-composer {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(246,249,255,0.96));
+  border: 1px solid rgba(15,23,42,0.08);
   border-radius: 14px;
-  padding: 12px;
+  padding: 10px 12px;
 }
 
-.composer-preview {
+@media (max-width: 576px) {
+  .comment-composer {
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+}
+
+/* auto-expand textarea for a compact single-line default */
+.comment-composer .auto-expand-textarea {
+  overflow: hidden;
+  resize: none;
+  min-height: 32px;
+  max-height: 160px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* MEDIA PREVIEWS (thumbnails + chips) */
+
+.media-previews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.media-previews-list {
   display: flex;
   flex-wrap: wrap;
+  gap: 6px;
+}
+
+.media-preview-item {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.media-preview-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.media-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.media-preview-item .media-item-emoji {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 10px;
+  border: 1px solid rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+.media-preview-item .remove-preview-item {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #dc2626;
+  border: 3px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  cursor: pointer;
+}
+
+.media-preview-item .remove-preview-item::before {
+  content: "×";
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.media-preview-item .remove-preview-item:hover {
+  background: #b91c1c !important;
+  transform: scale(1.08);
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.5);
+}
+
+/* CHIPS / STATS */
+
+.media-stats {
+  font-size: 12px;
+  color: #4b5563;
+  display: flex;
   gap: 8px;
   align-items: center;
-  margin-bottom: 10px;
-  min-height: 36px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 8px 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  font-weight: 500;
 }
 
-.composer-preview.has-items {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-.preview-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+.clear-media-btn {
+  background: #fee2e2;
+  border: 2px solid #f87171;
+  color: #dc2626;
+  padding: 4px 10px;
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.preview-badge .count {
-  background: rgba(255,255,255,0.9);
-  color: #1e40af;
-  border-radius: 999px;
-  padding: 2px 8px;
   font-size: 11px;
-  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-weight: 600;
+  border: none;
 }
+
+.clear-media-btn:hover {
+  background: #fecaca;
+  transform: translateY(-1px);
+}
+
+/* MEDIA CONTROLS ROW */
 
 .composer-media-row {
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-  margin-top:10px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
   position: relative;
 }
 
 .composer-media-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
   border: 2px solid #e5e7eb;
-  background: white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   font-size: 18px;
-  transition: all .2s;
+  transition: all .18s;
 }
 
 .composer-media-btn:hover {
-  border-color:#3b82f6;
-  background:#eff6ff;
+  border-color: #3b82f6;
+  background: #eff6ff;
   transform: translateY(-1px);
 }
 
 .composer-media-btn.active {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border-color:#3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
 }
 
+/* Search group: only visible when GIF/Sticker mode is active */
+
+.composer-search-group {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.composer-search-group.active {
+  display: flex;
+}
+
+/* small inline search (desktop), compact on mobile */
 .composer-search-input {
   flex: 1;
   min-width: 160px;
   border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 13px;
 }
 
-.composer-search-input:focus{
-  outline:none;
-  border-color:#3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+.composer-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
 }
 
 .composer-search-btn {
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 999px;
+  padding: 8px 12px;
   font-weight: 700;
   border: 2px solid #3b82f6;
-  background: white;
+  background: #fff;
   color: #3b82f6;
   cursor: pointer;
-  transition: all .2s;
+  transition: all .18s;
 }
 
-.composer-search-btn:hover{
-  background:#3b82f6;
-  color:white;
+.composer-search-btn:hover {
+  background: #3b82f6;
+  color: #fff;
   transform: translateY(-1px);
 }
+
+/* bottom-sheet results / grid (desktop: popover, mobile: sheet) */
 
 .composer-results {
   position: absolute;
@@ -203,7 +506,7 @@
   width: min(360px, 100%);
   max-height: 260px;
   overflow-y: auto;
-  background: white;
+  background: #fff;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,.15);
@@ -212,75 +515,81 @@
   z-index: 1050;
 }
 
-.composer-results.show { display:block; }
+.composer-results.show {
+  display: block;
+}
 
-.composer-grid{
-  display:grid;
+.composer-grid {
+  display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.composer-grid img{
-  width:100%;
-  height:80px;
-  object-fit:cover;
+.composer-grid img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
   border-radius: 10px;
-  cursor:pointer;
+  cursor: pointer;
   border: 2px solid transparent;
   transition: all .15s;
 }
-.composer-grid img:hover{
-  border-color:#3b82f6;
+
+.composer-grid img:hover {
+  border-color: #3b82f6;
   transform: scale(1.03);
 }
 
-@media (max-width: 576px){
-  .composer-search-input{
+@media (max-width: 576px) {
+  .composer-search-input {
     flex: 1 1 100%;
     width: 100%;
+    font-size: 12px;
+    padding: 7px 10px;
   }
-  .composer-search-btn{
-    flex: 1 1 100%;
-    width: 100%;
+  .composer-search-btn {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    font-size: 12px;
   }
 
-  .composer-results{
+  .composer-results {
     position: fixed;
-    left: 12px;
-    right: 12px;
+    left: 10px;
+    right: 10px;
     bottom: 12px;
     top: auto;
     width: auto;
     max-width: 560px;
     margin: 0 auto;
-    max-height: 50vh;
+    max-height: 55vh;
     overflow-y: auto;
     z-index: 1050;
   }
 
-  .composer-grid{
+  .composer-grid {
     grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   }
 
-  .composer-grid img{
+  .composer-grid img {
     height: 92px;
   }
 }
 </style>
 
 {% if messages %}
-<div class="messages">
-  {% for message in messages %}
-  <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3"
-       style="z-index: 9999;" role="alert">
-    <i class="fas fa-check-circle mr-2"></i>
-    {{ message }}
-    <button type="button" class="close" data-dismiss="alert">
-      <span aria-hidden="true">&times;</span>
-    </button>
+  <div class="messages">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3"
+           style="z-index: 9999;" role="alert">
+        <i class="fas fa-check-circle mr-2"></i>
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
 {% endif %}
 
 {% for post in page_obj %}
@@ -288,21 +597,28 @@
 
     <div class="d-flex align-items-center mb-3" style="gap:10px;">
       {% if post.user.profile_picture %}
-        <img src="{{ post.user.profile_picture.url }}" class="rounded-circle mr-2"
-             width="48" height="48" style="object-fit: cover;">
+        <img src="{{ post.user.profile_picture.url }}"
+             class="rounded-circle mr-2"
+             width="48" height="48"
+             style="object-fit: cover;"
+             onerror="this.src='{% static 'network/images/default-avatar.png' %}'">
       {% else %}
         <img src="{% static 'network/images/default-avatar.png' %}"
-             class="rounded-circle mr-2" width="48" height="48"
+             class="rounded-circle mr-2"
+             width="48" height="48"
              style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
       {% endif %}
 
-      <div style="min-width:0; flex:1;"> 
+      <div style="min-width:0; flex:1;">
         <strong>
-          <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
+          <a href="{% url 'profile' post.user.username %}"
+             class="text-dark text-decoration-none">
             {{ post.user.username }}
           </a>
         </strong>
-        <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
+        <small class="text-muted d-block">
+          {{ post.timestamp|date:"M d, Y • g:i A" }}
+        </small>
       </div>
 
       {% if request.user == post.user %}
@@ -311,15 +627,19 @@
                   class="action-menu-toggle js-action-menu-toggle"
                   aria-label="Post actions"
                   aria-expanded="false">
-            ⋮
+            <i class="fas fa-ellipsis-v"></i>
           </button>
 
           <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
-            <button type="button" class="action-menu-item edit-post" data-post="{{ post.id }}">
-              Edit
+            <button type="button"
+                    class="action-menu-item edit-post"
+                    data-post="{{ post.id }}">
+              <i class="fas fa-edit mr-2"></i>Edit
             </button>
-            <button type="button" class="action-menu-item delete-post" data-post="{{ post.id }}">
-              Delete
+            <button type="button"
+                    class="action-menu-item delete-post"
+                    data-post="{{ post.id }}">
+              <i class="fas fa-trash mr-2"></i>Delete
             </button>
           </div>
         </div>
@@ -332,38 +652,54 @@
       </div>
     </div>
 
-    <div class="mb-3">
-      {% for media in post.media.all %}
-        <div class="mb-2">
-          {% if media.media_type == 'image' %}
-            <img src="{{ media.file.url }}" class="img-fluid rounded" style="max-height: 500px; object-fit: contain;">
-          {% else %}
-            <video controls class="w-100 rounded" style="max-height: 500px;">
-              <source src="{{ media.file.url }}" type="video/mp4">
-            </video>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
+    {% if post.media.all %}
+      <div class="post-media-container">
+        {% for media in post.media.all %}
+          <div class="media-item position-relative">
+            {% if media.media_type == 'image' %}
+              <div class="image-wrapper">
+                <img src="{{ media.file.url }}"
+                     class="img-fluid rounded post-media-image"
+                     style="max-height: 500px; object-fit: contain;"
+                     alt="Post image"
+                     data-media-id="{{ media.id }}"
+                     loading="lazy"
+                     onerror="this.style.display='none'; document.getElementById('fallback-{{ media.id }}').style.display='block';">
+                <div class="image-fallback" id="fallback-{{ media.id }}">
+                  <i class="fas fa-image"></i>
+                  <p class="mb-0">Image unavailable</p>
+                </div>
+              </div>
+            {% elif media.media_type == 'video' %}
+              <video controls class="w-100 rounded" style="max-height: 500px;">
+                <source src="{{ media.file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <div class="d-flex align-items-center flex-wrap" style="gap:1rem;">
-      <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}" 
-        data-post="{{ post.id }}" data-value="1">
+      <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}"
+              data-post="{{ post.id }}" data-value="1">
         👍 <span>{{ post.thumbs_up.count }}</span>
       </button>
 
-      <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}" 
+      <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
               data-post="{{ post.id }}" data-value="-1">
         👎 <span>{{ post.thumbs_down.count }}</span>
-      </button> 
+      </button>
     </div>
 
+    {# COMMENTS + COMPOSER #}
     {% with visible_comments=post.comments.all|filter_by_privacy:request.user %}
       {% with visible_count=visible_comments|length %}
         {% with hidden_count=post.comments.count|sub:visible_count %}
           <div class="comments-section mt-4">
 
-            <div class="d-flex align-items-center justify-content-between flex-wrap mb-3" style="gap:8px;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-2" style="gap:8px;">
               <h6 class="mb-0">
                 Comments ({{ visible_count }})
                 {% if hidden_count|add:0 > 0 %}
@@ -383,33 +719,71 @@
 
               {% can_comment_on_post post user as can_comment %}
               {% if user.is_authenticated and can_comment %}
-                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4 js-media-form"
-                      data-composer-id="post-{{ post.id }}">
+                <form method="post"
+                      action="{% url 'add_comment' post.id %}"
+                      class="mb-3 js-media-form"
+                      data-composer-id="post-{{ post.id }}"
+                      enctype="multipart/form-data">
                   {% csrf_token %}
 
                   <div class="comment-composer">
-                    <div class="composer-preview" data-preview="post-{{ post.id }}"></div>
+                    <div class="media-previews-container">
+                      <div class="media-previews-list" data-preview="post-{{ post.id }}"></div>
+                      <div class="media-stats" data-stats="post-{{ post.id }}"></div>
+                    </div>
 
                     <textarea name="content"
-                              class="form-control"
-                              rows="2"
-                              placeholder="Write a comment..."
+                              class="form-control auto-expand-textarea js-mention-input"
+                              data-mention-scope="global"
+                              rows="1"
+                              placeholder="Add a comment..."
                               required></textarea>
 
                     <div class="composer-media-row" data-row="post-{{ post.id }}">
-                      <button type="button" class="composer-media-btn active" data-type="gifs" title="GIFs">🎞️</button>
-                      <button type="button" class="composer-media-btn" data-type="stickers" title="Stickers">🏷️</button>
+                      <button type="button"
+                              class="composer-media-btn"
+                              data-type="gifs"
+                              title="GIFs">🎞️</button>
+                      <button type="button"
+                              class="composer-media-btn"
+                              data-type="stickers"
+                              title="Stickers">🏷️</button>
+                      <button type="button"
+                              class="composer-media-btn composer-file-btn"
+                              data-file-kind="image"
+                              title="Attach image">📷</button>
+                      <button type="button"
+                              class="composer-media-btn composer-file-btn"
+                              data-file-kind="video"
+                              title="Attach video">🎥</button>
 
-                      <input type="text" class="composer-search-input" placeholder="Search GIFs or Stickers...">
-                      <button type="button" class="composer-search-btn"><i class="fas fa-search"></i></button>
+                      <div class="composer-search-group">
+                        <input type="text"
+                               class="composer-search-input"
+                               placeholder="Search GIFs or stickers...">
+                        <button type="button"
+                                class="composer-search-btn"
+                                title="Search">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
 
                       <div class="composer-results" data-results="post-{{ post.id }}"></div>
                     </div>
 
-                    <input type="hidden" class="media-data-input" value="[]">
+                    <input type="file"
+                           name="media"
+                           class="js-composer-file-input d-none"
+                           accept="image/*,video/*">
+                    <input type="hidden"
+                           class="media-data-input"
+                           value="[]">
                   </div>
 
-                  <button type="submit" class="btn btn-primary btn-sm mt-2">Comment</button>
+                  <button type="submit"
+                          class="btn btn-primary btn-sm mt-2">
+                    Comment
+                  </button>
                 </form>
               {% elif user.is_authenticated and not can_comment %}
                 <div class="alert alert-light border small mb-3">
@@ -421,10 +795,11 @@
                 {% for comment in root_comments %}
                   {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
                 {% empty %}
-                  <p class="text-center text-muted py-3">No comments yet.</p>
+                  <p class="text-center text-muted py-3 mb-0">
+                    No comments yet.
+                  </p>
                 {% endfor %}
               {% endwith %}
-
             </div>
           </div>
         {% endwith %}
@@ -436,118 +811,272 @@
 {% endfor %}
 
 {% if page_obj.has_other_pages %}
-<nav>
-  <ul class="pagination justify-content-center mt-4">
-    {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
-    {% endif %}
-    {% for num in page_obj.paginator.page_range %}
-      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-      </li>
-    {% endfor %}
-    {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
-    {% endif %}
-  </ul>
-</nav>
+  <nav class="mt-4">
+    <ul class="pagination argon-pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+        </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
 {% endif %}
 
+
 <script>
-/*
-  Media composer:
-  - No URLs shown in textarea while typing
-  - On submit: tags are appended into textarea (same pattern as conversation.html)
-*/
+document.addEventListener('DOMContentLoaded', function() {
+  /* Image fallback for post media */
+  document.querySelectorAll('.post-media-image').forEach(img => {
+    img.addEventListener('error', function() {
+      this.style.display = 'none';
+      const fallbackId = this.getAttribute('data-media-id');
+      const fallback = document.getElementById('fallback-' + fallbackId);
+      if (fallback) fallback.style.display = 'block';
+    });
+
+    img.addEventListener('load', function() {
+      const fallbackId = this.getAttribute('data-media-id');
+      const fallback = document.getElementById('fallback-' + fallbackId);
+      if (fallback) fallback.style.display = 'none';
+    });
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.post-media-image').forEach(img => {
+      if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+        img.dispatchEvent(new Event('error'));
+      }
+    });
+  }, 1000);
+
+  /* Auto-expand comment textareas */
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+  document.querySelectorAll('.auto-expand-textarea').forEach(t => {
+    autoResize(t);
+    t.addEventListener('input', function() { autoResize(this); });
+  });
+});
+
+/* GIF/STICKER + IMAGE/VIDEO media composer shared logic */
 (function(){
-  const states = {}; // composerId -> {items:[], type:'gifs'}
+  const states = {}; // composerId -> {items:[], type:'gifs', file:null}
 
   function getState(id){
-    if (!states[id]) states[id] = { items: [], type: 'gifs' };
+    if (!states[id]) states[id] = { items: [], type: 'gifs', file: null };
     return states[id];
   }
 
   function renderPreview(id){
-    const preview = document.querySelector(`[data-preview="${id}"]`);
-    const form = document.querySelector(`form[data-composer-id="${id}"]`);
-    if (!preview || !form) return;
+    const previewList = document.querySelector('[data-preview="'+id+'"]');
+    const statsContainer = document.querySelector('[data-stats="'+id+'"]');
+    const form = document.querySelector('form[data-composer-id="'+id+'"]');
+    if (!previewList || !form) return;
 
     const state = getState(id);
-    preview.innerHTML = '';
-    preview.classList.toggle('has-items', state.items.length > 0);
 
-    if (state.items.length === 0) return;
+    previewList.innerHTML = '';
+    if (statsContainer) statsContainer.innerHTML = '';
 
-    const gifs = state.items.filter(x => x.kind === 'GIF').length;
-    const stickers = state.items.filter(x => x.kind === 'STICKER').length;
+    if (state.items.length === 0 && !state.file) return;
 
-    if (gifs){
-      const b = document.createElement('span');
-      b.className = 'preview-badge';
-      b.innerHTML = `<span>🎞️ GIFs</span><span class="count">${gifs}</span>`;
-      preview.appendChild(b);
+    /* GIF / STICKER thumbs */
+    state.items.forEach((item, index) => {
+      const previewItem = document.createElement('div');
+      previewItem.className = 'media-preview-item';
+      previewItem.innerHTML = `
+        <div class="media-preview-inner">
+          <img src="${item.url}" alt="${item.kind} Preview"
+               onclick="window.open('${item.url}', '_blank')">
+          <div class="media-item-emoji">${item.emoji}</div>
+        </div>
+        <div class="remove-preview-item"
+             onclick="removeMediaItem('${id}', ${index}); event.stopPropagation();"></div>
+      `;
+      previewList.appendChild(previewItem);
+    });
+
+    /* Single upload (image / video) */
+    if (state.file) {
+      const f = state.file;
+      const previewItem = document.createElement('div');
+      previewItem.className = 'media-preview-item';
+
+      if (f.kind === 'IMAGE' && f.previewUrl) {
+        previewItem.innerHTML = `
+          <div class="media-preview-inner">
+            <img src="${f.previewUrl}" alt="Image preview">
+            <div class="media-item-emoji">📷</div>
+          </div>
+          <div class="remove-preview-item"
+               onclick="removeFileItem('${id}'); event.stopPropagation();"></div>
+        `;
+      } else {
+        previewItem.innerHTML = `
+          <div class="media-preview-inner"
+               style="background:#020617;display:flex;align-items:center;justify-content:center;color:#f9fafb;font-size:24px;">
+            🎥
+            <div class="media-item-emoji">🎥</div>
+          </div>
+          <div class="remove-preview-item"
+               onclick="removeFileItem('${id}'); event.stopPropagation();"></div>
+        `;
+      }
+
+      previewList.appendChild(previewItem);
     }
-    if (stickers){
-      const b = document.createElement('span');
-      b.className = 'preview-badge';
-      b.innerHTML = `<span>🏷️ Stickers</span><span class="count">${stickers}</span>`;
-      preview.appendChild(b);
+
+    if (statsContainer) {
+      const gifCount = state.items.filter(item => item.kind === 'GIF').length;
+      const stickerCount = state.items.filter(item => item.kind === 'STICKER').length;
+      const hasImage = state.file && state.file.kind === 'IMAGE';
+      const hasVideo = state.file && state.file.kind === 'VIDEO';
+
+      let statsHTML = '<div class="media-stats">';
+
+      if (gifCount > 0) {
+        statsHTML += `<span style="background:#fef3c7;padding:4px 8px;border-radius:999px;border:1px solid #fbbf24;font-weight:600;">
+          🎞️ ${gifCount} GIF${gifCount > 1 ? 's' : ''}
+        </span>`;
+      }
+
+      if (stickerCount > 0) {
+        statsHTML += `<span style="background:#e0e7ff;padding:4px 8px;border-radius:999px;border:1px solid #818cf8;font-weight:600;">
+          🏷️ ${stickerCount} Sticker${stickerCount > 1 ? 's' : ''}
+        </span>`;
+      }
+
+      if (hasImage) {
+        statsHTML += `<span style="background:#dbeafe;padding:4px 8px;border-radius:999px;border:1px solid #3b82f6;font-weight:600;">
+          📷 1 Image
+        </span>`;
+      }
+
+      if (hasVideo) {
+        statsHTML += `<span style="background:#fce7f3;padding:4px 8px;border-radius:999px;border:1px solid #ec4899;font-weight:600;">
+          🎥 1 Video
+        </span>`;
+      }
+
+      if (state.items.length > 0 || state.file) {
+        statsHTML += `<button class="clear-media-btn" onclick="clearAllMedia('${id}')">
+          <i class="fas fa-times mr-1" style="font-size:10px;"></i>Clear
+        </button>`;
+      }
+
+      statsHTML += '</div>';
+      statsContainer.innerHTML = statsHTML;
     }
 
-    // keep hidden JSON updated (optional)
     const hidden = form.querySelector('.media-data-input');
     if (hidden) hidden.value = JSON.stringify(state.items);
   }
 
+  window.removeMediaItem = function(composerId, index) {
+    const state = getState(composerId);
+    if (index >= 0 && index < state.items.length) {
+      state.items.splice(index, 1);
+      renderPreview(composerId);
+    }
+  };
+
+  window.removeFileItem = function(composerId) {
+    const state = getState(composerId);
+    if (state.file && state.file.previewUrl) {
+      URL.revokeObjectURL(state.file.previewUrl);
+    }
+    state.file = null;
+    const form = document.querySelector('form[data-composer-id="'+composerId+'"]');
+    if (form) {
+      const fileInput = form.querySelector('.js-composer-file-input');
+      if (fileInput) fileInput.value = '';
+    }
+    renderPreview(composerId);
+  };
+
+  window.clearAllMedia = function(composerId) {
+    const state = getState(composerId);
+    state.items = [];
+    if (state.file && state.file.previewUrl) {
+      URL.revokeObjectURL(state.file.previewUrl);
+    }
+    state.file = null;
+    const form = document.querySelector('form[data-composer-id="'+composerId+'"]');
+    if (form) {
+      const fileInput = form.querySelector('.js-composer-file-input');
+      if (fileInput) fileInput.value = '';
+    }
+    renderPreview(composerId);
+  };
+
+  function addItem(id, url, kind) {
+    const state = getState(id);
+    if (state.items.some(x => x.url === url)) return;
+    const emoji = (kind === 'GIF') ? '🎞️' : '🏷️';
+    state.items.push({ url, kind, emoji });
+    renderPreview(id);
+  }
+
   function openResults(id, html){
-    const box = document.querySelector(`[data-results="${id}"]`);
+    const box = document.querySelector('[data-results="'+id+'"]');
     if (!box) return;
     box.innerHTML = html;
     box.classList.add('show');
   }
 
   function closeResults(id){
-    const box = document.querySelector(`[data-results="${id}"]`);
+    const box = document.querySelector('[data-results="'+id+'"]');
     if (!box) return;
     box.classList.remove('show');
     box.innerHTML = '';
   }
 
-  function addItem(id, url, kind){
-    const state = getState(id);
-    if (state.items.some(x => x.url === url)) return;
-    state.items.push({ url, kind });
-    renderPreview(id);
-  }
-
   function search(id, query){
     const state = getState(id);
     const type = state.type;
-    openResults(id, `<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>`);
+    openResults(id, '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>');
 
-    fetch(`/search-gifs/?q=${encodeURIComponent(query || 'trending')}&type=${encodeURIComponent(type)}`)
+    fetch('/search-gifs/?q=' + encodeURIComponent(query || 'trending') +
+          '&type=' + encodeURIComponent(type))
       .then(r => r.json())
       .then(data => {
         const items = data.gifs || [];
         if (!items.length){
-          openResults(id, `<p class="text-muted text-center mb-0">No results</p>`);
+          openResults(id, '<p class="text-muted text-center mb-0">No results</p>');
           return;
         }
-
-        const grid = items.slice(0, 12).map(url => {
+        const grid = items.slice(0, 18).map(url => {
           const safeUrl = String(url).replace(/"/g, '&quot;');
-          return `<img src="${safeUrl}" alt="media" data-url="${safeUrl}">`;
+          return '<img src="'+safeUrl+'" alt="media" data-url="'+safeUrl+'">';
         }).join('');
 
         openResults(id, `
-          <button type="button" class="btn btn-sm btn-outline-primary w-100 mb-2 js-close-results">Close</button>
+          <button type="button"
+                  class="btn btn-sm btn-outline-primary w-100 mb-2 js-close-results">
+            Close
+          </button>
           <div class="composer-grid">${grid}</div>
         `);
 
-        const box = document.querySelector(`[data-results="${id}"]`);
+        const box = document.querySelector('[data-results="'+id+'"]');
         if (!box) return;
 
-        box.querySelector('.js-close-results')?.addEventListener('click', () => closeResults(id));
+        const closeBtn = box.querySelector('.js-close-results');
+        if (closeBtn) closeBtn.addEventListener('click', () => closeResults(id));
 
         box.querySelectorAll('img[data-url]').forEach(img => {
           img.addEventListener('click', () => {
@@ -558,23 +1087,46 @@
           });
         });
       })
-      .catch(() => openResults(id, `<p class="text-danger text-center mb-0">Search failed</p>`));
+      .catch(() => openResults(id, '<p class="text-danger text-center mb-0">Search failed</p>'));
   }
 
-  // Media button toggle + search
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', function(e) {
+    const fileBtn = e.target.closest('.composer-file-btn');
+    if (fileBtn){
+      const form = fileBtn.closest('form[data-composer-id]');
+      if (!form) return;
+      const fileInput = form.querySelector('.js-composer-file-input');
+      if (!fileInput) return;
+      fileInput.click();
+      return;
+    }
+
     const btn = e.target.closest('.composer-media-btn');
-    if (btn){
+    if (btn && !btn.classList.contains('composer-file-btn')){
       const row = btn.closest('.composer-media-row');
       const form = btn.closest('form[data-composer-id]');
       if (!row || !form) return;
 
       const id = form.dataset.composerId;
       const state = getState(id);
-      state.type = btn.dataset.type;
+      const newType = btn.dataset.type || state.type;
+      state.type = newType;
 
-      row.querySelectorAll('.composer-media-btn').forEach(b => b.classList.remove('active'));
+      // Toggle active state for GIF/STICKER buttons only
+      row.querySelectorAll('.composer-media-btn').forEach(b => {
+        if (!b.classList.contains('composer-file-btn')) b.classList.remove('active');
+      });
       btn.classList.add('active');
+
+      // Show search UI only when GIFs or stickers are active
+      const sg = row.querySelector('.composer-search-group');
+      if (sg) {
+        if (newType === 'gifs' || newType === 'stickers') {
+          sg.classList.add('active');
+        } else {
+          sg.classList.remove('active');
+        }
+      }
       return;
     }
 
@@ -586,13 +1138,13 @@
 
       const id = form.dataset.composerId;
       const input = row.querySelector('.composer-search-input');
-      const q = (input?.value || '').trim() || 'trending';
+      const q = (input && input.value.trim()) || 'trending';
       search(id, q);
       return;
     }
 
-    // Close results when clicking outside
-    if (!e.target.closest('.composer-media-row') && !e.target.closest('.composer-results')){
+    if (!e.target.closest('.composer-media-row') &&
+        !e.target.closest('.composer-results')){
       document.querySelectorAll('.composer-results.show').forEach(x => {
         x.classList.remove('show');
         x.innerHTML = '';
@@ -600,23 +1152,51 @@
     }
   });
 
-  // Enter key for search
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('change', function(e) {
+    const input = e.target.closest('.js-composer-file-input');
+    if (!input) return;
+    const form = input.closest('form[data-composer-id]');
+    if (!form) return;
+    const id = form.dataset.composerId;
+    const file = input.files[0];
+    const state = getState(id);
+
+    if (!file) {
+      if (state.file && state.file.previewUrl) {
+        URL.revokeObjectURL(state.file.previewUrl);
+      }
+      state.file = null;
+      renderPreview(id);
+      return;
+    }
+
+    const isVideo = file.type.startsWith('video/');
+    const kind = isVideo ? 'VIDEO' : 'IMAGE';
+    const previewUrl = !isVideo ? URL.createObjectURL(file) : null;
+
+    if (state.file && state.file.previewUrl) {
+      URL.revokeObjectURL(state.file.previewUrl);
+    }
+
+    state.file = { kind: kind, previewUrl: previewUrl };
+    renderPreview(id);
+  });
+
+  document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter') return;
     const input = e.target.closest('.composer-search-input');
     if (!input) return;
 
     e.preventDefault();
     const form = input.closest('form[data-composer-id]');
-    const id = form?.dataset?.composerId;
+    const id = form && form.dataset && form.dataset.composerId;
     if (!id) return;
-
     const q = (input.value || '').trim() || 'trending';
     search(id, q);
   });
 
-  // Submit: append tags ONLY at submit time (no URLs shown while typing)
-  document.addEventListener('submit', (e) => {
+  /* On submit, append [GIF:url] / [STICKER:url] tags into content */
+  document.addEventListener('submit', function(e) {
     const form = e.target.closest('form[data-composer-id]');
     if (!form) return;
 
@@ -626,13 +1206,17 @@
     if (!textarea) return;
 
     const userText = (textarea.value || '').trim();
-    const tags = state.items.map(item => `[${item.kind}:${item.url}]`).join(' ');
+    const tags = state.items.map(item => '['+item.kind+':'+item.url+']').join(' ');
 
-    // Ensure content is not empty if only media selected
-    textarea.value = tags ? (userText ? `${userText}\n${tags}` : tags) : userText;
+    textarea.value = tags ? (userText ? (userText + '\n' + tags) : tags) : userText;
   });
 
-  // init previews already on page
-  document.querySelectorAll('form[data-composer-id]').forEach(f => renderPreview(f.dataset.composerId));
 })();
 </script>
+
+
+<!--
+================================================================================
+END OF post_list.html - Author: Argon Admin
+================================================================================
+-->
