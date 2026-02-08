@@ -1,116 +1,337 @@
+<!--
+================================================================================
+ARGON SOCIAL NETWORK - POST DETAIL TEMPLATE
+================================================================================
+
+@file        post_detail.html
+@description Individual post view with full comment thread
+@version     2.0.0
+@author      Argon admin 
+@date        February 2026
+@copyright   Copyright (c) 2026 Argon Social Network
+
+TEMPLATE PURPOSE
+================================================================================
+This template displays a single post with complete interaction features:
+- Full post content and media
+- Author information and timestamp
+- Voting system (thumbs up/down)
+- Complete comment thread
+- Nested replies (up to 2 levels)
+- Comment creation forms
+- Edit/delete actions for own content
+- Back navigation to feed
+
+TEMPLATE INHERITANCE
+================================================================================
+Extends: network/layout.html
+Block: {% block body %}
+
+CONTEXT VARIABLES REQUIRED
+================================================================================
+- post: Post object being displayed
+- request.user: Current authenticated user
+- request.user.is_authenticated: Boolean authentication state
+- comments: QuerySet of Comment objects (root level)
+- MEDIA_URL: Django media files URL
+
+POST OBJECT ATTRIBUTES
+================================================================================
+- post.author: User who created the post
+- post.content: Post text content
+- post.timestamp: Creation datetime
+- post.media: Optional media file
+- post.voters_up: Users who upvoted
+- post.voters_down: Users who downvoted
+
+FEATURES
+================================================================================
+- View complete post details
+- Vote on post (authenticated users)
+- Add root-level comments
+- Reply to existing comments
+- Edit/delete own comments
+- Nested comment display (2 levels)
+- Real-time vote counts
+- Author profile links
+
+DEPENDENCIES
+================================================================================
+- Bootstrap 4 components
+- main.js (comment interactions)
+- Django comment system
+
+BROWSER SUPPORT
+================================================================================
+- Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
+- Mobile responsive
+
+ACCESSIBILITY
+================================================================================
+- Semantic comment threading
+- ARIA expanded states
+- Keyboard navigation
+- Focus management for forms
+
+================================================================================
+-->
+
+{# network/post_detail.html #}
+<!-- 
+    ========================================================================
+    SECTION 1: POST CONTENT DISPLAY
+    ========================================================================
+    
+    Displays the complete post including:
+    - Author profile picture and name
+    - Post timestamp
+    - Post content (text)
+    - Media (if attached)
+    - Vote buttons and counts
+    - Edit/delete actions (owner only)
+    ========================================================================
+-->
+
 {% extends "network/layout.html" %}
+
 {% load static %}
 {% load parse_media %}
+{% load comment_filters %}
+{% load custom_filters %}
 
 {% block body %}
-    <div class="container mt-5">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
-              {{ message }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+
+      <div class="post-card p-3 mb-3 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
+
+        <div class="d-flex align-items-center mb-3" style="gap:10px;">
+          {% if post.user.profile_picture %}
+            <img src="{{ post.user.profile_picture.url }}"
+                 class="rounded-circle mr-2"
+                 width="48" height="48"
+                 style="object-fit: cover;"
+                 onerror="this.src='{% static 'network/images/default-avatar.png' %}'">
+          {% else %}
+            <img src="{% static 'network/images/default-avatar.png' %}"
+                 class="rounded-circle mr-2"
+                 width="48" height="48"
+                 style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          {% endif %}
+
+          <div style="min-width:0; flex:1;">
+            <strong>
+              <a href="{% url 'profile' post.user.username %}"
+                 class="text-dark text-decoration-none">
+                {{ post.user.username }}
+              </a>
+            </strong>
+            <small class="text-muted d-block">
+              {{ post.timestamp|date:"M d, Y • g:i A" }}
+            </small>
+          </div>
+
+          {% if request.user == post.user %}
+            <div class="ml-auto action-menu">
+              <button type="button"
+                      class="action-menu-toggle js-action-menu-toggle"
+                      aria-label="Post actions"
+                      aria-expanded="false">
+                <i class="fas fa-ellipsis-v"></i>
               </button>
+
+              <div class="action-menu-dropdown js-action-menu" role="menu" aria-hidden="true">
+                <button type="button"
+                        class="action-menu-item edit-post"
+                        data-post="{{ post.id }}">
+                  <i class="fas fa-edit mr-2"></i>Edit
+                </button>
+                <button type="button"
+                        class="action-menu-item delete-post"
+                        data-post="{{ post.id }}">
+                  <i class="fas fa-trash mr-2"></i>Delete
+                </button>
+              </div>
             </div>
-          {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="post-content mb-3">
+          <div class="post-text mb-0">
+            {{ post.content|parse_media|safe }}
+          </div>
+        </div>
+
+        {% if post.media.all %}
+          <div class="post-media-container">
+            {% for media in post.media.all %}
+              <div class="media-item position-relative">
+                {% if media.media_type == 'image' %}
+                  <div class="image-wrapper">
+                    <img src="{{ media.file.url }}"
+                         class="img-fluid rounded post-media-image"
+                         style="max-height: 500px; object-fit: contain;"
+                         alt="Post image"
+                         data-media-id="{{ media.id }}"
+                         loading="lazy"
+                         onerror="this.style.display='none'; document.getElementById('fallback-{{ media.id }}').style.display='block';">
+                    <div class="image-fallback" id="fallback-{{ media.id }}">
+                      <i class="fas fa-image"></i>
+                      <p class="mb-0">Image unavailable</p>
+                    </div>
+                  </div>
+                {% elif media.media_type == 'video' %}
+                  <video controls class="w-100 rounded" style="max-height: 500px;">
+                    <source src="{{ media.file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
         {% endif %}
 
-        <a href="{% url 'all_posts' %}" class="btn btn-outline-secondary mb-4">
-            ← Back to Posts
-        </a>
+        <div class="d-flex align-items-center flex-wrap" style="gap:1rem;">
+          <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                  data-post="{{ post.id }}" data-value="1">
+            👍 <span>{{ post.thumbs_up.count }}</span>
+          </button>
 
-        <div class="post-card p-4 mb-4 border rounded bg-white shadow-sm" data-post-id="{{ post.id }}">
-            <!-- Post Header -->
-            <div class="d-flex align-items-center mb-3">
-                {% if post.user.profile_picture %}
-                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" width="48" height="48" style="object-fit: cover;">
-                {% else %}
-                    <img src="{% static 'network/images/default-avatar.png' %}"
-                         class="rounded-circle me-2" width="48" height="48"
-                         style="object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                {% endif %}
-                <div>
-                    <strong>
-                        <a href="{% url 'profile' post.user.username %}" class="text-dark text-decoration-none">
-                            {{ post.user.username }}
-                        </a>
-                    </strong>
-                    <small class="text-muted ms-2">
-                        {% if post.user.gender == 'M' %}♂
-                        {% elif post.user.gender == 'F' %}♀
-                        {% elif post.user.gender == 'O' %}⚧
-                        {% else %}•
-                        {% endif %}
-                    </small>
-                    <small class="text-muted d-block">{{ post.timestamp|date:"M d, Y • g:i A" }}</small>
-                </div>
-            </div>
-
-            <!-- Post Content -->
-            <div class="post-content mb-3">
-                <div class="post-text mb-0">
-                    {{ post.content|parse_media|safe|linebreaksbr }}
-                </div>
-            </div>
-
-            <!-- Post Media -->
-            <div class="mb-3">
-                {% for media in post.media.all %}
-                    <div class="mb-2">
-                        {% if media.media_type == 'image' %}
-                            <img src="{{ media.file.url }}" class="img-fluid rounded"
-                                 style="max-height: 500px; object-fit: contain;"
-                                 alt="Post image" loading="lazy">
-                        {% else %}
-                            <video controls class="w-100 rounded" style="max-height: 500px;">
-                                <source src="{{ media.file.url }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-
-            <!-- Post Actions (same as post_list) -->
-            <div class="d-flex gap-3 align-items-center flex-wrap">
-                <button class="btn btn-sm border thumbs-up {% if request.user in post.thumbs_up.all %}btn-success{% else %}btn-outline-secondary{% endif %}"
-        data-post="{{ post.id }}" data-value="1">
-    👍 <span>{{ post.thumbs_up.count }}</span>
-</button>
-<button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
-        data-post="{{ post.id }}" data-value="-1">
-    👎 <span>{{ post.thumbs_down.count }}</span>
-</button> 
-                {% if request.user == post.user %}
-                    <button class="btn btn-sm btn-outline-primary edit-post" data-post="{{ post.id }}">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger delete-post" data-post="{{ post.id }}">Delete</button>
-                {% endif %}
-            </div>
-
-            <!-- Comments Section (same style as post_list) -->
-            <div class="comments-section mt-4">
-                <h6 class="mb-3">Comments ({{ post.comments.count }})</h6>
-
-                <!-- Comment Form -->
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'add_comment' post.id %}" class="mb-4">
-                        {% csrf_token %}
-                        <textarea name="content" class="form-control mb-2"
-                                  rows="2" placeholder="Write a comment..."
-                                  required></textarea>
-                        <button type="submit" class="btn btn-primary btn-sm">Comment</button>
-                    </form>
-                {% endif %}
-
-                <!-- Comments -->
-                {% for comment in post.comments.all %}
-                    {% if not comment.parent %}
-                        {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
-                    {% endif %}
-                {% empty %}
-                    <p class="text-center text-muted py-3">No comments yet.</p>
-                {% endfor %}
-            </div>
+          <button class="btn btn-sm border thumbs-down {% if request.user in post.thumbs_down.all %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+                  data-post="{{ post.id }}" data-value="-1">
+            👎 <span>{{ post.thumbs_down.count }}</span>
+          </button>
         </div>
+
+        {# COMMENTS + COMPOSER (detail view – always expanded) #}
+        <div class="comments-section mt-4">
+          {% with visible_comments=post.comments.all|filter_by_privacy:request.user %}
+            {% with visible_count=visible_comments|length %}
+              {% with hidden_count=post.comments.count|sub:visible_count %}
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap mb-2" style="gap:8px;">
+                  <h6 class="mb-0">
+                    Comments ({{ visible_count }})
+                    {% if hidden_count|add:0 > 0 %}
+                      <small class="text-muted">({{ hidden_count }} hidden)</small>
+                    {% endif %}
+                  </h6>
+                </div>
+
+                <div class="js-comments-body" data-post-id="{{ post.id }}">
+
+                  {% can_comment_on_post post user as can_comment %}
+                  {% if user.is_authenticated and can_comment %}
+                    <form method="post"
+                          action="{% url 'add_comment' post.id %}"
+                          class="mb-3 js-media-form"
+                          data-composer-id="detail-{{ post.id }}"
+                          enctype="multipart/form-data">
+                      {% csrf_token %}
+
+                      <div class="comment-composer">
+                        <div class="media-previews-container">
+                          <div class="media-previews-list" data-preview="detail-{{ post.id }}"></div>
+                          <div class="media-stats" data-stats="detail-{{ post.id }}"></div>
+                        </div>
+
+                        <textarea name="content"
+                                  class="form-control auto-expand-textarea js-mention-input"
+                                  data-mention-scope="global"
+                                  rows="1"
+
+    <!-- =================================================================== -->
+    <!-- COMMENT CREATION FORM: Add new root-level comment                -->
+    <!-- =================================================================== -->
+                                  placeholder="Add a comment..."
+                                  required></textarea>
+
+                        <div class="composer-media-row" data-row="detail-{{ post.id }}">
+                          <button type="button"
+                                  class="composer-media-btn active"
+                                  data-type="gifs"
+                                  title="GIFs">🎞️</button>
+                          <button type="button"
+                                  class="composer-media-btn"
+                                  data-type="stickers"
+                                  title="Stickers">🏷️</button>
+                          <button type="button"
+                                  class="composer-media-btn composer-file-btn"
+                                  data-file-kind="image"
+                                  title="Attach image">📷</button>
+                          <button type="button"
+                                  class="composer-media-btn composer-file-btn"
+                                  data-file-kind="video"
+                                  title="Attach video">🎥</button>
+
+                          <div class="composer-search-group">
+                            <input type="text"
+                                   class="composer-search-input"
+                                   placeholder="Search GIFs or stickers...">
+                            <button type="button"
+                                    class="composer-search-btn"
+                                    title="Search">
+                              <i class="fas fa-search"></i>
+                            </button>
+                          </div>
+
+                          <div class="composer-results" data-results="detail-{{ post.id }}"></div>
+                        </div>
+
+                        <input type="file"
+                               name="media"
+                               class="js-composer-file-input d-none"
+                               accept="image/*,video/*">
+                        <input type="hidden"
+                               class="media-data-input"
+                               value="[]">
+                      </div>
+
+                      <button type="submit"
+                              class="btn btn-primary btn-sm mt-2">
+                        Comment
+                      </button>
+                    </form>
+                  {% elif user.is_authenticated and not can_comment %}
+                    <div class="alert alert-light border small mb-3">
+                      You can't comment here.
+                    </div>
+                  {% endif %}
+
+                  {% with root_comments=visible_comments|get_root_comments %}
+                    {% for comment in root_comments %}
+                      {% include "network/partials/comment_item.html" with comment=comment post=post depth=0 %}
+                    {% empty %}
+                      <p class="text-center text-muted py-3 mb-0">
+                        No comments yet.
+                      </p>
+                    {% endfor %}
+                  {% endwith %}
+                </div>
+
+              {% endwith %}
+            {% endwith %}
+          {% endwith %}
+        </div>
+
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- 
+    ========================================================================
+    END OF POST DETAIL TEMPLATE
+    ========================================================================
+    
+    Single post view with complete comment threading.
+    JavaScript in main.js handles all interactions.
+    
+    Maintainer: Argon admin 
+    Last updated: February 2026
+    ========================================================================
+-->
+
 {% endblock %}
