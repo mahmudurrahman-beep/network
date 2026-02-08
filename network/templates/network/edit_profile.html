@@ -1,81 +1,253 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div class="container mt-5 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                {% if messages %}
-                  {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
-                      {{ message }}
-                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                  {% endfor %}
-                {% endif %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
 
-                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                    <div class="card-body p-5 bg-light text-center">
-                        <h3 class="mb-4 fw-bold text-primary">Edit Profile</h3>
-                        
-                        <!-- Error Message Display -->
-                        {% if message %}
-                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                          </div>
-                        {% endif %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      {% endif %}
 
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-
-                            <!-- Username Field - ADDED -->
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" name="username" class="form-control" id="username" value="{{ user.username }}" required>
-                                <small class="text-muted">You can change your username (must be unique)</small>
-                            </div>
-
-                            <!-- Bio Centered -->
-                            <div class="mb-3">
-                                <label for="id_bio" class="form-label">Bio</label>
-                                <textarea name="bio" id="id_bio" class="form-control" rows="4" placeholder="Tell us about yourself... (optional)">{{ user.bio }}</textarea>
-                            </div>
-
-                            <!-- Timezone Selection -->
-                            <div class="mb-3">
-                                <label for="timezone" class="form-label">Time Zone</label>
-                                <select name="timezone" class="form-control" id="timezone">
-                                    {% for tz, tz_display in timezone_choices %}
-                                        <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>
-                                            {{ tz_display }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <small class="text-muted">All timestamps will display in your local time</small>
-                            </div>
-
-                            <!-- Gender Selection -->
-                            <div class="mb-3">
-                                <label for="gender" class="form-label">Gender</label>
-                                <select name="gender" class="form-control" id="gender">
-                                    <option value="">Prefer not to say</option>
-                                    <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
-                                    <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
-                                    <option value="O" {% if user.gender == 'O' %}selected{% endif %}>Other</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
-                                Save Changes
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+      {% if message %}
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+      {% endif %}
+
+      <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-body p-4 p-md-5 bg-light" style="border-radius: 16px;">
+          <div class="d-flex align-items-center mb-4" style="gap: 10px;">
+            <div class="d-flex align-items-center justify-content-center rounded-circle"
+                 style="width: 44px; height: 44px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)); color: #fff;">
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <div>
+              <h4 class="mb-0" style="color: var(--muted-dark); font-weight: 900;">Edit Profile</h4>
+              <small class="text-muted">Update what you want people to see.</small>
+            </div>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="form-group">
+              <label for="username" class="mb-1" style="font-weight: 800; color: var(--muted-dark);">Username</label>
+              <input type="text" name="username" class="form-control" id="username" value="{{ user.username }}" required>
+              <small class="text-muted">Must be unique.</small>
+            </div>
+
+            <!-- Bio -->
+            <div class="form-group">
+              <label for="id_bio" class="mb-1" style="font-weight: 800; color: var(--muted-dark);">Bio</label>
+              <textarea name="bio" id="id_bio" class="form-control" rows="4" placeholder="Tell us about yourself... (optional)">{{ user.bio }}</textarea>
+            </div>
+
+            <!-- Timezone -->
+            <div class="form-group">
+              <label for="timezone" class="mb-1" style="font-weight: 800; color: var(--muted-dark);">Time Zone</label>
+              <select name="timezone" class="form-control" id="timezone">
+                {% for tz, tz_display in timezone_choices %}
+                  <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>
+                    {{ tz_display }}
+                  </option>
+                {% endfor %}
+              </select>
+              <small class="text-muted">Timestamps will display in your local time.</small>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+              <label for="gender" class="mb-1" style="font-weight: 800; color: var(--muted-dark);">Gender</label>
+              <select name="gender" class="form-control" id="gender">
+                <option value="">Prefer not to say</option>
+                <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
+                <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
+                <option value="O" {% if user.gender == 'O' %}selected{% endif %}>Other</option>
+                <option value="N" {% if user.gender == 'N' %}selected{% endif %}>Prefer not to say</option>
+              </select>
+            </div>
+
+            <!-- Birthdate -->
+            <div class="mt-4 p-3 p-md-4 bg-white border" style="border-radius: 14px; border-color: rgba(8,48,71,0.10) !important;">
+              <div class="d-flex align-items-center mb-3" style="gap: 10px;">
+                <div class="d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 38px; height: 38px; background: rgba(14, 97, 150, 0.10); color: var(--brand-blue);">
+                  <i class="fas fa-birthday-cake"></i>
+                </div>
+                <div class="mr-auto">
+                  <div style="font-weight: 900; color: var(--muted-dark); line-height: 1.1;">Birthdate</div>
+                  <small class="text-muted">Optional. You can show it, hide it, or remove it anytime.</small>
+                </div>
+              </div>
+
+              {% if user.birth_date %}
+                <div class="alert alert-info py-2 mb-3" style="border-radius: 12px;">
+                  <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+                    <span style="font-weight: 800;">Current:</span>
+                    {% if user.birth_year_hidden %}
+                      <span>{{ user.birth_date|date:"F j" }}</span>
+                    {% else %}
+                      <span>{{ user.birth_date|date:"F j, Y" }}</span>
+                    {% endif %}
+                    {% if birth.birth_zodiac %}
+                      <span class="badge badge-pill" style="background: rgba(6, 182, 212, 0.12); color: var(--brand-blue); font-weight: 800; padding: 6px 10px;">
+                        <i class="fas fa-star mr-1"></i>{{ birth.birth_zodiac }}
+                      </span>
+                    {% endif %}
+                    {% if user.birth_date_hidden %}
+                      <span class="badge badge-pill badge-secondary" style="font-weight: 800; padding: 6px 10px;">
+                        Hidden on profile
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+
+              <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="clear_birth_date" name="clear_birth_date">
+                <label class="custom-control-label" for="clear_birth_date" style="font-weight: 800;">
+                  Remove birthdate
+                </label>
+                <div class="text-muted small">This clears the saved value completely.</div>
+              </div>
+
+              <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="birth_date_hidden" name="birth_date_hidden" {% if user.birth_date_hidden %}checked{% endif %}>
+                <label class="custom-control-label" for="birth_date_hidden" style="font-weight: 800;">
+                  Hide birthdate on my profile
+                </label>
+                <div class="text-muted small">You keep it saved, but others won’t see it.</div>
+              </div>
+
+              <div class="mb-2" style="font-weight: 800; color: var(--muted-dark);">How should it appear?</div>
+
+              <div class="custom-control custom-radio mb-2">
+                <input type="radio" id="bd_mode_full" name="birth_date_mode" class="custom-control-input" value="full"
+                       {% if not user.birth_year_hidden %}checked{% endif %}>
+                <label class="custom-control-label" for="bd_mode_full">Full date (with year)</label>
+              </div>
+              <div id="bd_full_wrap" class="pl-3 mb-3">
+                <input type="date" class="form-control" name="birth_date"
+                       value="{% if user.birth_date and not user.birth_year_hidden %}{{ user.birth_date|date:'Y-m-d' }}{% endif %}">
+                <small class="text-muted">Example: 1995-11-03</small>
+              </div>
+
+              <div class="custom-control custom-radio mb-2">
+                <input type="radio" id="bd_mode_md" name="birth_date_mode" class="custom-control-input" value="md"
+                       {% if user.birth_year_hidden %}checked{% endif %}>
+                <label class="custom-control-label" for="bd_mode_md">Day & month only (no year)</label>
+              </div>
+
+              <div id="bd_md_wrap" class="pl-3">
+                <div class="d-flex flex-wrap" style="gap: 10px;">
+                  <select class="form-control" name="birth_month" style="max-width: 180px;">
+                    <option value="">Month</option>
+                    {% for m in "123456789101112"|make_list %}{% endfor %}
+                    <option value="1" {% if birth.birth_month == 1 and user.birth_year_hidden %}selected{% endif %}>January</option>
+                    <option value="2" {% if birth.birth_month == 2 and user.birth_year_hidden %}selected{% endif %}>February</option>
+                    <option value="3" {% if birth.birth_month == 3 and user.birth_year_hidden %}selected{% endif %}>March</option>
+                    <option value="4" {% if birth.birth_month == 4 and user.birth_year_hidden %}selected{% endif %}>April</option>
+                    <option value="5" {% if birth.birth_month == 5 and user.birth_year_hidden %}selected{% endif %}>May</option>
+                    <option value="6" {% if birth.birth_month == 6 and user.birth_year_hidden %}selected{% endif %}>June</option>
+                    <option value="7" {% if birth.birth_month == 7 and user.birth_year_hidden %}selected{% endif %}>July</option>
+                    <option value="8" {% if birth.birth_month == 8 and user.birth_year_hidden %}selected{% endif %}>August</option>
+                    <option value="9" {% if birth.birth_month == 9 and user.birth_year_hidden %}selected{% endif %}>September</option>
+                    <option value="10" {% if birth.birth_month == 10 and user.birth_year_hidden %}selected{% endif %}>October</option>
+                    <option value="11" {% if birth.birth_month == 11 and user.birth_year_hidden %}selected{% endif %}>November</option>
+                    <option value="12" {% if birth.birth_month == 12 and user.birth_year_hidden %}selected{% endif %}>December</option>
+                  </select>
+
+                  <select class="form-control" name="birth_day" style="max-width: 140px;">
+                    <option value="">Day</option>
+                    {% for d in day_range %}
+                      <option value="{{ d }}" {% if birth.birth_day == d and user.birth_year_hidden %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <small class="text-muted">Example: November 3</small>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mt-4" style="gap: 12px;">
+              <a href="{% url 'profile' user.username %}" class="btn btn-outline-secondary" style="border-radius: 10px; font-weight: 800;">
+                <i class="fas fa-arrow-left mr-1"></i>Back
+              </a>
+              <button type="submit" class="btn btn-primary" style="border-radius: 10px; font-weight: 900; padding: 10px 18px;">
+                <i class="fas fa-save mr-1"></i>Save changes
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function toggleBirthMode() {
+      var full = document.getElementById('bd_mode_full');
+      var wrapFull = document.getElementById('bd_full_wrap');
+      var wrapMd = document.getElementById('bd_md_wrap');
+      if (!full || !wrapFull || !wrapMd) return;
+
+      if (full.checked) {
+        wrapFull.style.display = 'block';
+        wrapMd.style.display = 'none';
+      } else {
+        wrapFull.style.display = 'none';
+        wrapMd.style.display = 'block';
+      }
+    }
+
+    function toggleDisableBirthInputs() {
+      var clear = document.getElementById('clear_birth_date');
+      var birthHidden = document.getElementById('birth_date_hidden');
+      var wrapFull = document.getElementById('bd_full_wrap');
+      var wrapMd = document.getElementById('bd_md_wrap');
+      var radios = document.querySelectorAll('input[name="birth_date_mode"]');
+
+      var disabled = clear && clear.checked;
+      if (birthHidden) birthHidden.disabled = disabled;
+
+      radios.forEach(function(r) { r.disabled = disabled; });
+      if (wrapFull) wrapFull.style.opacity = disabled ? '0.5' : '1';
+      if (wrapMd) wrapMd.style.opacity = disabled ? '0.5' : '1';
+
+      var inputs = document.querySelectorAll('#bd_full_wrap input, #bd_md_wrap select');
+      inputs.forEach(function(i) { i.disabled = disabled; });
+
+      if (disabled) {
+        // still show selected mode, but disabled
+        if (wrapFull) wrapFull.style.display = 'block';
+        if (wrapMd) wrapMd.style.display = 'block';
+      } else {
+        toggleBirthMode();
+      }
+    }
+
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.name === 'birth_date_mode') toggleBirthMode();
+      if (e.target && e.target.id === 'clear_birth_date') toggleDisableBirthInputs();
+    });
+
+    // init
+    toggleBirthMode();
+    toggleDisableBirthInputs();
+  })();
+</script>
 {% endblock %}
