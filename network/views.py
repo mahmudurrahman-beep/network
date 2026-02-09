@@ -1101,7 +1101,6 @@ def new_post(request):
 
         return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
     
-    
     return redirect('all_posts') 
 
     
