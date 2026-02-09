@@ -1093,12 +1093,16 @@ def new_post(request):
             PostMedia.objects.create(post=post, file=f, media_type=media_type)
 
         # Notify mentions
-        _notify_mentions_in_post(request.user, post, content, "post")
+        try:
+            from .utils import _notify_mentions_in_post
+            _notify_mentions_in_post(request.user, post, content, "post")
+        except ImportError:
+            pass
 
-        
-        return redirect('all_posts')  
-
-    return redirect('all_posts')
+        return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
+    
+    
+    return redirect('all_posts') 
 
     
 @csrf_exempt
