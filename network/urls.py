@@ -486,26 +486,23 @@ urlpatterns = [
     ),  # Group member mention autocomplete
 
     # --- PWA & Notifications ---
-
     path(
         "api/message-badge/", 
-        views.message_badge_count, 
-        name="message_badge_count"
+        views.api_message_badge,
+        name="api_message_badge"
     ),  # Unread message count for PWA badge
 
     path(
         "api/user-settings/", 
-        views.user_settings_api, 
-        name="user_settings_api"
+        views.api_user_settings,
+        name="api_user_settings"
     ),  # Get user notification settings
 
     path(
         "api/update-message-settings/", 
         views.update_message_settings, 
         name="update_message_settings"
-    ),  # Update message notification settings
-    path('api/user-settings/', views.api_user_settings, name='api_user_settings'),
-    path('api/message-badge/', views.api_message_badge, name='api_message_badge'),
+    ),  
 
     # ========================================================================
     # SECTION 11: MEDIA & GIF INTEGRATION
