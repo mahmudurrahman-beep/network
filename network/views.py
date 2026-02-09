@@ -2529,16 +2529,45 @@ def api_message_badge(request):
     Return unread message count for badge updates
     Called by: argonUpdateMessageBadge() in main.js (every 3 seconds)
     """
-    from network.models import Message, Conversation
+    total_unread = 0
     
-    # Count unread messages across all conversations
-    unread_count = Message.objects.filter(
-        conversation__participants=request.user,
-        is_read=False
-    ).exclude(sender=request.user).count()
+    # Get all conversations user is a member of
+    memberships = ConversationMember.objects.filter(
+        user=request.user
+    ).select_related('conversation')
+    
+    for mem in memberships:
+        conv = mem.conversation
+        
+        # Skip hidden conversations
+        if conv.hidden_by.filter(id=request.user.id).exists():
+            continue
+        
+        if conv.is_group:
+            # Group chat: count messages after last read time
+            last_read = mem.last_read_at or conv.created_at
+            unread = conv.messages.exclude(sender=request.user).filter(
+                timestamp__gt=last_read
+            ).count()
+        else:
+            # DM: count unread messages from other user
+            other_user = User.objects.filter(
+                conversation_memberships__conversation=conv
+            ).exclude(id=request.user.id).first()
+            
+            if other_user:
+                unread = conv.messages.filter(
+                    sender=other_user,
+                    recipient=request.user,
+                    is_read=False
+                ).count()
+            else:
+                unread = 0
+        
+        total_unread += unread
     
     return JsonResponse({
-        'count': unread_count,
+        'count': total_unread,
         'badge_enabled': request.user.message_badge_enabled
     })
 
