@@ -299,6 +299,21 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 });
+
+// ✅ Request notification permission for mobile alerts
+if ('Notification' in window && Notification.permission === 'default') {
+  soundToggle.addEventListener('change', function() {
+    if (this.checked) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('✅ Notifications enabled');
+        } else {
+          console.log('❌ Notifications denied');
+        }
+      });
+    }
+  });
+}
 </script>
 {% endblock %} 
 
