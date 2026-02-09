@@ -46,19 +46,32 @@
         top: 0;
         right: 0;
         display: flex;
-        gap: 6px;
+        gap: 8px;
         z-index: 10;
+        /* Add animation for when they appear */
+        animation: fadeInSlideDown 0.3s ease;
+    }
+    
+    @keyframes fadeInSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .notification-floating-btn {
-        width: 40px;
-        height: 40px;
+        width: 48px;  /* INCREASED from 40px */
+        height: 48px; /* INCREASED from 40px */
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         border: 2px solid transparent;
-        font-size: 0.9rem;
+        font-size: 1rem;  /* Slightly larger icon */
         transition: all 0.2s ease;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(2,6,23,0.1);
@@ -112,7 +125,7 @@
         .notifications-header {
             flex-direction: column;
             align-items: flex-start;
-            padding-bottom: 50px; /* Make room for floating buttons */
+            padding-bottom: 60px; /* Increased for larger buttons */
         }
         
         .notification-floating-actions {
@@ -139,10 +152,11 @@
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
+            animation: fadeInSlideDown 0.3s ease;
         }
         
         .notification-desktop-btn {
-            padding: 8px 20px;
+            padding: 10px 24px;  /* Slightly larger padding */
             border-radius: 10px;
             font-weight: 700;
             border: 2px solid transparent;
@@ -163,7 +177,7 @@
         }
     }
     
-    /* Notification items */
+    /* Notification items with swipe support */
     .notification-item {
         background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
         border: 1px solid rgba(8,48,71,0.08);
@@ -173,6 +187,9 @@
         transition: all 0.2s ease;
         border-left: 4px solid var(--brand-blue);
         position: relative;
+        /* Swipe container */
+        overflow: hidden;
+        touch-action: pan-y; /* Allow vertical scroll, track horizontal */
     }
     
     .notification-item:hover {
@@ -180,6 +197,57 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(2,6,23,0.08);
         border-color: rgba(8,48,71,0.12);
+    }
+    
+    /* Swipe action background */
+    .notification-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 80px;
+        background: linear-gradient(90deg, rgba(220, 53, 69, 0.9), rgba(220, 53, 69, 1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateX(100%);
+        transition: transform 0.2s ease;
+        pointer-events: none;
+    }
+    
+    .notification-item.swiping::before {
+        transform: translateX(0);
+    }
+    
+    /* Swipe delete icon */
+    .notification-item::after {
+        content: '\f2ed'; /* fa-trash-alt */
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        right: 30px;
+        transform: translateY(-50%);
+        color: white;
+        font-size: 1.2rem;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .notification-item.swiping::after {
+        opacity: 1;
+    }
+    
+    /* Notification content wrapper for swipe */
+    .notification-wrapper {
+        position: relative;
+        transition: transform 0.2s ease;
+        background: inherit;
+        border-radius: inherit;
+        z-index: 2;
     }
     
     /* Unread indicator */
@@ -222,7 +290,7 @@
         display: block;
     }
     
-    /* Delete individual notification button */
+    /* Delete individual notification button - LARGER on mobile */
     .delete-notification-btn {
         position: absolute;
         top: 12px;
@@ -231,15 +299,23 @@
         color: rgba(8,48,71,0.4);
         border: none;
         border-radius: 8px;
-        width: 28px;
-        height: 28px;
+        width: 32px;  /* Increased from 28px */
+        height: 32px; /* Increased from 28px */
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
         cursor: pointer;
-        font-size: 0.9rem;
-        z-index: 2;
+        font-size: 1rem;  /* Slightly larger */
+        z-index: 3;
+    }
+    
+    @media (max-width: 768px) {
+        .delete-notification-btn {
+            width: 40px;  /* Even larger on mobile */
+            height: 40px;
+            font-size: 1.1rem;
+        }
     }
     
     .delete-notification-btn:hover {
@@ -250,7 +326,7 @@
     
     /* Notification content */
     .notification-content {
-        padding-right: 32px;
+        padding-right: 40px; /* More space for larger button */
     }
     
     .notification-content h6 {
@@ -265,6 +341,18 @@
         border-radius: 20px;
         padding: 60px 20px;
         box-shadow: 0 12px 36px rgba(2,6,23,0.04);
+        animation: fadeInSlideUp 0.4s ease;
+    }
+    
+    @keyframes fadeInSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .notifications-empty-state h4 {
@@ -315,7 +403,7 @@
       {% endfor %}
     {% endif %}
 
-    <!-- HEADER WITH FLOATING BUTTONS -->
+    <!-- HEADER WITH CONDITIONAL FLOATING BUTTONS -->
     <div class="notifications-header">
         <h2>Notifications</h2>
         
@@ -324,9 +412,8 @@
             <i class="fas fa-bell"></i>
             {{ notifications|length }}
         </span>
-        {% endif %}
         
-        <!-- FLOATING ACTION BUTTONS (MOBILE) -->
+        <!-- FLOATING ACTION BUTTONS (MOBILE) - ONLY SHOW IF NOTIFICATIONS EXIST -->
         <div class="notification-floating-actions">
             <button id="clear-all-floating" class="notification-floating-btn clear-btn" 
                     title="Clear All">
@@ -337,9 +424,10 @@
                 <i class="fas fa-check-double"></i>
             </button>
         </div>
+        {% endif %}
     </div>
 
-    <!-- DESKTOP ACTION BUTTONS -->
+    <!-- DESKTOP ACTION BUTTONS - ONLY SHOW IF NOTIFICATIONS EXIST -->
     {% if notifications %}
     <div class="notification-desktop-actions">
         <button id="clear-all-desktop" class="btn notification-desktop-btn"
@@ -364,41 +452,44 @@
             {% for notif in notifications %}
                 <div class="notification-item {% if not notif.read %}unread{% endif %}" 
                      data-notification-id="{{ notif.id }}">
-                    <button class="delete-notification-btn" 
-                            data-notification-id="{{ notif.id }}"
-                            title="Delete notification">
-                        <i class="fas fa-times"></i>
-                    </button>
                     
-                    <div class="notification-content">
-                        <h6 class="mb-1" style="color: var(--muted-dark); font-weight: 700;">
-                            <!-- Clickable username -->
-                            <a href="{% url 'profile' notif.actor.username %}"
-                               class="notification-username">
-                                {{ notif.actor.username }}
-                            </a>
-                            {{ notif.verb }}
-                            {% if notif.post %}
-                                <!-- Clickable post preview -->
-                                on post: 
-                                <a href="{% url 'post_detail' notif.post.id %}"
-                                   class="notification-post-link">
-                                    "{{ notif.post.content|truncatewords:8 }}"
+                    <div class="notification-wrapper">
+                        <button class="delete-notification-btn" 
+                                data-notification-id="{{ notif.id }}"
+                                title="Delete notification">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        
+                        <div class="notification-content">
+                            <h6 class="mb-1" style="color: var(--muted-dark); font-weight: 700;">
+                                <!-- Clickable username -->
+                                <a href="{% url 'profile' notif.actor.username %}"
+                                   class="notification-username">
+                                    {{ notif.actor.username }}
                                 </a>
-                            {% elif notif.conversation %}
-                                <!-- NEW: Group mention notification -->
-                                in group: 
-                                <a href="{% url 'conversation_room' notif.conversation.id %}"
-                                   class="notification-post-link">
-                                    "{{ notif.conversation.name|default:"Group Chat" }}"
-                                </a>
+                                {{ notif.verb }}
+                                {% if notif.post %}
+                                    <!-- Clickable post preview -->
+                                    on post: 
+                                    <a href="{% url 'post_detail' notif.post.id %}"
+                                       class="notification-post-link">
+                                        "{{ notif.post.content|truncatewords:8 }}"
+                                    </a>
+                                {% elif notif.conversation %}
+                                    <!-- Group mention notification -->
+                                    in group: 
+                                    <a href="{% url 'conversation_room' notif.conversation.id %}"
+                                       class="notification-post-link">
+                                        "{{ notif.conversation.name|default:"Group Chat" }}"
+                                    </a>
+                                {% endif %}
+                            </h6>
+                            {% if notif.timestamp %}
+                                <small class="notification-timestamp">
+                                    {{ notif.timestamp|timesince }} ago
+                                </small>
                             {% endif %}
-                        </h6>
-                        {% if notif.timestamp %}
-                            <small class="notification-timestamp">
-                                {{ notif.timestamp|timesince }} ago
-                            </small>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -418,7 +509,90 @@
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
     
-    // Helper function for API calls
+    // ===============================
+    // SWIPE TO DELETE (MOBILE ONLY)
+    // ===============================
+    if (window.innerWidth <= 768) {
+        const notificationItems = document.querySelectorAll('.notification-item');
+        
+        notificationItems.forEach(item => {
+            let startX = 0;
+            let currentX = 0;
+            let isSwiping = false;
+            const wrapper = item.querySelector('.notification-wrapper');
+            const threshold = -80; // Swipe threshold to trigger delete
+            
+            item.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isSwiping = true;
+                wrapper.style.transition = 'none';
+            }, { passive: true });
+            
+            item.addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
+                
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                
+                // Only allow left swipe (negative diff)
+                if (diff < 0) {
+                    wrapper.style.transform = `translateX(${Math.max(diff, threshold)}px)`;
+                    
+                    if (diff < -30) {
+                        item.classList.add('swiping');
+                    }
+                }
+            }, { passive: true });
+            
+            item.addEventListener('touchend', async (e) => {
+                if (!isSwiping) return;
+                
+                isSwiping = false;
+                wrapper.style.transition = 'transform 0.2s ease';
+                
+                const diff = currentX - startX;
+                
+                // If swiped past threshold, delete
+                if (diff < threshold) {
+                    // Haptic feedback (if supported)
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                    
+                    const notificationId = item.dataset.notificationId;
+                    
+                    if (confirm('Delete this notification?')) {
+                        try {
+                            const result = await callNotificationAPI(`/delete-notification/${notificationId}/`);
+                            
+                            if (result.success) {
+                                item.classList.add('removing');
+                                setTimeout(() => {
+                                    item.remove();
+                                    updateNotificationUI(-1);
+                                }, 300);
+                            }
+                        } catch (error) {
+                            wrapper.style.transform = 'translateX(0)';
+                            item.classList.remove('swiping');
+                            showToast('Failed to delete notification', 'error');
+                        }
+                    } else {
+                        wrapper.style.transform = 'translateX(0)';
+                        item.classList.remove('swiping');
+                    }
+                } else {
+                    // Reset position
+                    wrapper.style.transform = 'translateX(0)';
+                    item.classList.remove('swiping');
+                }
+            }, { passive: true });
+        });
+    }
+    
+    // ===============================
+    // HELPER FUNCTIONS
+    // ===============================
     async function callNotificationAPI(url, method = 'POST') {
         try {
             const response = await fetch(url, {
@@ -439,7 +613,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Common function to handle clear all
+    function updateNotificationUI(delta) {
+        const badge = document.querySelector('.notification-count-badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent) || 0;
+            const newCount = Math.max(0, currentCount + delta);
+            
+            if (newCount > 0) {
+                badge.innerHTML = `<i class="fas fa-bell"></i> ${newCount}`;
+                
+                // Update badge color based on if there are unread notifications
+                const hasUnread = document.querySelector('.notification-item.unread');
+                if (!hasUnread) {
+                    badge.style.background = 'linear-gradient(90deg, rgba(108, 117, 125, 0.9), rgba(108, 117, 125, 0.8)) !important';
+                }
+            } else {
+                // No notifications left, show empty state
+                showEmptyState();
+            }
+        }
+    }
+    
+    function showEmptyState() {
+        // Remove all notification items
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.classList.add('removing');
+        });
+        
+        setTimeout(() => {
+            // Hide action buttons
+            const floatingActions = document.querySelector('.notification-floating-actions');
+            const desktopActions = document.querySelector('.notification-desktop-actions');
+            if (floatingActions) floatingActions.style.display = 'none';
+            if (desktopActions) desktopActions.style.display = 'none';
+            
+            // Remove notification list
+            const notificationList = document.getElementById('notifications-list');
+            if (notificationList) notificationList.remove();
+            
+            // Create empty state message
+            const container = document.querySelector('.notifications-container');
+            const emptyState = document.createElement('div');
+            emptyState.className = 'text-center notifications-empty-state';
+            emptyState.innerHTML = `
+                <h4 class="mb-3">No notifications yet</h4>
+                <p>
+                    When someone follows you, likes your post, or comments,<br>
+                    you'll see it here.
+                </p>
+            `;
+            
+            // Remove badge
+            const badge = document.querySelector('.notification-count-badge');
+            if (badge) badge.remove();
+            
+            // Insert empty state
+            container.appendChild(emptyState);
+        }, 300);
+    }
+    
+    // ===============================
+    // CLEAR ALL HANDLER
+    // ===============================
     function handleClearAll() {
         if (!confirm('Are you sure you want to delete ALL notifications? This cannot be undone.')) {
             return;
@@ -455,16 +690,8 @@ document.addEventListener('DOMContentLoaded', function() {
         callNotificationAPI('/clear-notifications/')
             .then(result => {
                 if (result.success) {
-                    // Animate out all notifications
-                    const notifications = document.querySelectorAll('.notification-item');
-                    notifications.forEach(notif => {
-                        notif.classList.add('removing');
-                    });
-                    
-                    // Reload page after animation
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 400);
+                    showEmptyState();
+                    showToast('All notifications cleared', 'success');
                 }
             })
             .catch(error => {
@@ -475,7 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Common function to handle mark all read
+    // ===============================
+    // MARK ALL READ HANDLER
+    // ===============================
     function handleMarkAllRead() {
         const readBtn = document.getElementById('mark-all-read-desktop') || document.getElementById('mark-all-read-floating');
         if (readBtn) {
@@ -487,16 +716,18 @@ document.addEventListener('DOMContentLoaded', function() {
         callNotificationAPI('/mark-notifications-read/')
             .then(result => {
                 if (result.success) {
-                    // Remove "unread" styling from all notifications
                     document.querySelectorAll('.notification-item.unread').forEach(item => {
                         item.classList.remove('unread');
                         item.style.borderLeft = '4px solid var(--brand-blue)';
                     });
                     
-                    // Show success message
-                    showToast('All notifications marked as read!', 'success');
+                    // Update badge color
+                    const badge = document.querySelector('.notification-count-badge');
+                    if (badge) {
+                        badge.style.background = 'linear-gradient(90deg, rgba(108, 117, 125, 0.9), rgba(108, 117, 125, 0.8)) !important';
+                    }
                     
-                    // Update button state for desktop
+                    // Update button state
                     const desktopBtn = document.getElementById('mark-all-read-desktop');
                     if (desktopBtn) {
                         desktopBtn.innerHTML = '<i class="fas fa-check mr-2"></i> All Read';
@@ -504,11 +735,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         desktopBtn.style.opacity = '0.6';
                     }
                     
-                    // Update badge color to indicate all read
-                    const badge = document.querySelector('.notification-count-badge');
-                    if (badge) {
-                        badge.style.background = 'linear-gradient(90deg, rgba(108, 117, 125, 0.9), rgba(108, 117, 125, 0.8)) !important';
+                    const floatingBtn = document.getElementById('mark-all-read-floating');
+                    if (floatingBtn) {
+                        floatingBtn.innerHTML = '<i class="fas fa-check"></i>';
+                        floatingBtn.disabled = true;
+                        floatingBtn.style.opacity = '0.6';
                     }
+                    
+                    showToast('All notifications marked as read!', 'success');
                 }
             })
             .catch(error => {
@@ -519,29 +753,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Setup event listeners for FLOATING buttons (mobile)
+    // ===============================
+    // EVENT LISTENERS
+    // ===============================
     const clearFloatingBtn = document.getElementById('clear-all-floating');
     const readFloatingBtn = document.getElementById('mark-all-read-floating');
-    
-    if (clearFloatingBtn) {
-        clearFloatingBtn.addEventListener('click', handleClearAll);
-    }
-    
-    if (readFloatingBtn) {
-        readFloatingBtn.addEventListener('click', handleMarkAllRead);
-    }
-    
-    // Setup event listeners for DESKTOP buttons
     const clearDesktopBtn = document.getElementById('clear-all-desktop');
     const readDesktopBtn = document.getElementById('mark-all-read-desktop');
     
-    if (clearDesktopBtn) {
-        clearDesktopBtn.addEventListener('click', handleClearAll);
-    }
-    
-    if (readDesktopBtn) {
-        readDesktopBtn.addEventListener('click', handleMarkAllRead);
-    }
+    if (clearFloatingBtn) clearFloatingBtn.addEventListener('click', handleClearAll);
+    if (readFloatingBtn) readFloatingBtn.addEventListener('click', handleMarkAllRead);
+    if (clearDesktopBtn) clearDesktopBtn.addEventListener('click', handleClearAll);
+    if (readDesktopBtn) readDesktopBtn.addEventListener('click', handleMarkAllRead);
     
     // Delete Individual Notification
     document.querySelectorAll('.delete-notification-btn').forEach(btn => {
@@ -558,24 +781,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await callNotificationAPI(`/delete-notification/${notificationId}/`);
                 
                 if (result.success) {
-                    // Animate out and remove
                     notificationItem.classList.add('removing');
                     setTimeout(() => {
                         notificationItem.remove();
-                        
-                        // Update count badge
-                        const badge = document.querySelector('.notification-count-badge');
-                        if (badge) {
-                            const currentCount = parseInt(badge.textContent) || 0;
-                            const newCount = Math.max(0, currentCount - 1);
-                            
-                            if (newCount > 0) {
-                                badge.innerHTML = `<i class="fas fa-bell"></i> ${newCount}`;
-                            } else {
-                                // Reload if all notifications are gone
-                                window.location.reload();
-                            }
-                        }
+                        updateNotificationUI(-1);
                     }, 300);
                 }
             } catch (error) {
@@ -586,7 +795,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Toast notification helper
+    // ===============================
+    // TOAST NOTIFICATIONS
+    // ===============================
     function showToast(message, type = 'info') {
         const existingToast = document.querySelector('.action-toast');
         if (existingToast) existingToast.remove();
