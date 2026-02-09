@@ -2542,7 +2542,7 @@ def user_settings_api(request):
         "message_badge_enabled": u.message_badge_enabled
     })
 
-
+@csrf_exempt
 @login_required
 @require_POST
 def update_message_settings(request):
