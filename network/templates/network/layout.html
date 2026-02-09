@@ -85,9 +85,9 @@ BLOCKS: title, body (child templates override these)
 
             <li class="nav-item position-relative">
               <a class="nav-link {% if request.resolver_match.url_name == 'messages_inbox' %}active{% endif %}" href="{% url 'messages_inbox' %}">Messages
-                {% if unread_messages_count > 0 %}
-                  <span class="badge badge-danger badge-pill nav-badge">{{ unread_messages_count }}</span>
-                {% endif %}
+              <span class="badge badge-danger badge-pill nav-badge js-message-badge" style="display: none;">
+                  {{ unread_messages_count }}
+              </span>
               </a>
             </li>
 
