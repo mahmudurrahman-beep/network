@@ -1074,7 +1074,31 @@ def post_detail(request, post_id):
     }
     return render(request, "network/post_detail.html", context)
 
+@login_required
+def new_post(request):
+    """Create new post with optional media."""
+    if request.method == "POST":
+        content = request.POST.get('content', '').strip()
+        if not content:
+            return JsonResponse({"error": "Content required"}, status=400)
 
+        post = Post.objects.create(user=request.user, content=content)
+
+        # Handle media files
+        for f in request.FILES.getlist('media_files'):
+            if f.content_type.startswith('audio/'):
+                post.delete()
+                return JsonResponse({"error": "Audio files not supported"}, status=400)
+            media_type = 'video' if f.content_type.startswith('video') else 'image'
+            PostMedia.objects.create(post=post, file=f, media_type=media_type)
+
+        # Notify mentions
+        _notify_mentions_in_post(request.user, post, content, "post")
+
+        return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
+
+    return render(request, "network/new_post.html")
+    
 @csrf_exempt
 @login_required
 def edit_post(request, post_id):
