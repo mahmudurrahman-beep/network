@@ -1095,9 +1095,11 @@ def new_post(request):
         # Notify mentions
         _notify_mentions_in_post(request.user, post, content, "post")
 
-        return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
+        
+        return redirect('all_posts')  
 
-    return render(request, "network/new_post.html")
+    return redirect('all_posts')
+
     
 @csrf_exempt
 @login_required
