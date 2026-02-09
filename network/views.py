@@ -2480,68 +2480,6 @@ def check_typing(request, username):
     return JsonResponse({"is_typing": is_typing})
 
 
-@login_required
-@require_GET
-def message_badge_count(request):
-    """
-    Return total unread message count for PWA badge.
-    Counts both DM and group messages.
-    """
-    total_unread = 0
-
-    memberships = (
-        ConversationMember.objects
-        .filter(user=request.user)
-        .select_related("conversation")
-    )
-
-    for mem in memberships:
-        conv = mem.conversation
-
-        # Skip hidden
-        if conv.hidden_by.filter(id=request.user.id).exists():
-            continue
-
-        if conv.is_group:
-            last_read = mem.last_read_at or conv.created_at
-            unread = conv.messages.exclude(sender=request.user).filter(
-                timestamp__gt=last_read
-            ).count()
-        else:
-            other_user = (
-                User.objects
-                .filter(conversation_memberships__conversation=conv)
-                .exclude(id=request.user.id)
-                .first()
-            )
-            if other_user:
-                unread = conv.messages.filter(
-                    sender=other_user,
-                    recipient=request.user,
-                    is_read=False
-                ).count()
-            else:
-                unread = 0
-
-        total_unread += unread
-
-    return JsonResponse({
-        "count": total_unread,
-        "badge_enabled": request.user.message_badge_enabled
-    })
-
-
-@login_required
-@require_GET
-def user_settings_api(request):
-    """Get current user's message alert settings."""
-    u = request.user
-    return JsonResponse({
-        "message_sound_enabled": u.message_sound_enabled,
-        "message_sound_choice": u.message_sound_choice,
-        "message_badge_enabled": u.message_badge_enabled
-    })
-
 @csrf_exempt
 @login_required
 @require_POST
