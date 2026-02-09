@@ -1499,7 +1499,7 @@ function argonUpdateMessageBadge() {
       const badgeEnabled = !!data.badge_enabled;
 
       // ✅ NEW: Update navbar badge element
-      const navBadge = document.querySelector('.nav-link[href*="messages"] .nav-badge');
+      const navBadge = document.querySelector('.js-message-badge');
       if (navBadge) {
         if (newCount > 0) {
           navBadge.textContent = newCount;
