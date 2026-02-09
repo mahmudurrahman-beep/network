@@ -193,7 +193,19 @@ urlpatterns = [
         views.post_detail, 
         name="post_detail"
     ),  # Single post detail view
+    
+    path(
+        "new-post", 
+        views.new_post, 
+        name="new_post"
+    ),  # Create new post (authenticated)
 
+    path(
+        "new-post/", 
+        views.new_post, 
+        name="new_post"
+    ),  # Duplicate for trailing slash compatibility
+    
     path(
         "edit-post/<int:post_id>/", 
         views.edit_post, 
