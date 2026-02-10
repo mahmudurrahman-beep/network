@@ -1089,30 +1089,83 @@ def post_detail(request, post_id):
 def new_post(request):
     """Create new post with optional media."""
     if request.method == "POST":
-        content = request.POST.get('content', '').strip()
-        if not content:
-            return JsonResponse({"error": "Content required"}, status=400)
-
-        post = Post.objects.create(user=request.user, content=content)
-
-        # Handle media files
-        for f in request.FILES.getlist('media_files'):
-            if f.content_type.startswith('audio/'):
-                post.delete()
-                return JsonResponse({"error": "Audio files not supported"}, status=400)
-            media_type = 'video' if f.content_type.startswith('video') else 'image'
-            PostMedia.objects.create(post=post, file=f, media_type=media_type)
-
-        # Notify mentions
         try:
-            from .utils import _notify_mentions_in_post
-            _notify_mentions_in_post(request.user, post, content, "post")
-        except ImportError:
-            pass
-
-        return JsonResponse({"message": "Posted!", "post_id": post.id}, status=201)
+            content = request.POST.get('content', '').strip()
+            media_files = request.FILES.getlist('media_files')
+            
+            # Validation 1: Check if post has content OR media
+            if not content and not media_files:
+                return JsonResponse({
+                    "error": "Post must contain text or media"
+                }, status=400)
+            
+            # Validation 2: Check if content is too long
+            if len(content) > 1000:
+                return JsonResponse({
+                    "error": "Post content cannot exceed 1000 characters"
+                }, status=400)
+            
+            # Validation 3: File size and type validation
+            MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+            MAX_FILES = 4  # Maximum files per post
+            ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo']
+            
+            # Check number of files
+            if len(media_files) > MAX_FILES:
+                return JsonResponse({
+                    "error": f"Maximum {MAX_FILES} files allowed per post"
+                }, status=400)
+            
+            # Validate each file
+            for f in media_files:
+                # File size validation
+                if f.size > MAX_FILE_SIZE:
+                    file_size_mb = f.size / (1024 * 1024)
+                    return JsonResponse({
+                        "error": f"File '{f.name}' is {file_size_mb:.1f}MB. Maximum size is 10MB"
+                    }, status=400)
+                
+                # File type validation
+                if f.content_type.startswith('audio/'):
+                    return JsonResponse({
+                        "error": "Audio files are not supported"
+                    }, status=400)
+                
+                # Check for allowed image/video types
+                if (f.content_type not in ALLOWED_IMAGE_TYPES and 
+                    f.content_type not in ALLOWED_VIDEO_TYPES):
+                    return JsonResponse({
+                        "error": f"File type '{f.content_type}' not supported. Use JPEG, PNG, GIF, WebP, MP4, MOV, AVI"
+                    }, status=400)
+            
+            # Create the post
+            post = Post.objects.create(user=request.user, content=content)
+            
+            # Handle media files
+            for f in media_files:
+                media_type = 'video' if f.content_type.startswith('video/') else 'image'
+                PostMedia.objects.create(post=post, file=f, media_type=media_type)
+            
+            # Notify mentions
+            try:
+                from .utils import _notify_mentions_in_post
+                _notify_mentions_in_post(request.user, post, content, "post")
+            except ImportError:
+                pass
+            
+            return JsonResponse({
+                "message": "Posted successfully!", 
+                "post_id": post.id
+            }, status=201)
+            
+        except Exception as e:
+            print(f"Error creating post: {e}")
+            return JsonResponse({
+                "error": f"Server error: {str(e)}"
+            }, status=500)
     
-    return redirect('all_posts') 
+    return redirect('all_posts')
 
     
 @csrf_exempt
