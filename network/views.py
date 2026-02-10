@@ -1624,16 +1624,14 @@ def messages_inbox(request):
         'conversations': conversations
     })
 
-
 @login_required
 def conversation(request, username):
     """
     Legacy DM route - redirects to conversation room.
     Checks for blocks before allowing messaging.
+    Auto-unhides conversation if user re-initiates contact.
     """
     other_user = get_object_or_404(User, username=username)
-
-    # Check for blocks
     is_blocked = False
     has_blocked_me = False
     try:
@@ -1647,17 +1645,16 @@ def conversation(request, username):
         ).exists()
     except (Block.DoesNotExist, AttributeError):
         pass
-
     if is_blocked or has_blocked_me:
         messages.error(request, "Cannot message this user due to block settings.")
         return redirect('messages_inbox')
-
     if request.user == other_user:
         return HttpResponseRedirect(reverse('messages_inbox'))
-
     conv = _get_or_create_dm_conversation(request.user, other_user)
     _attach_legacy_dm_messages_to_conversation(conv, request.user, other_user)
-
+    if conv.hidden_by.filter(id=request.user.id).exists():
+        conv.hidden_by.remove(request.user)
+        messages.success(request, f"Conversation with {other_user.username} restored.")
     return redirect('conversation_room', conversation_id=conv.id)
 
 
