@@ -6,7 +6,7 @@
  * @file        main.js
  * @description Core JavaScript functionality for Argon Social Network
  * @version     2.1.0 (Added Smart Polling System)
- * @author      Argon Development Team
+ * @author      Argon Admin
  * @date        February 2026
  * 
  * @copyright   Copyright (c) 2026 Argon Social Network 
@@ -1646,7 +1646,7 @@ document.addEventListener("DOMContentLoaded", function() {
  * - Screen reader friendly alerts
  * 
  * @maintainers
- * Argon Development Team
+ * Argon Admin
  * 
  * @last_updated February 2026
  * ============================================================================
