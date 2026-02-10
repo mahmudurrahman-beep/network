@@ -487,12 +487,12 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 
 /* Auto-dismiss animation */
 .alert-auto-dismiss {
-    animation: alertDismiss 30s forwards;
+    animation: alertDismiss 45s forwards;
 }
 
 @keyframes alertDismiss {
     0% { opacity: 1; transform: translateY(0); }
-    70% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
 }
 /* ========== END ALERT FIXES ========== */
