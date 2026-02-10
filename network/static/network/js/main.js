@@ -654,7 +654,6 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
       });
   }
 })(); 
-
 /**
  * Post Deletion Handler
  * 
