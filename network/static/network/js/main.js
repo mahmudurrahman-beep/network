@@ -424,16 +424,16 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation (FIXED VERSION)
+ * Enhanced New Post Creation with File Validation (PRODUCTION READY)
  * 
  * @description
- * Enhanced version that works with existing HTML structure:
- * - Preserves existing file attachment UI
- * - Adds file size validation (10MB limit)
- * - Adds file type validation
- * - Adds file count validation (max 4 files)
- * - Adds content length validation
- * - Works with existing file indicator system
+ * Complete solution with validation AND file attachment indicator
+ * - File size validation (10MB limit)
+ * - File type validation (images/videos only)
+ * - File count validation (max 4 files)
+ * - Content length validation (1000 chars)
+ * - File attachment indicator (green check, file names, remove button)
+ * - Progress feedback with specific error messages
  * 
  * @selector #new-post-form
  * @fires POST /new-post/
@@ -441,6 +441,11 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
  */
 const newPostForm = document.getElementById('new-post-form');
 if (newPostForm) {
+  // Disable console.log in production (keep error logs)
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.log = console.info = console.debug = function() {};
+  }
+  
   // Get elements - match your HTML structure
   const contentTextarea = newPostForm.querySelector('textarea[name="content"]');
   const fileInput = document.getElementById('media_files');
@@ -448,8 +453,45 @@ if (newPostForm) {
   const messageText = document.getElementById('post-message-text');
   const submitBtn = newPostForm.querySelector('button[type="submit"]');
   
+  // File attachment indicator elements (CRITICAL - this was missing!)
+  const fileIndicator = document.getElementById('post-file-indicator');
+  const fileName = document.getElementById('post-file-name');
+  const removeBtn = document.getElementById('post-remove-files');
+  
   // Safety check - don't break if elements don't exist
   if (!contentTextarea || !fileInput) return;
+  
+  // ==================================================
+  // FILE ATTACHMENT INDICATOR HANDLING (ADD THIS!)
+  // ==================================================
+  if (fileIndicator && fileName && removeBtn) {
+    // Show indicator when files are selected
+    fileInput.addEventListener('change', function() {
+      const files = Array.from(this.files || []);
+      if (files.length === 0) {
+        fileIndicator.classList.remove('show');
+        fileName.textContent = '';
+        return;
+      }
+      
+      // Update indicator with file info
+      const count = files.length;
+      if (count === 1) {
+        fileName.textContent = files[0].name;
+      } else {
+        fileName.textContent = `${count} files selected`;
+      }
+      fileIndicator.classList.add('show');
+    });
+    
+    // Remove files when remove button clicked
+    removeBtn.addEventListener('click', function() {
+      fileInput.value = '';
+      fileIndicator.classList.remove('show');
+      fileName.textContent = '';
+    });
+  }
+  // ==================================================
   
   // Override the existing form submission ONLY for validation
   newPostForm.addEventListener('submit', function(e) {
@@ -527,6 +569,15 @@ if (newPostForm) {
       messageDiv.classList.add('alert-' + type);
       messageText.textContent = text;
       messageDiv.classList.remove('d-none');
+      
+      // Auto-hide success messages after 3 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          if (messageDiv.classList.contains('alert-success')) {
+            messageDiv.classList.add('d-none');
+          }
+        }, 3000);
+      }
     }
   }
   
@@ -568,8 +619,6 @@ if (newPostForm) {
           newPostForm.reset();
           
           // Also reset the file indicator manually
-          const fileIndicator = document.getElementById('post-file-indicator');
-          const fileName = document.getElementById('post-file-name');
           if (fileIndicator) fileIndicator.classList.remove('show');
           if (fileName) fileName.textContent = '';
           
