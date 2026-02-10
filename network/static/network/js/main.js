@@ -19,11 +19,10 @@
  * 4.  Comment System (CRUD + Nested Replies)
  * 5.  Messaging & Conversations
  * 6.  UI Enhancements (Time Display, Action Menus)
- * 7.  Alert & Notification System
- * 8.  Mentions Autocomplete System
- * 9.  Message Badge & Sound Alerts
- * 10. Smart Polling System (NEW)
- * 11. Initialization & Event Binding
+ * 7.  Mentions Autocomplete System
+ * 8.  Message Badge & Sound Alerts
+ * 9. Smart Polling System (NEW)
+ * 10. Initialization & Event Binding
  * ============================================================================
  */
 
@@ -1031,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
 
 
 // ============================================================================
-// SECTION 8: MENTIONS AUTOCOMPLETE SYSTEM (@username)
+// SECTION 7: MENTIONS AUTOCOMPLETE SYSTEM (@username)
 // ============================================================================
 
 /**
@@ -1308,7 +1307,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
 
 
 // ============================================================================
-// SECTION 9: MESSAGE BADGE & SOUND ALERTS
+// SECTION 8: MESSAGE BADGE & SOUND ALERTS
 // ============================================================================
 
 /**
@@ -1475,7 +1474,7 @@ function argonUpdateMessageBadge() {
 
 
 // ============================================================================
-// SECTION 10: SMART POLLING SYSTEM
+// SECTION 9: SMART POLLING SYSTEM
 // ============================================================================
 
 /**
@@ -1570,7 +1569,7 @@ setInterval(argonMonitorPolling, 30000);
 
 
 // ============================================================================
-// SECTION 11: INITIALIZATION & EVENT BINDING
+// SECTION 10: INITIALIZATION & EVENT BINDING
 // ============================================================================
 
 /**
