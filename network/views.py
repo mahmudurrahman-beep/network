@@ -375,25 +375,36 @@ def user_can_manage(conversation, user):
 def _get_or_create_dm_conversation(user_a, user_b):
     """
     Find or create a 1:1 conversation between two users.
-
+    FIXED: More reliable query logic to prevent duplicate conversations.
+    
     Args:
         user_a: First user
         user_b: Second user
-
+    
     Returns:
         Conversation object
     """
-    conv = (
-        Conversation.objects
-        .filter(is_group=False, members__user=user_a)
-        .filter(members__user=user_b)
-        .annotate(member_count=Count('members'))
-        .filter(member_count=2)
-        .first()
+    
+    user_a_conv_ids = set(
+        ConversationMember.objects
+        .filter(user=user_a, conversation__is_group=False)
+        .values_list('conversation_id', flat=True)
     )
-    if conv:
-        return conv
-
+    
+    user_b_conv_ids = set(
+        ConversationMember.objects
+        .filter(user=user_b, conversation__is_group=False)
+        .values_list('conversation_id', flat=True)
+    )
+    
+    common_conv_ids = user_a_conv_ids & user_b_conv_ids
+    
+    for conv_id in common_conv_ids:
+        conv = Conversation.objects.get(id=conv_id)
+        member_count = ConversationMember.objects.filter(conversation=conv).count()
+        if member_count == 2:
+            return conv  
+    
     conv = Conversation.objects.create(is_group=False)
     ConversationMember.objects.bulk_create([
         ConversationMember(conversation=conv, user=user_a),
