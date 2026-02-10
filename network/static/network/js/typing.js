@@ -6,7 +6,7 @@
  * @file        typing.js
  * @description Real-time typing indicator for messaging conversations
  * @version     2.0.0
- * @author      Argon Development Team
+ * @author      Argon Admin
  * @date        February 2026
  * 
  * @copyright   Copyright (c) 2026 Argon Social Network
@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * - No keyboard trap or focus issues
  * 
  * @maintainers
- * Argon Development Team
+ * Argon Admin
  * 
  * @last_updated February 2026
  * ============================================================================
