@@ -116,7 +116,7 @@ from django.db import models
 import pytz
 from django.utils import timezone as dj_timezone
 from datetime import timedelta
-
+from cloudinary.models import CloudinaryField
 
 # ============================================================================
 # CONSTANTS & CHOICES
@@ -395,7 +395,7 @@ class PostMedia(models.Model):
 
     Attributes:
         post (ForeignKey): Associated post
-        file (FileField): Media file (image or video)
+        file (CloudinaryField): Media file (image or video) - auto-detects type
         media_type (CharField): Type of media ('image' or 'video')
 
     Example:
@@ -412,8 +412,11 @@ class PostMedia(models.Model):
         related_name='media',
         help_text="Post this media belongs to"
     )
-    file = models.FileField(
-        upload_to='post_media/',
+    # ✅ CHANGED: CloudinaryField instead of FileField
+    file = CloudinaryField(
+        'media',
+        resource_type='auto',  # Auto-detects image vs video
+        folder='post_media',
         help_text="Uploaded media file"
     )
     media_type = models.CharField(
@@ -421,7 +424,6 @@ class PostMedia(models.Model):
         choices=[('image', 'Image'), ('video', 'Video')],
         help_text="Type of media file"
     )
-
 
 class Comment(models.Model):
     """
