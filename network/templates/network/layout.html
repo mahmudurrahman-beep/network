@@ -210,38 +210,6 @@ BLOCKS: title, body (child templates override these)
       setupClockTick('.navbar .clock-r', +1, 6, 1000, 2000);
       setupClockTick('.landing-card .clock-r', -1, 6, 1000, 2000);
 
-/* ========== FIXED ALERT AUTO-DISMISS ========== */
-// Wait for page to fully load before starting alert timer
-window.addEventListener('load', function() {
-  // Small delay to ensure alerts are visible
-  setTimeout(function() {
-    const successAlerts = document.querySelectorAll('.alert-success');
-    
-    if (successAlerts.length > 0) {
-      console.log(`Found ${successAlerts.length} success alert(s) - will auto-dismiss in 45 seconds`);
-      
-      successAlerts.forEach(alert => {
-        // Ensure alert is visible
-        alert.style.opacity = '1';
-        alert.style.display = 'block';
-        
-        // Add auto-dismiss animation class
-        alert.classList.add('alert-auto-dismiss');
-      });
-
-      // Remove alerts after 45 seconds (plenty of time to read)
-      setTimeout(() => {
-        successAlerts.forEach(alert => {
-          if (alert.style.display !== 'none') {
-            console.log('Auto-removing success alert');
-            alert.remove();
-          }
-        });
-      }, 45500); // 45.5 seconds
-    }
-  }, 100); // 100ms delay after page load
-});
-/* ========== END ALERT AUTO-DISMISS ========== */
     })();
   </script>
 <!-- Service Worker Registration for PWA -->
