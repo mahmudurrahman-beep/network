@@ -424,15 +424,16 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation
+ * Enhanced New Post Creation with File Validation (FIXED VERSION)
  * 
  * @description
- * Enhanced version of new post handler with:
- * - File size validation (10MB limit)
- * - File type validation (images and videos only)
- * - File count validation (max 4 files)
- * - Content length validation (1000 chars)
- * - Progress feedback with specific error messages
+ * Enhanced version that works with existing HTML structure:
+ * - Preserves existing file attachment UI
+ * - Adds file size validation (10MB limit)
+ * - Adds file type validation
+ * - Adds file count validation (max 4 files)
+ * - Adds content length validation
+ * - Works with existing file indicator system
  * 
  * @selector #new-post-form
  * @fires POST /new-post/
@@ -440,25 +441,30 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
  */
 const newPostForm = document.getElementById('new-post-form');
 if (newPostForm) {
-  // Disable console.log in production (keep only errors)
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    console.log = console.info = console.debug = function() {};
-  }
-  
-  // Get elements from your actual HTML structure
+  // Get elements - match your HTML structure
   const contentTextarea = newPostForm.querySelector('textarea[name="content"]');
   const fileInput = document.getElementById('media_files');
   const messageDiv = document.getElementById('post-message');
   const messageText = document.getElementById('post-message-text');
   const submitBtn = newPostForm.querySelector('button[type="submit"]');
   
-  // Safety check for required elements
-  if (!contentTextarea || !fileInput) {
-    // Fallback to default behavior if elements not found
-    return;
-  }
+  // Safety check - don't break if elements don't exist
+  if (!contentTextarea || !fileInput) return;
   
-  // Add validation function
+  // Override the existing form submission ONLY for validation
+  newPostForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Call validation function
+    if (!validateNewPostForm()) {
+      return;
+    }
+    
+    // If validation passes, proceed with original form submission logic
+    submitForm();
+  });
+  
+  // Validation function
   function validateNewPostForm() {
     const content = contentTextarea.value.trim();
     const files = fileInput.files;
@@ -501,12 +507,12 @@ if (newPostForm) {
         return false;
       }
       
-      // Check for allowed types (images and videos only)
+      // Check for allowed types
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
       
       if (!isImage && !isVideo) {
-        showMessage(`"${file.name}" has unsupported format. Use images (JPEG, PNG, GIF) or videos (MP4, MOV)`, 'danger');
+        showMessage(`"${file.name}" has unsupported format. Use images or videos`, 'danger');
         return false;
       }
     }
@@ -514,38 +520,19 @@ if (newPostForm) {
     return true;
   }
   
-  // Helper function to show messages
+  // Helper to show messages
   function showMessage(text, type = 'info') {
     if (messageDiv && messageText) {
       messageDiv.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
       messageDiv.classList.add('alert-' + type);
       messageText.textContent = text;
       messageDiv.classList.remove('d-none');
-      
-      // Auto-hide success messages after 3 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          messageDiv.classList.add('d-none');
-        }, 3000);
-      }
-    } else {
-      // Fallback alert for critical errors
-      if (type === 'danger') {
-        alert(text);
-      }
     }
   }
   
-  // Enhanced form submission handler
-  newPostForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Validate before sending
-    if (!validateNewPostForm()) {
-      return;
-    }
-    
-    const formData = new FormData(this);
+  // Form submission function
+  function submitForm() {
+    const formData = new FormData(newPostForm);
     
     // Show loading state
     showMessage('Posting...', 'info');
@@ -573,39 +560,34 @@ if (newPostForm) {
       })
       .then(data => {
         if (data.error) {
-          // Show error message
           showMessage(data.error, 'danger');
         } else {
-          // Show success message
           showMessage(data.message || 'Posted successfully!', 'success');
           
           // Reset form
           newPostForm.reset();
           
-          // Reset file indicator if it exists
+          // Also reset the file indicator manually
           const fileIndicator = document.getElementById('post-file-indicator');
           const fileName = document.getElementById('post-file-name');
           if (fileIndicator) fileIndicator.classList.remove('show');
           if (fileName) fileName.textContent = '';
           
-          // Redirect or refresh after delay
           setTimeout(() => {
             window.location.reload();
           }, 1500);
         }
       })
       .catch(error => {
-        // Show error message
         showMessage(error.message || 'Failed to post. Please try again.', 'danger');
       })
       .finally(() => {
-        // Re-enable submit button
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText;
         }
       });
-  });
+  }
 }
 
 /**
