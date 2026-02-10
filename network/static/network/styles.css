@@ -485,17 +485,6 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
     margin-top: -1px;
 }
 
-/* Auto-dismiss animation */
-.alert-auto-dismiss {
-    animation: alertDismiss 45s forwards;
-}
-
-@keyframes alertDismiss {
-    0% { opacity: 1; transform: translateY(0); }
-    90% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
-}
-/* ========== END ALERT FIXES ========== */
 
 /* ========== FOLLOW BUTTON FIXES - ENHANCED ========== */
 .btn-following {
@@ -589,7 +578,6 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
 @media (prefers-reduced-motion: reduce) {
   .argon-logo .char { animation: none !important; transform: none !important; }
   * { transition: none !important; }
-  .alert-auto-dismiss { animation: none !important; }
 }
 
 /* PWA Fullscreen Optimizations */
