@@ -1108,8 +1108,6 @@ def new_post(request):
             # Validation 3: File size and type validation
             MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
             MAX_FILES = 4  # Maximum files per post
-            ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-            ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo']
             
             # Check number of files
             if len(media_files) > MAX_FILES:
@@ -1126,17 +1124,19 @@ def new_post(request):
                         "error": f"File '{f.name}' is {file_size_mb:.1f}MB. Maximum size is 10MB"
                     }, status=400)
                 
-                # File type validation
+                # File type validation - block audio
                 if f.content_type.startswith('audio/'):
                     return JsonResponse({
                         "error": "Audio files are not supported"
                     }, status=400)
                 
-                # Check for allowed image/video types
-                if (f.content_type not in ALLOWED_IMAGE_TYPES and 
-                    f.content_type not in ALLOWED_VIDEO_TYPES):
+                # Allow images and videos
+                is_image = f.content_type.startswith('image/')
+                is_video = f.content_type.startswith('video/')
+                
+                if not is_image and not is_video:
                     return JsonResponse({
-                        "error": f"File type '{f.content_type}' not supported. Use JPEG, PNG, GIF, WebP, MP4, MOV, AVI"
+                        "error": f"File '{f.name}' has unsupported type. Use images or videos only"
                     }, status=400)
             
             # Create the post
@@ -1151,8 +1151,8 @@ def new_post(request):
             try:
                 from .utils import _notify_mentions_in_post
                 _notify_mentions_in_post(request.user, post, content, "post")
-            except ImportError:
-                pass
+            except (ImportError, Exception) as e:
+                print(f"Mention notification failed: {e}")
             
             return JsonResponse({
                 "message": "Posted successfully!", 
@@ -1160,9 +1160,13 @@ def new_post(request):
             }, status=201)
             
         except Exception as e:
+            # Log the error for debugging
+            import traceback
             print(f"Error creating post: {e}")
+            print(traceback.format_exc())
+            
             return JsonResponse({
-                "error": f"Server error: {str(e)}"
+                "error": "An error occurred while creating your post. Please try again."
             }, status=500)
     
     return redirect('all_posts')
