@@ -1093,28 +1093,27 @@ def new_post(request):
             content = request.POST.get('content', '').strip()
             media_files = request.FILES.getlist('media_files')
             
-            # Validation 1: Check if post has content OR media
+            # Validation 1: Content or media required
             if not content and not media_files:
                 return JsonResponse({
                     "error": "Post must contain text or media"
                 }, status=400)
             
-            # Validation 2: Check if content is too long
+            # Validation 2: Content length
             if len(content) > 1000:
                 return JsonResponse({
                     "error": "Post content cannot exceed 1000 characters"
                 }, status=400)
             
-            # Validation 3: File size and type validation
-            MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+            # Validation 3: File count
             MAX_FILES = 4
-            
             if len(media_files) > MAX_FILES:
                 return JsonResponse({
                     "error": f"Maximum {MAX_FILES} files allowed per post"
                 }, status=400)
             
-            # Validate each file
+            # Validation 4: File size and type
+            MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
             for f in media_files:
                 if f.size > MAX_FILE_SIZE:
                     file_size_mb = f.size / (1024 * 1024)
@@ -1138,54 +1137,30 @@ def new_post(request):
             # Create the post
             post = Post.objects.create(user=request.user, content=content)
             
-            # ✅ FIXED: Handle media with Cloudinary manual upload for videos
-            import cloudinary.uploader
-            from django.core.files.base import ContentFile
+            # Handle media files - CloudinaryField handles everything automatically
+            try:
+                for f in media_files:
+                    media_type = 'video' if f.content_type.startswith('video/') else 'image'
+                    PostMedia.objects.create(
+                        post=post,
+                        file=f,
+                        media_type=media_type
+                    )
+            except Exception as upload_error:
+                # If upload fails, delete the post and return error
+                post.delete()
+                print(f"Media upload failed: {upload_error}")
+                import traceback
+                traceback.print_exc()
+                return JsonResponse({
+                    "error": f"Failed to upload media. Please try again."
+                }, status=500)
             
-            for f in media_files:
-                is_video = f.content_type.startswith('video/')
-                media_type = 'video' if is_video else 'image'
-                
-                try:
-                    if is_video:
-                        # Manually upload videos to Cloudinary with correct resource_type
-                        upload_result = cloudinary.uploader.upload(
-                            f,
-                            resource_type='video',
-                            folder='post_media'
-                        )
-                        
-                        # Create PostMedia with the Cloudinary URL
-                        media = PostMedia.objects.create(
-                            post=post,
-                            media_type=media_type
-                        )
-                        # Save the Cloudinary URL/path to the file field
-                        media.file.name = upload_result['secure_url'].split('/')[-1]
-                        media.save()
-                    else:
-                        # Images work fine with the default FileField
-                        PostMedia.objects.create(
-                            post=post,
-                            file=f,
-                            media_type=media_type
-                        )
-                        
-                except Exception as upload_error:
-                    # If upload fails, delete the post and return error
-                    post.delete()
-                    print(f"Media upload failed: {upload_error}")
-                    import traceback
-                    traceback.print_exc()
-                    return JsonResponse({
-                        "error": f"Failed to upload {f.name}. Please try again."
-                    }, status=500)
-            
-            # Notify mentions
+            # Notify mentions (don't fail post if this breaks)
             try:
                 from .utils import _notify_mentions_in_post
                 _notify_mentions_in_post(request.user, post, content, "post")
-            except (ImportError, Exception) as e:
+            except Exception as e:
                 print(f"Mention notification failed: {e}")
             
             return JsonResponse({
