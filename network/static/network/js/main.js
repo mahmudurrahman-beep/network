@@ -424,7 +424,7 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation (PRODUCTION READY)
+ * Enhanced New Post Creation with File Validation (FIXED VERSION)
  * 
  * @description
  * Complete solution with validation AND file attachment indicator
@@ -439,12 +439,9 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
  * @fires POST /new-post/
  * @returns {void}
  */
-const newPostForm = document.getElementById('new-post-form');
-if (newPostForm) {
-  // Disable console.log in production (keep error logs)
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    console.log = console.info = console.debug = function() {};
-  }
+(function() {
+  const newPostForm = document.getElementById('new-post-form');
+  if (!newPostForm) return; // Exit early if form doesn't exist
   
   // Get elements - match your HTML structure
   const contentTextarea = newPostForm.querySelector('textarea[name="content"]');
@@ -453,16 +450,19 @@ if (newPostForm) {
   const messageText = document.getElementById('post-message-text');
   const submitBtn = newPostForm.querySelector('button[type="submit"]');
   
-  // File attachment indicator elements (CRITICAL - this was missing!)
+  // File attachment indicator elements
   const fileIndicator = document.getElementById('post-file-indicator');
   const fileName = document.getElementById('post-file-name');
   const removeBtn = document.getElementById('post-remove-files');
   
-  // Safety check - don't break if elements don't exist
-  if (!contentTextarea || !fileInput) return;
+  // Safety check - exit if critical elements don't exist
+  if (!contentTextarea || !fileInput) {
+    console.warn('Post form elements missing - skipping post validation setup');
+    return;
+  }
   
   // ==================================================
-  // FILE ATTACHMENT INDICATOR HANDLING (ADD THIS!)
+  // FILE ATTACHMENT INDICATOR HANDLING
   // ==================================================
   if (fileIndicator && fileName && removeBtn) {
     // Show indicator when files are selected
@@ -491,22 +491,27 @@ if (newPostForm) {
       fileName.textContent = '';
     });
   }
-  // ==================================================
   
-  // Override the existing form submission ONLY for validation
+  // ==================================================
+  // FORM SUBMISSION WITH VALIDATION
+  // ==================================================
   newPostForm.addEventListener('submit', function(e) {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
     
     // Call validation function
     if (!validateNewPostForm()) {
-      return;
+      return false;
     }
     
-    // If validation passes, proceed with original form submission logic
+    // If validation passes, submit the form
     submitForm();
+    return false;
   });
   
-  // Validation function
+  // ==================================================
+  // VALIDATION FUNCTION
+  // ==================================================
   function validateNewPostForm() {
     const content = contentTextarea.value.trim();
     const files = fileInput.files;
@@ -562,8 +567,12 @@ if (newPostForm) {
     return true;
   }
   
-  // Helper to show messages
-  function showMessage(text, type = 'info') {
+  // ==================================================
+  // HELPER TO SHOW MESSAGES
+  // ==================================================
+  function showMessage(text, type) {
+    type = type || 'info';
+    
     if (messageDiv && messageText) {
       messageDiv.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
       messageDiv.classList.add('alert-' + type);
@@ -572,16 +581,21 @@ if (newPostForm) {
       
       // Auto-hide success messages after 3 seconds
       if (type === 'success') {
-        setTimeout(() => {
+        setTimeout(function() {
           if (messageDiv.classList.contains('alert-success')) {
             messageDiv.classList.add('d-none');
           }
         }, 3000);
       }
+    } else {
+      // Fallback if message elements don't exist
+      console.warn('Post message:', text);
     }
   }
   
-  // Form submission function
+  // ==================================================
+  // FORM SUBMISSION FUNCTION
+  // ==================================================
   function submitForm() {
     const formData = new FormData(newPostForm);
     
@@ -589,7 +603,7 @@ if (newPostForm) {
     showMessage('Posting...', 'info');
     
     // Disable submit button
-    const originalBtnText = submitBtn?.innerHTML || 'Post';
+    const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Post';
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...';
@@ -599,17 +613,18 @@ if (newPostForm) {
     fetch('/new-post/', {
       method: 'POST',
       body: formData,
-      headers: { 'X-CSRFToken': getCsrfToken() }
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      credentials: 'same-origin'
     })
-      .then(response => {
+      .then(function(response) {
         if (!response.ok) {
-          return response.json().then(data => {
-            throw new Error(data.error || `HTTP error ${response.status}`);
+          return response.json().then(function(data) {
+            throw new Error(data.error || 'HTTP error ' + response.status);
           });
         }
         return response.json();
       })
-      .then(data => {
+      .then(function(data) {
         if (data.error) {
           showMessage(data.error, 'danger');
         } else {
@@ -622,22 +637,23 @@ if (newPostForm) {
           if (fileIndicator) fileIndicator.classList.remove('show');
           if (fileName) fileName.textContent = '';
           
-          setTimeout(() => {
+          // Reload page after brief delay
+          setTimeout(function() {
             window.location.reload();
           }, 1500);
         }
       })
-      .catch(error => {
+      .catch(function(error) {
         showMessage(error.message || 'Failed to post. Please try again.', 'danger');
       })
-      .finally(() => {
+      .finally(function() {
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText;
         }
       });
   }
-}
+})(); 
 
 /**
  * Post Deletion Handler
