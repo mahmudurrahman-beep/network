@@ -156,37 +156,6 @@ INCLUDES: network/partials/post_list.html
   {% endif %}
 </div>
 
-<script>
-/* Post file indicator (safe, minimal, doesn't change your existing submit logic) */
-(function () {
-  const input = document.getElementById('media_files');
-  const indicator = document.getElementById('post-file-indicator');
-  const nameEl = document.getElementById('post-file-name');
-  const removeBtn = document.getElementById('post-remove-files');
-
-  if (!input || !indicator || !nameEl || !removeBtn) return;
-
-  input.addEventListener('change', () => {
-    const files = Array.from(input.files || []);
-    if (!files.length) {
-      indicator.classList.remove('show');
-      nameEl.textContent = '';
-      return;
-    }
-    const count = files.length;
-    nameEl.textContent = count === 1
-      ? `${files[0].name}`
-      : `${count} files selected`;
-    indicator.classList.add('show');
-  });
-
-  removeBtn.addEventListener('click', () => {
-    input.value = '';
-    indicator.classList.remove('show');
-    nameEl.textContent = '';
-  });
-})();
-</script>
 {% endblock %}
 
 
