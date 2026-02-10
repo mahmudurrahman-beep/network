@@ -109,9 +109,20 @@ BLOCKS: title, body (child templates override these)
     </div>
   </nav>
 
-  <main class="container my-4">
-    {% block body %}{% endblock %}
-  </main>
+<main class="container my-4">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% block body %}{% endblock %}
+</main>
 
   <footer class="site-footer" role="contentinfo">
     <div class="links"><a href="mailto:mahmudurrahman23yahoo@gmail.com">Contact</a></div>
