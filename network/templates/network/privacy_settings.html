@@ -65,11 +65,37 @@ FILE LOCATION: templates/network/privacy_settings.html
                 {% if user.message_badge_enabled %}checked{% endif %}
               >
               <label class="custom-control-label" for="msgBadgeToggle">
-                <span class="font-weight-semibold">Show badge on app icon</span>
-                <small class="d-block text-muted">
-                  Shows unread <strong>message</strong> count on the Argon app icon or browser tab when supported.
+                <span class="font-weight-semibold">Show unread message count</span>
+                <small class="d-block text-muted mt-1">
+                  Display unread message count on app icon or browser tab.
                 </small>
               </label>
+            </div>
+            
+            <!-- ✅ NEW: Realistic badge behavior explanation -->
+            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.9rem;">
+              <strong>📱 How message badges work:</strong>
+              <ul class="mb-2 mt-2 pl-3">
+                <li><strong>Updates every 3 seconds</strong> when Argon app is open</li>
+                <li><strong>To check new messages:</strong> Open the Argon app</li>
+                <li><strong>Background updates</strong> require keeping app open or checking periodically</li>
+              </ul>
+              
+              <strong>Platform support:</strong>
+              <div class="mt-2">
+                <div class="mb-1">
+                  <strong>📱 Android:</strong> 
+                  <span class="text-muted">Badge on app icon (when app is open)</span>
+                </div>
+                <div class="mb-1">
+                  <strong>🍎 iOS/Safari:</strong> 
+                  <span class="text-muted">Count shows in browser tab only</span>
+                </div>
+                <div>
+                  <strong>💻 Desktop:</strong> 
+                  <span class="text-muted">Badge in taskbar/dock (when app is open)</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -84,38 +110,43 @@ FILE LOCATION: templates/network/privacy_settings.html
               >
               <label class="custom-control-label" for="msgSoundToggle">
                 <span class="font-weight-semibold">Play sound for new messages</span>
+                <small class="d-block text-muted mt-1">
+                  Hear a notification sound when new messages arrive (while app is open).
+                </small>
               </label>
             </div>
           </div>
 
           <!-- Sound choice -->
           <div class="form-group mb-3" id="msgSoundChoiceGroup">
-            <label class="mb-1 font-weight-semibold">Sound type</label>
+            <label class="mb-1 font-weight-semibold">Notification sound</label>
             <select class="custom-select" id="msgSoundChoice">
               <option value="ding"
                 {% if user.message_sound_choice == "ding" %}selected{% endif %}
               >
-                Ding
+                🔔 Ding
               </option>
               <option value="pop"
                 {% if user.message_sound_choice == "pop" %}selected{% endif %}
               >
-                Pop
+                💬 Pop
               </option>
               <option value="chime"
                 {% if user.message_sound_choice == "chime" %}selected{% endif %}
               >
-                Chime
+                🎵 Chime
               </option>
             </select>
             <small class="form-text text-muted">
-              Plays when a new message arrives and you’re not viewing the messages page.
+              Plays when a new message arrives and you're not viewing the messages page.
+              <br>
+              <em>Note: Sound plays only while Argon app is open and active.</em>
             </small>
           </div>
 
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-secondary btn-sm" id="msgTestSoundBtn">
-              🔔 Test sound
+          <div class="d-flex flex-column flex-sm-row justify-content-between">
+            <button class="btn btn-outline-secondary btn-sm mb-2 mb-sm-0" id="msgTestSoundBtn">
+              🔊 Test sound
             </button>
             <button class="btn btn-primary btn-sm" id="msgSaveSettingsBtn">
               💾 Save message alert settings
@@ -163,7 +194,7 @@ FILE LOCATION: templates/network/privacy_settings.html
                 <option value="both"
                   {% if privacy_settings.post_visibility == "both" %}selected{% endif %}
                 >
-                  Mutual followers only 
+                  Mutual followers only
                 </option>
               </select>
             </div>
@@ -181,7 +212,7 @@ FILE LOCATION: templates/network/privacy_settings.html
         </div>
         <div class="card-body">
           <p class="text-muted mb-3">
-            Users you’ve blocked won’t see your posts or be able to interact with you.
+            Users you've blocked won't see your posts or be able to interact with you.
           </p>
 
           {% if blocked_users %}
@@ -220,7 +251,7 @@ FILE LOCATION: templates/network/privacy_settings.html
             </div>
           {% else %}
             <p class="mb-0 text-muted">
-              You haven’t blocked any users.
+              You haven't blocked any users.
             </p>
           {% endif %}
         </div>
@@ -267,7 +298,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const soundFile = soundChoice.value || "ding";
     const audio = new Audio(`/static/network/sounds/${soundFile}.mp3`);
     audio.volume = 0.3;
-    audio.play().catch(function () {});
+    audio.play().catch(function (err) {
+      console.log('Sound play blocked:', err);
+      alert('🔊 Sound test: Tap anywhere on the page first, then try again (browser security).');
+    });
   });
 
   // Save settings
@@ -277,6 +311,10 @@ document.addEventListener("DOMContentLoaded", function () {
       message_sound_enabled: soundToggle.checked,
       message_sound_choice: soundChoice.value
     };
+
+    // Disable button during save
+    saveSettingsBtn.disabled = true;
+    saveSettingsBtn.textContent = "Saving...";
 
     fetch("/api/update-message-settings/", {
       method: "POST",
@@ -289,33 +327,23 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.status === "success") {
-          alert("Message alert settings saved");
+          alert("✅ Message alert settings saved successfully!");
         } else {
-          alert("Error saving settings");
+          alert("❌ Error saving settings. Please try again.");
         }
       })
       .catch(function () {
-        alert("Network error saving settings");
+        alert("❌ Network error. Please check your connection and try again.");
+      })
+      .finally(function () {
+        // Re-enable button
+        saveSettingsBtn.disabled = false;
+        saveSettingsBtn.textContent = "💾 Save message alert settings";
       });
   });
 });
-
-// ✅ Request notification permission for mobile alerts
-if ('Notification' in window && Notification.permission === 'default') {
-  soundToggle.addEventListener('change', function() {
-    if (this.checked) {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          console.log('✅ Notifications enabled');
-        } else {
-          console.log('❌ Notifications denied');
-        }
-      });
-    }
-  });
-}
 </script>
-{% endblock %} 
+{% endblock %}
 
 <!--
 ================================================================================
@@ -324,6 +352,14 @@ END OF privacy_settings.html - Author: Argon Admin
 
 MAINTAINER: Argon Admin
 LAST UPDATED: February 2026
+
+CHANGES IN THIS VERSION:
+✅ Added realistic badge behavior explanation
+✅ Platform-specific guidance (Android, iOS, Desktop)
+✅ Honest about when badges/sounds work (app must be open)
+✅ Improved mobile responsiveness
+✅ Better error handling in save function
+✅ Enhanced sound test with user-friendly error message
 
 RELATED TEMPLATES:
 • profile.html - User profile
