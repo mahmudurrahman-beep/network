@@ -1107,9 +1107,8 @@ def new_post(request):
             
             # Validation 3: File size and type validation
             MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
-            MAX_FILES = 4  # Maximum files per post
+            MAX_FILES = 4
             
-            # Check number of files
             if len(media_files) > MAX_FILES:
                 return JsonResponse({
                     "error": f"Maximum {MAX_FILES} files allowed per post"
@@ -1117,20 +1116,17 @@ def new_post(request):
             
             # Validate each file
             for f in media_files:
-                # File size validation
                 if f.size > MAX_FILE_SIZE:
                     file_size_mb = f.size / (1024 * 1024)
                     return JsonResponse({
                         "error": f"File '{f.name}' is {file_size_mb:.1f}MB. Maximum size is 10MB"
                     }, status=400)
                 
-                # File type validation - block audio
                 if f.content_type.startswith('audio/'):
                     return JsonResponse({
                         "error": "Audio files are not supported"
                     }, status=400)
                 
-                # Allow images and videos
                 is_image = f.content_type.startswith('image/')
                 is_video = f.content_type.startswith('video/')
                 
@@ -1142,10 +1138,48 @@ def new_post(request):
             # Create the post
             post = Post.objects.create(user=request.user, content=content)
             
-            # Handle media files
+            # ✅ FIXED: Handle media with Cloudinary manual upload for videos
+            import cloudinary.uploader
+            from django.core.files.base import ContentFile
+            
             for f in media_files:
-                media_type = 'video' if f.content_type.startswith('video/') else 'image'
-                PostMedia.objects.create(post=post, file=f, media_type=media_type)
+                is_video = f.content_type.startswith('video/')
+                media_type = 'video' if is_video else 'image'
+                
+                try:
+                    if is_video:
+                        # Manually upload videos to Cloudinary with correct resource_type
+                        upload_result = cloudinary.uploader.upload(
+                            f,
+                            resource_type='video',
+                            folder='post_media'
+                        )
+                        
+                        # Create PostMedia with the Cloudinary URL
+                        media = PostMedia.objects.create(
+                            post=post,
+                            media_type=media_type
+                        )
+                        # Save the Cloudinary URL/path to the file field
+                        media.file.name = upload_result['secure_url'].split('/')[-1]
+                        media.save()
+                    else:
+                        # Images work fine with the default FileField
+                        PostMedia.objects.create(
+                            post=post,
+                            file=f,
+                            media_type=media_type
+                        )
+                        
+                except Exception as upload_error:
+                    # If upload fails, delete the post and return error
+                    post.delete()
+                    print(f"Media upload failed: {upload_error}")
+                    import traceback
+                    traceback.print_exc()
+                    return JsonResponse({
+                        "error": f"Failed to upload {f.name}. Please try again."
+                    }, status=500)
             
             # Notify mentions
             try:
@@ -1160,10 +1194,9 @@ def new_post(request):
             }, status=201)
             
         except Exception as e:
-            # Log the error for debugging
             import traceback
             print(f"Error creating post: {e}")
-            print(traceback.format_exc())
+            traceback.print_exc()
             
             return JsonResponse({
                 "error": "An error occurred while creating your post. Please try again."
