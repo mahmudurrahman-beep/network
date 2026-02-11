@@ -29,7 +29,7 @@
 'use strict';
 
 // ============================================================================
-// GLOBAL STATE VARIABLES (SAFELY ADDED)
+// GLOBAL STATE VARIABLES 
 // ============================================================================
 
 // Message Alert System State
@@ -424,7 +424,7 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation (FIXED VERSION)
+ * Enhanced New Post Creation with File Validation 
  * 
  * @description
  * Complete solution with validation AND file attachment indicator
@@ -1600,7 +1600,6 @@ function argonUpdateMessageBadge() {
       const newCount = data.count || 0;
       const newCount = data.count || 0;
 
-      // ✅ Update navbar badge element (ALWAYS WORKS)
       const navBadge = document.querySelector('.js-message-badge');
       if (navBadge) {
         if (newCount > 0) {
@@ -1611,7 +1610,6 @@ function argonUpdateMessageBadge() {
         }
       }
 
-      // ✅ Browser tab title badge (ALWAYS WORKS)
       if (newCount > 0) {
         document.title = `(${newCount}) Argon`;
       } else {
