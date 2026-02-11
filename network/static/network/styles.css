@@ -5,7 +5,7 @@ ARGON SOCIAL NETWORK - MAIN STYLESHEET
 
 @file        styles.css
 @purpose     Main CSS styles for Argon Social Network
-@author      Argon Admin
+@author      Argon Admin(Mahmudur Rahman)
 @date        February 2026
 @framework   Bootstrap 4 (customized)
 @fonts       Inter, system fonts
@@ -71,7 +71,7 @@ ACCESSIBILITY:
 
 MAINTAINER:
 ================================================================================
-Argon Admin
+Argon Admin(Mahmudur Rahman)
 Last updated: February 2026
 
 ================================================================================
@@ -626,7 +626,7 @@ footer a { color:var(--muted-dark); text-decoration:none; font-weight:600; }
     box-shadow: 0 8px 24px rgba(220, 53, 69, 0.1) !important;
 }
 
-/* Profile action buttons base - FIXED: Removed border property */
+/* Profile action buttons base. Border property removed */
 .profile-action-btn {
     min-width: 120px !important;
     padding: 10px 20px !important;
@@ -1005,7 +1005,7 @@ RELATED FILES:
 
 CUSTOMIZATION:
 ================================================================================
-To customize the theme, modify CSS variables in :root:
+To customize the theme, CSS variables need to be modified in :root:
 • --brand-blue: Change primary brand color
 • --brand-teal: Change accent color
 • --max-width: Adjust content container width
@@ -1020,11 +1020,8 @@ BROWSER COMPATIBILITY:
 
 MAINTAINER:
 ================================================================================
-Argon Admin
+Argon Admin(Mahmudur Rahman)
 Last updated: February 2026
-
-For questions about styles or design system,
-contact the Argon Admin.
 
 ================================================================================
 */
