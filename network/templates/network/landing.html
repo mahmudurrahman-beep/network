@@ -389,7 +389,7 @@
     outline-offset:3px; 
   }
   
-  /* Hide search buttons on landing page */
+  /* Hide search buttons(glitch) on landing page */
   .composer-search-container,
   .chat-search-container {
     display: none !important;
@@ -484,7 +484,7 @@
       container.remove();
     });
     
-    // Also remove any buttons with these classes directly
+    // This remove any buttons with these classes directly
     const unwantedButtons = document.querySelectorAll('.composer-search-btn, .chat-search-btn');
     unwantedButtons.forEach(button => {
       button.remove();
