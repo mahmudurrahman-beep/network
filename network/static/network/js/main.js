@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ARGON SOCIAL NETWORK - CLIENT-SIDE APPLICATION
+ * ARGON NETWORK - CLIENT-SIDE APPLICATION
  * ============================================================================
  * 
  * @file        main.js
@@ -9,7 +9,7 @@
  * @author      Argon Admin(Mahmudur Rahman)
  * @date        February 2026
  * 
- * @copyright   Copyright (c) 2026 Argon Social Network 
+ * @copyright   Copyright (c) 2026 Argon Network 
  * 
  * TABLE OF CONTENTS
  * ============================================================================
@@ -1695,8 +1695,8 @@ document.addEventListener("DOMContentLoaded", function() {
  * ============================================================================
  * 
  * @summary
- * This file provides complete client-side functionality for Argon Social
- * Network including:
+ * This file provides complete client-side functionality for
+ * Argon Network including:
  * - User interactions (follow, block)
  * - Content management (posts, comments)
  * - Real-time features (mentions, typing indicators)
