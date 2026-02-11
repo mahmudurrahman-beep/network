@@ -24,14 +24,14 @@ def filter_by_privacy(comments, request_user):
     blocked_users = request_user.blocks.values_list('blocked', flat=True)
     blocked_by_users = request_user.blocked_by.values_list('blocker', flat=True)
     
-    # Exclude comments from users who blocked you or you blocked
+    # Exclude comments from users who blocked specific user or the user blocked
     return comments.exclude(
         user_id__in=blocked_users
     ).exclude(
         user_id__in=blocked_by_users
     ).filter(
         Q(user__is_private=False) |
-        Q(user__followers__follower=request_user) |  # FIXED: Use through model
+        Q(user__followers__follower=request_user) |  
         Q(user=request_user)
     ).distinct()
 
