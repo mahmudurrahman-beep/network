@@ -1232,19 +1232,13 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
   const ACTIVE_CLASS = "mention-active";
   const DROPDOWN_ID = "__mention_dropdown__";
 
-  /**
-   * Get CSRF token for AJAX requests
-   * @returns {string} CSRF token
-   */
+  // Get CSRF token for AJAX requests
   function getCsrf() {
     const el = document.querySelector("[name=csrfmiddlewaretoken]");
     return el ? el.value : "";
   }
 
-  /**
-   * Create or retrieve global dropdown element
-   * @returns {HTMLElement} Dropdown element
-   */
+  // Ensure dropdown exists
   function ensureDropdown() {
     let dd = document.getElementById(DROPDOWN_ID);
     if (dd) return dd;
@@ -1262,11 +1256,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return dd;
   }
 
-  /**
-   * Position dropdown relative to input element
-   * @param {HTMLElement} dd - Dropdown element
-   * @param {HTMLElement} el - Input element
-   */
+  // Position dropdown relative to input element
   function positionDropdown(dd, el) {
     const r = el.getBoundingClientRect();
     dd.style.left = (window.scrollX + r.left) + "px";
@@ -1274,11 +1264,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     dd.style.width = r.width + "px";
   }
 
-  /**
-   * Parse current mention query from input
-   * @param {HTMLElement} el - Input element
-   * @returns {Object|null} {query, start, end} or null if no mention
-   */
+  // Parse current mention query from input
   function getMentionQuery(el) {
     const v = el.value || "";
     const caret = el.selectionStart || 0;
@@ -1301,12 +1287,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return { query: afterAt, start: at, end: caret };
   }
 
-  /**
-   * Fetch mention suggestions from server
-   * @param {HTMLElement} el - Input element
-   * @param {string} q - Search query
-   * @returns {Promise<Array>} Array of user objects
-   */
+  // Fetch mention suggestions from server
   async function fetchSuggestions(el, q) {
     const scope = el.getAttribute("data-mention-scope") || "global";
     let url = "/api/mentions/users/?q=" + encodeURIComponent(q);
@@ -1327,34 +1308,20 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return d.results || [];
   }
 
-  /**
-   * Close dropdown and remove active state
-   * @param {HTMLElement} dd - Dropdown element
-   * @param {HTMLElement} el - Input element
-   */
-  function close(dd, el) {
-    dd.style.display = "none";
-    dd.innerHTML = "";
-    if (el) el.classList.remove(ACTIVE_CLASS);
-  }
-
-  /**
-   * Open dropdown and add active state
-   * @param {HTMLElement} dd - Dropdown element
-   * @param {HTMLElement} el - Input element
-   */
+  // Handle dropdown visibility and state
   function open(dd, el) {
     positionDropdown(dd, el);
     dd.style.display = "block";
     el.classList.add(ACTIVE_CLASS);
   }
 
-  /**
-   * Replace @mention token with selected username
-   * @param {HTMLElement} el - Input element
-   * @param {Object} tokenInfo - {start, end} of mention token
-   * @param {string} username - Selected username
-   */
+  function close(dd, el) {
+    dd.style.display = "none";
+    dd.innerHTML = "";
+    if (el) el.classList.remove(ACTIVE_CLASS);
+  }
+
+  // Handle token replacement (select mention)
   function replaceToken(el, tokenInfo, username) {
     const v = el.value || "";
     const before = v.slice(0, tokenInfo.start);
@@ -1367,13 +1334,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     el.setSelectionRange(newPos, newPos);
   }
 
-  /**
-   * Render suggestion dropdown
-   * @param {HTMLElement} dd - Dropdown element
-   * @param {HTMLElement} el - Input element
-   * @param {Object} tokenInfo - Current mention token info
-   * @param {Array} items - User suggestion array
-   */
+  // Render dropdown with suggestions
   function render(dd, el, tokenInfo, items) {
     dd.innerHTML = "";
     if (!items.length) {
@@ -1399,10 +1360,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     open(dd, el);
   }
 
-  /**
-   * Attach autocomplete to an input element
-   * @param {HTMLElement} el - Input element to attach to
-   */
+  // Attach the mention system to input/textarea elements
   function attach(el) {
     if (!el || el.__mentionAttached) return;
     el.__mentionAttached = true;
@@ -1411,14 +1369,10 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     let lastQuery = "";
     let inflight = 0;
 
-    /**
-     * Check for mention and update dropdown
-     */
     async function tick() {
       const tokenInfo = getMentionQuery(el);
       if (!tokenInfo) return close(dd, el);
 
-      // Only show dropdown when at least 1 char typed after @
       const q = tokenInfo.query || "";
       if (q.length < 1) return close(dd, el);
 
@@ -1429,17 +1383,15 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
       const my = inflight;
 
       const items = await fetchSuggestions(el, q);
-      if (my !== inflight) return; // Stale request
+      if (my !== inflight) return;
       render(dd, el, tokenInfo, items);
     }
 
-    // Event listeners
     el.addEventListener("input", tick);
     el.addEventListener("keyup", tick);
     el.addEventListener("click", tick);
     el.addEventListener("blur", () => setTimeout(() => close(dd, el), 150));
 
-    // Reposition on scroll/resize
     window.addEventListener("scroll", () => {
       if (dd.style.display === "block") positionDropdown(dd, el);
     }, { passive: true });
@@ -1448,14 +1400,11 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     });
   }
 
-  /**
-   * Scan document for mention inputs and attach
-   */
+  // Scan document for mention inputs and attach
   function scan() {
     document.querySelectorAll("textarea.js-mention-input, input.js-mention-input").forEach(attach);
   }
 
-  // Attach on focus (for dynamic content)
   document.addEventListener("focusin", (e) => {
     const el = e.target;
     if (el && (el.matches("textarea.js-mention-input") || el.matches("input.js-mention-input"))) {
@@ -1463,7 +1412,6 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     }
   });
 
-  // Close on outside click
   document.addEventListener("click", (e) => {
     const dd = document.getElementById(DROPDOWN_ID);
     if (!dd) return;
@@ -1476,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
 
   document.addEventListener("DOMContentLoaded", scan);
 })();
+
 
 
 // ============================================================================
