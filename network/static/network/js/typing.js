@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ARGON SOCIAL NETWORK - TYPING INDICATOR SYSTEM
+ * ARGON NETWORK - TYPING INDICATOR SYSTEM
  * ============================================================================
  * 
  * @file        typing.js
@@ -9,7 +9,7 @@
  * @author      Argon Admin(Mahmudur Rahman)
  * @date        February 2026
  * 
- * @copyright   Copyright (c) 2026 Argon Social Network
+ * @copyright   Copyright (c) 2026 Argon Network
  * 
  * PURPOSE
  * ============================================================================
