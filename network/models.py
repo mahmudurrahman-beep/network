@@ -1,6 +1,6 @@
 """
 ================================================================================
-ARGON SOCIAL NETWORK - DATABASE MODELS
+ARGON NETWORK - DATABASE MODELS
 ================================================================================
 
 @file        models.py
@@ -8,7 +8,7 @@ ARGON SOCIAL NETWORK - DATABASE MODELS
 @version     2.0.0
 @author      Argon Admin
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 MODULE PURPOSE
 ================================================================================
@@ -411,8 +411,7 @@ class PostMedia(models.Model):
         on_delete=models.CASCADE, 
         related_name='media',
         help_text="Post this media belongs to"
-    )
-    # ✅ CHANGED: CloudinaryField instead of FileField
+    ) 
     file = CloudinaryField(
         'media',
         resource_type='auto',  # Auto-detects image vs video
@@ -989,20 +988,6 @@ class PrivacySettings(models.Model):
 ================================================================================
 END OF MODELS DEFINITION
 ================================================================================
-
-DATABASE MIGRATION NOTES
-================================================================================
-After modifying models, run:
-1. python manage.py makemigrations
-2. python manage.py migrate
-
-TESTING RECOMMENDATIONS
-================================================================================
-- Test all foreign key relationships
-- Verify CASCADE delete behavior
-- Test unique_together constraints
-- Verify ManyToMany relationships
-- Test timezone-aware datetime fields
 
 FUTURE ENHANCEMENTS
 ================================================================================
