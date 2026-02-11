@@ -6,7 +6,7 @@
  * @file        typing.js
  * @description Real-time typing indicator for messaging conversations
  * @version     2.0.0
- * @author      Argon Admin
+ * @author      Argon Admin(Mahmudur Rahman)
  * @date        February 2026
  * 
  * @copyright   Copyright (c) 2026 Argon Social Network
@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * Checks if other users are typing and updates UI accordingly.
      * 
      * Response handling:
-     * - Room mode: Displays multiple users (e.g., "Alice, Bob are typing...")
+     * - Room mode: Displays multiple users (e.g., "David, Brian are typing...")
      * - Legacy mode: Shows generic "Someone is typing..."
      * - Smart formatting for 1-3 users vs. "X and N others"
      * 
@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * @example Response format (room mode):
      * {
      *   "is_typing": true,
-     *   "users": ["Alice", "Bob", "Charlie"]
+     *   "users": ["David", "Brian", "Ron"]
      * }
      */
     function checkTyping() {
@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * - No keyboard trap or focus issues
  * 
  * @maintainers
- * Argon Admin
+ * Argon Admin(Mahmudur Rahman)
  * 
  * @last_updated February 2026
  * ============================================================================
