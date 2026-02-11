@@ -6,7 +6,7 @@
  * @file        main.js
  * @description Core JavaScript functionality for Argon Social Network
  * @version     2.1.0 (Added Smart Polling System)
- * @author      Argon Development Team
+ * @author      Argon Admin(Mahmudur Rahman)
  * @date        February 2026
  * 
  * @copyright   Copyright (c) 2026 Argon Social Network 
@@ -29,7 +29,7 @@
 'use strict';
 
 // ============================================================================
-// GLOBAL STATE VARIABLES (SAFELY ADDED)
+// GLOBAL STATE VARIABLES 
 // ============================================================================
 
 // Message Alert System State
@@ -424,7 +424,7 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation
+ * New Post Creation with File Validation
  * 
  * @description
  * Complete solution with validation AND file attachment indicator
@@ -971,7 +971,7 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
         return response.json();
       })
       .then(data => {
-        // ✅ FIX: Check if we're on inbox or conversation page
+        // Check if we're on inbox or conversation page
         const card = btn.closest('.list-group-item');
         
         if (card) {
@@ -1407,7 +1407,7 @@ document.querySelectorAll('.message-item').forEach(item => {
 // ============================================================================
 
 /**
- * Message Alert System (Badge + Sound)
+ * Message Alert System (Badge + Sound). This has limitation. Specifically Message Badge system on android and such 
  * 
  * @description
  * Provides real-time message notifications with:
@@ -1455,7 +1455,7 @@ function argonInitMessageAlertSettings() {
 /**
  * Play message notification sound
  * Respects user preferences and page context
- * ✅ MOBILE-SAFE VERSION with autoplay unlock
+ * MOBILE-SAFE VERSION with autoplay unlock
  * 
  * @function argonPlayMessageSound
  */
@@ -1470,7 +1470,7 @@ function argonPlayMessageSound() {
 
   argonMessageSound.currentTime = 0;
   
-  // ✅ Mobile-safe play with autoplay unlock fallback
+  // Mobile-safe play with autoplay unlock fallback
   const playPromise = argonMessageSound.play();
   
   if (playPromise !== undefined) {
@@ -1478,7 +1478,7 @@ function argonPlayMessageSound() {
       // Expected on mobile browsers - they block autoplay
       console.log('🔇 Audio autoplay blocked (mobile restriction):', err.name);
       
-      // ✅ UNLOCK STRATEGY: Wait for next user interaction
+      //  UNLOCK STRATEGY: Wait for next user interaction
       const unlockAudio = () => {
         argonMessageSound.play()
           .then(() => {
@@ -1504,7 +1504,7 @@ function argonPlayMessageSound() {
  * 
  * @description
  * Updates:
- * - PWA app badge (if supported)
+ * - PWA app badge (if supported) Mentioned already if the system supports 
  * - Browser title with count
  * - Triggers sound for new messages
  * 
@@ -1525,7 +1525,7 @@ function argonUpdateMessageBadge() {
       const badgeEnabled = !!data.badge_enabled;
 
       if (badgeEnabled) {
-        // PWA app icon badge (Chrome/Edge on Android)
+        // PWA app icon badge (Chrome/Edge on Android) has limitation(realistic)
         if ("setAppBadge" in navigator) {
           if (newCount > 0) {
             navigator.setAppBadge(newCount).catch(() => {});
@@ -1734,7 +1734,7 @@ document.addEventListener("DOMContentLoaded", function() {
  * - Screen reader friendly alerts
  * 
  * @maintainers
- * Argon Development Team
+ * Argon Admin(Mahmudur Rahman)
  * 
  * @last_updated February 2026
  * ============================================================================
