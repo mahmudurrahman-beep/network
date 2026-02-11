@@ -424,115 +424,236 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * New Post Creation Handler
+ * Enhanced New Post Creation with File Validation
  * 
  * @description
- * Handles new post form submission with:
- * - Form validation
- * - Media upload support
- * - Progress feedback
- * - Success notification
- * - Page refresh on success
+ * Complete solution with validation AND file attachment indicator
+ * - File size validation (10MB limit)
+ * - File type validation (images/videos only)
+ * - File count validation (max 4 files)
+ * - Content length validation (1000 chars)
+ * - File attachment indicator (green check, file names, remove button)
+ * - Progress feedback with specific error messages
  * 
  * @selector #new-post-form
  * @fires POST /new-post/
  * @returns {void}
  */
-const newPostForm = document.getElementById('new-post-form');
-if (newPostForm) {
+(function() {
+  const newPostForm = document.getElementById('new-post-form');
+  if (!newPostForm) return; // Exit early if form doesn't exist
+  
+  // Get elements - match your HTML structure
+  const contentTextarea = newPostForm.querySelector('textarea[name="content"]');
+  const fileInput = document.getElementById('media_files');
+  const messageDiv = document.getElementById('post-message');
+  const messageText = document.getElementById('post-message-text');
+  const submitBtn = newPostForm.querySelector('button[type="submit"]');
+  
+  // File attachment indicator elements
+  const fileIndicator = document.getElementById('post-file-indicator');
+  const fileName = document.getElementById('post-file-name');
+  const removeBtn = document.getElementById('post-remove-files');
+  
+  // Safety check - exit if critical elements don't exist
+  if (!contentTextarea || !fileInput) {
+    console.warn('Post form elements missing - skipping post validation setup');
+    return;
+  }
+  
+  // ==================================================
+  // FILE ATTACHMENT INDICATOR HANDLING
+  // ==================================================
+  if (fileIndicator && fileName && removeBtn) {
+    // Show indicator when files are selected
+    fileInput.addEventListener('change', function() {
+      const files = Array.from(this.files || []);
+      if (files.length === 0) {
+        fileIndicator.classList.remove('show');
+        fileName.textContent = '';
+        return;
+      }
+      
+      // Update indicator with file info
+      const count = files.length;
+      if (count === 1) {
+        fileName.textContent = files[0].name;
+      } else {
+        fileName.textContent = `${count} files selected`;
+      }
+      fileIndicator.classList.add('show');
+    });
+    
+    // Remove files when remove button clicked
+    removeBtn.addEventListener('click', function() {
+      fileInput.value = '';
+      fileIndicator.classList.remove('show');
+      fileName.textContent = '';
+    });
+  }
+  
+  // ==================================================
+  // FORM SUBMISSION WITH VALIDATION
+  // ==================================================
   newPostForm.addEventListener('submit', function(e) {
     e.preventDefault();
-
-    const formData = new FormData(this);
-    const messageDiv = document.getElementById('post-message');
-
-    if (messageDiv) {
-      messageDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
-      messageDiv.classList.add('alert-info');
-      messageDiv.textContent = 'Posting...';
+    e.stopPropagation(); // Prevent event bubbling
+    
+    // Call validation function
+    if (!validateNewPostForm()) {
+      return false;
     }
-
+    
+    // If validation passes, submit the form
+    submitForm();
+    return false;
+  });
+  
+  // ==================================================
+  // VALIDATION FUNCTION
+  // ==================================================
+  function validateNewPostForm() {
+    const content = contentTextarea.value.trim();
+    const files = fileInput.files;
+    
+    // Validation 1: Content or media required
+    if (!content && files.length === 0) {
+      showMessage('Please add some text or media to your post', 'danger');
+      return false;
+    }
+    
+    // Validation 2: Content length
+    if (content.length > 1000) {
+      showMessage('Post content cannot exceed 1000 characters', 'danger');
+      return false;
+    }
+    
+    // Validation 3: File count
+    const MAX_FILES = 4;
+    if (files.length > MAX_FILES) {
+      showMessage(`Maximum ${MAX_FILES} files allowed per post`, 'danger');
+      return false;
+    }
+    
+    // Validation 4: File size and type
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        showMessage(`"${file.name}" is ${fileSizeMB}MB. Maximum size is 10MB`, 'danger');
+        return false;
+      }
+      
+      // Check file type
+      if (file.type.startsWith('audio/')) {
+        showMessage('Audio files are not supported', 'danger');
+        return false;
+      }
+      
+      // Check for allowed types
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      
+      if (!isImage && !isVideo) {
+        showMessage(`"${file.name}" has unsupported format. Use images or videos`, 'danger');
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  // ==================================================
+  // HELPER TO SHOW MESSAGES
+  // ==================================================
+  function showMessage(text, type) {
+    type = type || 'info';
+    
+    if (messageDiv && messageText) {
+      messageDiv.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
+      messageDiv.classList.add('alert-' + type);
+      messageText.textContent = text;
+      messageDiv.classList.remove('d-none');
+      
+      // Auto-hide success messages after 3 seconds
+      if (type === 'success') {
+        setTimeout(function() {
+          if (messageDiv.classList.contains('alert-success')) {
+            messageDiv.classList.add('d-none');
+          }
+        }, 3000);
+      }
+    } else {
+      // Fallback if message elements don't exist
+      console.warn('Post message:', text);
+    }
+  }
+  
+  // ==================================================
+  // FORM SUBMISSION FUNCTION
+  // ==================================================
+  function submitForm() {
+    const formData = new FormData(newPostForm);
+    
+    // Show loading state
+    showMessage('Posting...', 'info');
+    
+    // Disable submit button
+    const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Post';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...';
+    }
+    
+    // Send request
     fetch('/new-post/', {
       method: 'POST',
       body: formData,
-      headers: { 'X-CSRFToken': getCsrfToken() }
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      credentials: 'same-origin'
     })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          if (messageDiv) {
-            messageDiv.classList.remove('alert-info');
-            messageDiv.classList.add('alert-danger');
-            messageDiv.textContent = data.error;
-          }
-        } else {
-          if (messageDiv) {
-            messageDiv.classList.remove('alert-info');
-            messageDiv.classList.add('alert-success');
-            messageDiv.textContent = 'Posted successfully!';
-          }
-          newPostForm.reset();
-          setTimeout(() => location.reload(), 1500);
+      .then(function(response) {
+        if (!response.ok) {
+          return response.json().then(function(data) {
+            throw new Error(data.error || 'HTTP error ' + response.status);
+          });
         }
-      })
-      .catch(error => {
-        console.error('Post creation error:', error);
-        if (messageDiv) {
-          messageDiv.classList.remove('alert-info');
-          messageDiv.classList.add('alert-danger');
-          messageDiv.textContent = 'Failed to post. Try again.';
-        }
-      });
-  });
-}
-
-/**
- * Post Deletion Handler
- * 
- * @description
- * Handles post deletion with:
- * - Confirmation dialog
- * - Server-side deletion
- * - DOM element removal
- * - User feedback
- * 
- * @selector .delete-post
- * @data-attribute {string} data-post - Post ID to delete
- * 
- * @fires POST /delete-post/{postId}/
- * @returns {void}
- */
-document.querySelectorAll('.delete-post').forEach(btn => {
-  btn.addEventListener('click', function() {
-    if (!confirm('Are you sure you want to delete this post?')) return;
-
-    const postId = this.dataset.post;
-    const postCard = this.closest('.post-card');
-    if (!postCard) return;
-
-    fetch(`/delete-post/${postId}/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCsrfToken() }
-    })
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
         return response.json();
       })
-      .then(data => {
-        if (data.message) {
-          postCard.remove();
-          alert('Post deleted successfully');
+      .then(function(data) {
+        if (data.error) {
+          showMessage(data.error, 'danger');
         } else {
-          alert('Failed to delete post');
+          showMessage(data.message || 'Posted successfully!', 'success');
+          
+          // Reset form
+          newPostForm.reset();
+          
+          // Also reset the file indicator manually
+          if (fileIndicator) fileIndicator.classList.remove('show');
+          if (fileName) fileName.textContent = '';
+          
+          // Reload page after brief delay
+          setTimeout(function() {
+            window.location.reload();
+          }, 1500);
         }
       })
-      .catch(error => {
-        console.error('Delete failed:', error);
-        alert('Error deleting post. Check console for details.');
+      .catch(function(error) {
+        showMessage(error.message || 'Failed to post. Please try again.', 'danger');
+      })
+      .finally(function() {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
       });
-  });
-});
-
+  }
+})(); 
 
 // ============================================================================
 // SECTION 4: COMMENT SYSTEM (CRUD + Nested Replies)
