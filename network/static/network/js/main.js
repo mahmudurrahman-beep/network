@@ -824,8 +824,13 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
     const csrfToken = getCsrfToken();
 
     btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = 'Hiding...';
+    
+    // Mobile-safe button state
+    const icon = btn.querySelector('i');
+    const textSpan = btn.querySelector('span');
+    
+    if (icon) icon.className = 'fas fa-spinner fa-spin';
+    if (textSpan) textSpan.textContent = '...';
 
     // Choose URL based on available data
     const url = conversationId
@@ -845,18 +850,29 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
         return response.json();
       })
       .then(data => {
-        alert(data.message || 'Conversation hidden.');
-        window.location.href = '/messages/';
+        // ✅ FIX: Check if we're on inbox or conversation page
+        const card = btn.closest('.list-group-item');
+        
+        if (card) {
+          // On inbox page - remove the conversation card
+          card.style.transition = 'opacity 0.3s, transform 0.3s';
+          card.style.opacity = '0';
+          card.style.transform = 'translateX(-20px)';
+          setTimeout(() => card.remove(), 300);
+        } else {
+          // On conversation page - redirect to inbox
+          window.location.href = '/messages/';
+        }
       })
       .catch(error => {
         console.error('Hide conversation failed:', error);
         alert('Failed to hide conversation.');
         btn.disabled = false;
-        btn.textContent = originalText;
+        if (icon) icon.className = 'fas fa-eye-slash';
+        if (textSpan) textSpan.textContent = 'Hide';
       });
   });
 });
-
 
 // ============================================================================
 // SECTION 6: UI ENHANCEMENTS (Time Display, Action Menus)
