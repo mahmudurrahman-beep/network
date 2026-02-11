@@ -1,6 +1,6 @@
 """
-Django settings for project4 project.
-Production-ready for Koyeb + Supabase + Cloudinary
+Django settings for project4(Harvardx CS50W)
+Production-ready for Koyeb + Supabase + Cloudinary = Argon Network
 """
 
 import os
