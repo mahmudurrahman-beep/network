@@ -5,7 +5,7 @@
 
 const CACHE_NAME = 'argon-v1';
 
-// Install event - just claim immediately
+// Install event - claim immediately
 self.addEventListener('install', (event) => {
   console.log('[SW] Service Worker installing');
   self.skipWaiting();
