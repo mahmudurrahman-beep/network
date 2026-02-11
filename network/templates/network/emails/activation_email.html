@@ -50,7 +50,7 @@
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #0A4D7A 0%, #06b6d4 100%);
+            background: #0A4D7A; /* Darker gradient background */
             color: white;
             padding: 16px 40px;
             text-decoration: none;
@@ -174,13 +174,13 @@
             </div>
         </a>
         <div class="content">
-            <h2 class="greeting">Hi {{ user.get_username }}! <span style="color: #0E6196;">👋</span></h2>
+            <h2 class="greeting">Account Activation</h2>
             <p class="message">
                 Thank you for joining <span class="brand">Argon Network</span>. To get started, please verify your email address by clicking the button below:
             </p>
             <div style="text-align: center; margin: 40px 0;">
                 <a href="{{ activation_link }}" class="btn">
-                    <span class="icon">✨</span> Activate My Account
+                    Activate My Account
                 </a>
             </div>
             <p class="message">
@@ -194,7 +194,7 @@
                 If you didn't create an account with us, please ignore this email.
             </p>
             <p style="margin-top: 36px; font-style: italic; color: #6b7280; font-size: 15px;">
-                Welcome aboard! <span style="color: #0E6196;">🚀</span><br>
+                Best regards,<br>
                 <strong style="color: #111827;">The Argon Network Team</strong>
             </p>
         </div>
