@@ -1,5 +1,5 @@
 /**
- * Argon Social Network - Service Worker
+ * Argon Network - Service Worker
  * Minimal service worker for PWA installation
  */
 
