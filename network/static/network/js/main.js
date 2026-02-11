@@ -6,7 +6,7 @@
  * @file        main.js
  * @description Core JavaScript functionality for Argon Social Network
  * @version     2.1.0 (Added Smart Polling System)
- * @author      Argon Admin
+ * @author      Argon Development Team
  * @date        February 2026
  * 
  * @copyright   Copyright (c) 2026 Argon Social Network 
@@ -29,7 +29,7 @@
 'use strict';
 
 // ============================================================================
-// GLOBAL STATE VARIABLES 
+// GLOBAL STATE VARIABLES (SAFELY ADDED)
 // ============================================================================
 
 // Message Alert System State
@@ -424,236 +424,68 @@ document.querySelectorAll('.thumbs-up, .thumbs-down').forEach(btn => {
 });
 
 /**
- * Enhanced New Post Creation with File Validation 
+ * New Post Creation Handler
  * 
  * @description
- * Complete solution with validation AND file attachment indicator
- * - File size validation (10MB limit)
- * - File type validation (images/videos only)
- * - File count validation (max 4 files)
- * - Content length validation (1000 chars)
- * - File attachment indicator (green check, file names, remove button)
- * - Progress feedback with specific error messages
+ * Handles new post form submission with:
+ * - Form validation
+ * - Media upload support
+ * - Progress feedback
+ * - Success notification
+ * - Page refresh on success
  * 
  * @selector #new-post-form
  * @fires POST /new-post/
  * @returns {void}
  */
-(function() {
-  const newPostForm = document.getElementById('new-post-form');
-  if (!newPostForm) return; // Exit early if form doesn't exist
-
-  // Get elements - match your HTML structure
-  const contentTextarea = newPostForm.querySelector('textarea[name="content"]');
-  const fileInput = document.getElementById('media_files');
-  const messageDiv = document.getElementById('post-message');
-  const messageText = document.getElementById('post-message-text');
-  const submitBtn = newPostForm.querySelector('button[type="submit"]');
-
-  // File attachment indicator elements
-  const fileIndicator = document.getElementById('post-file-indicator');
-  const fileName = document.getElementById('post-file-name');
-  const removeBtn = document.getElementById('post-remove-files');
-
-  // Safety check - exit if critical elements don't exist
-  if (!contentTextarea || !fileInput) {
-    console.warn('Post form elements missing - skipping post validation setup');
-    return;
-  }
-
-  // ==================================================
-  // FILE ATTACHMENT INDICATOR HANDLING
-  // ==================================================
-  if (fileIndicator && fileName && removeBtn) {
-    // Show indicator when files are selected
-    fileInput.addEventListener('change', function() {
-      const files = Array.from(this.files || []);
-      if (files.length === 0) {
-        fileIndicator.classList.remove('show');
-        fileName.textContent = '';
-        return;
-      }
-
-      // Update indicator with file info
-      const count = files.length;
-      if (count === 1) {
-        fileName.textContent = files[0].name;
-      } else {
-        fileName.textContent = `${count} files selected`;
-      }
-      fileIndicator.classList.add('show');
-    });
-
-    // Remove files when remove button clicked
-    removeBtn.addEventListener('click', function() {
-      fileInput.value = '';
-      fileIndicator.classList.remove('show');
-      fileName.textContent = '';
-    });
-  }
-
-  // ==================================================
-  // FORM SUBMISSION WITH VALIDATION
-  // ==================================================
+const newPostForm = document.getElementById('new-post-form');
+if (newPostForm) {
   newPostForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
 
-    // Call validation function
-    if (!validateNewPostForm()) {
-      return false;
+    const formData = new FormData(this);
+    const messageDiv = document.getElementById('post-message');
+
+    if (messageDiv) {
+      messageDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
+      messageDiv.classList.add('alert-info');
+      messageDiv.textContent = 'Posting...';
     }
 
-    // If validation passes, submit the form
-    submitForm();
-    return false;
-  });
-
-  // ==================================================
-  // VALIDATION FUNCTION
-  // ==================================================
-  function validateNewPostForm() {
-    const content = contentTextarea.value.trim();
-    const files = fileInput.files;
-
-    // Validation 1: Content or media required
-    if (!content && files.length === 0) {
-      showMessage('Please add some text or media to your post', 'danger');
-      return false;
-    }
-
-    // Validation 2: Content length
-    if (content.length > 1000) {
-      showMessage('Post content cannot exceed 1000 characters', 'danger');
-      return false;
-    }
-
-    // Validation 3: File count
-    const MAX_FILES = 4;
-    if (files.length > MAX_FILES) {
-      showMessage(`Maximum ${MAX_FILES} files allowed per post`, 'danger');
-      return false;
-    }
-
-    // Validation 4: File size and type
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-
-      // Check file size
-      if (file.size > MAX_FILE_SIZE) {
-        showMessage(`"${file.name}" is ${fileSizeMB}MB. Maximum size is 10MB`, 'danger');
-        return false;
-      }
-
-      // Check file type
-      if (file.type.startsWith('audio/')) {
-        showMessage('Audio files are not supported', 'danger');
-        return false;
-      }
-
-      // Check for allowed types
-      const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
-
-      if (!isImage && !isVideo) {
-        showMessage(`"${file.name}" has unsupported format. Use images or videos`, 'danger');
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  // ==================================================
-  // HELPER TO SHOW MESSAGES
-  // ==================================================
-  function showMessage(text, type) {
-    type = type || 'info';
-
-    if (messageDiv && messageText) {
-      messageDiv.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
-      messageDiv.classList.add('alert-' + type);
-      messageText.textContent = text;
-      messageDiv.classList.remove('d-none');
-
-      // Auto-hide success messages after 3 seconds
-      if (type === 'success') {
-        setTimeout(function() {
-          if (messageDiv.classList.contains('alert-success')) {
-            messageDiv.classList.add('d-none');
-          }
-        }, 3000);
-      }
-    } else {
-      // Fallback if message elements don't exist
-      console.warn('Post message:', text);
-    }
-  }
-
-  // ==================================================
-  // FORM SUBMISSION FUNCTION
-  // ==================================================
-  function submitForm() {
-    const formData = new FormData(newPostForm);
-
-    // Show loading state
-    showMessage('Posting...', 'info');
-
-    // Disable submit button
-    const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Post';
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...';
-    }
-
-    // Send request
     fetch('/new-post/', {
       method: 'POST',
       body: formData,
-      headers: { 'X-CSRFToken': getCsrfToken() },
-      credentials: 'same-origin'
+      headers: { 'X-CSRFToken': getCsrfToken() }
     })
-      .then(function(response) {
-        if (!response.ok) {
-          return response.json().then(function(data) {
-            throw new Error(data.error || 'HTTP error ' + response.status);
-          });
-        }
-        return response.json();
-      })
-      .then(function(data) {
+      .then(response => response.json())
+      .then(data => {
         if (data.error) {
-          showMessage(data.error, 'danger');
+          if (messageDiv) {
+            messageDiv.classList.remove('alert-info');
+            messageDiv.classList.add('alert-danger');
+            messageDiv.textContent = data.error;
+          }
         } else {
-          showMessage(data.message || 'Posted successfully!', 'success');
-
-          // Reset form
+          if (messageDiv) {
+            messageDiv.classList.remove('alert-info');
+            messageDiv.classList.add('alert-success');
+            messageDiv.textContent = 'Posted successfully!';
+          }
           newPostForm.reset();
-
-          // Also reset the file indicator manually
-          if (fileIndicator) fileIndicator.classList.remove('show');
-          if (fileName) fileName.textContent = '';
-
-          // Reload page after brief delay
-          setTimeout(function() {
-            window.location.reload();
-          }, 1500);
+          setTimeout(() => location.reload(), 1500);
         }
       })
-      .catch(function(error) {
-        showMessage(error.message || 'Failed to post. Please try again.', 'danger');
-      })
-      .finally(function() {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnText;
+      .catch(error => {
+        console.error('Post creation error:', error);
+        if (messageDiv) {
+          messageDiv.classList.remove('alert-info');
+          messageDiv.classList.add('alert-danger');
+          messageDiv.textContent = 'Failed to post. Try again.';
         }
       });
-  }
-})(); 
+  });
+}
+
 /**
  * Post Deletion Handler
  * 
@@ -992,13 +824,8 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
     const csrfToken = getCsrfToken();
 
     btn.disabled = true;
-
-    // Mobile-safe button state
-    const icon = btn.querySelector('i');
-    const textSpan = btn.querySelector('span');
-
-    if (icon) icon.className = 'fas fa-spinner fa-spin';
-    if (textSpan) textSpan.textContent = '...';
+    const originalText = btn.textContent;
+    btn.textContent = 'Hiding...';
 
     // Choose URL based on available data
     const url = conversationId
@@ -1018,28 +845,18 @@ document.querySelectorAll('.delete-conversation').forEach(btn => {
         return response.json();
       })
       .then(data => {
-        const card = btn.closest('.list-group-item');
-
-        if (card) {
-          // On inbox page - remove the conversation card
-          card.style.transition = 'opacity 0.3s, transform 0.3s';
-          card.style.opacity = '0';
-          card.style.transform = 'translateX(-20px)';
-          setTimeout(() => card.remove(), 300);
-        } else {
-          // On conversation page - redirect to inbox
-          window.location.href = '/messages/';
-        }
+        alert(data.message || 'Conversation hidden.');
+        window.location.href = '/messages/';
       })
       .catch(error => {
         console.error('Hide conversation failed:', error);
         alert('Failed to hide conversation.');
         btn.disabled = false;
-        if (icon) icon.className = 'fas fa-eye-slash';
-        if (textSpan) textSpan.textContent = 'Hide';
+        btn.textContent = originalText;
       });
   });
 });
+
 
 // ============================================================================
 // SECTION 6: UI ENHANCEMENTS (Time Display, Action Menus)
@@ -1170,36 +987,6 @@ document.querySelectorAll('.message-item').forEach(item => {
 })();
 
 
-/**
- * Notification Badge Auto-Update
- * 
- * @description
- * Periodically updates notification count badge in navbar.
- * Fetches from server endpoint and updates UI accordingly.
- * 
- * @selector .notification-badge
- * @fires GET /get-notification-count/
- * @fires DOMContentLoaded
- */
-function updateNotificationBadge() {
-  const badge = document.querySelector('.notification-badge');
-  if (badge) {
-    fetch('/get-notification-count/')
-      .then(r => r.json())
-      .then(data => {
-        if (data.count > 0) {
-          badge.textContent = data.count;
-          badge.style.display = 'inline-block';
-        } else {
-          badge.style.display = 'none';
-        }
-      })
-      .catch(err => console.error('Notification badge update failed:', err));
-  }
-}
-
-document.addEventListener('DOMContentLoaded', updateNotificationBadge);
-
 
 // ============================================================================
 // SECTION 7: MENTIONS AUTOCOMPLETE SYSTEM (@username)
@@ -1232,13 +1019,19 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
   const ACTIVE_CLASS = "mention-active";
   const DROPDOWN_ID = "__mention_dropdown__";
 
-  // Get CSRF token for AJAX requests
+  /**
+   * Get CSRF token for AJAX requests
+   * @returns {string} CSRF token
+   */
   function getCsrf() {
     const el = document.querySelector("[name=csrfmiddlewaretoken]");
     return el ? el.value : "";
   }
 
-  // Ensure dropdown exists
+  /**
+   * Create or retrieve global dropdown element
+   * @returns {HTMLElement} Dropdown element
+   */
   function ensureDropdown() {
     let dd = document.getElementById(DROPDOWN_ID);
     if (dd) return dd;
@@ -1256,7 +1049,11 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return dd;
   }
 
-  // Position dropdown relative to input element
+  /**
+   * Position dropdown relative to input element
+   * @param {HTMLElement} dd - Dropdown element
+   * @param {HTMLElement} el - Input element
+   */
   function positionDropdown(dd, el) {
     const r = el.getBoundingClientRect();
     dd.style.left = (window.scrollX + r.left) + "px";
@@ -1264,7 +1061,11 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     dd.style.width = r.width + "px";
   }
 
-  // Parse current mention query from input
+  /**
+   * Parse current mention query from input
+   * @param {HTMLElement} el - Input element
+   * @returns {Object|null} {query, start, end} or null if no mention
+   */
   function getMentionQuery(el) {
     const v = el.value || "";
     const caret = el.selectionStart || 0;
@@ -1287,7 +1088,12 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return { query: afterAt, start: at, end: caret };
   }
 
-  // Fetch mention suggestions from server
+  /**
+   * Fetch mention suggestions from server
+   * @param {HTMLElement} el - Input element
+   * @param {string} q - Search query
+   * @returns {Promise<Array>} Array of user objects
+   */
   async function fetchSuggestions(el, q) {
     const scope = el.getAttribute("data-mention-scope") || "global";
     let url = "/api/mentions/users/?q=" + encodeURIComponent(q);
@@ -1308,20 +1114,34 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     return d.results || [];
   }
 
-  // Handle dropdown visibility and state
-  function open(dd, el) {
-    positionDropdown(dd, el);
-    dd.style.display = "block";
-    el.classList.add(ACTIVE_CLASS);
-  }
-
+  /**
+   * Close dropdown and remove active state
+   * @param {HTMLElement} dd - Dropdown element
+   * @param {HTMLElement} el - Input element
+   */
   function close(dd, el) {
     dd.style.display = "none";
     dd.innerHTML = "";
     if (el) el.classList.remove(ACTIVE_CLASS);
   }
 
-  // Handle token replacement (select mention)
+  /**
+   * Open dropdown and add active state
+   * @param {HTMLElement} dd - Dropdown element
+   * @param {HTMLElement} el - Input element
+   */
+  function open(dd, el) {
+    positionDropdown(dd, el);
+    dd.style.display = "block";
+    el.classList.add(ACTIVE_CLASS);
+  }
+
+  /**
+   * Replace @mention token with selected username
+   * @param {HTMLElement} el - Input element
+   * @param {Object} tokenInfo - {start, end} of mention token
+   * @param {string} username - Selected username
+   */
   function replaceToken(el, tokenInfo, username) {
     const v = el.value || "";
     const before = v.slice(0, tokenInfo.start);
@@ -1334,7 +1154,13 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     el.setSelectionRange(newPos, newPos);
   }
 
-  // Render dropdown with suggestions
+  /**
+   * Render suggestion dropdown
+   * @param {HTMLElement} dd - Dropdown element
+   * @param {HTMLElement} el - Input element
+   * @param {Object} tokenInfo - Current mention token info
+   * @param {Array} items - User suggestion array
+   */
   function render(dd, el, tokenInfo, items) {
     dd.innerHTML = "";
     if (!items.length) {
@@ -1360,7 +1186,10 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     open(dd, el);
   }
 
-  // Attach the mention system to input/textarea elements
+  /**
+   * Attach autocomplete to an input element
+   * @param {HTMLElement} el - Input element to attach to
+   */
   function attach(el) {
     if (!el || el.__mentionAttached) return;
     el.__mentionAttached = true;
@@ -1369,10 +1198,14 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     let lastQuery = "";
     let inflight = 0;
 
+    /**
+     * Check for mention and update dropdown
+     */
     async function tick() {
       const tokenInfo = getMentionQuery(el);
       if (!tokenInfo) return close(dd, el);
 
+      // Only show dropdown when at least 1 char typed after @
       const q = tokenInfo.query || "";
       if (q.length < 1) return close(dd, el);
 
@@ -1383,15 +1216,17 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
       const my = inflight;
 
       const items = await fetchSuggestions(el, q);
-      if (my !== inflight) return;
+      if (my !== inflight) return; // Stale request
       render(dd, el, tokenInfo, items);
     }
 
+    // Event listeners
     el.addEventListener("input", tick);
     el.addEventListener("keyup", tick);
     el.addEventListener("click", tick);
     el.addEventListener("blur", () => setTimeout(() => close(dd, el), 150));
 
+    // Reposition on scroll/resize
     window.addEventListener("scroll", () => {
       if (dd.style.display === "block") positionDropdown(dd, el);
     }, { passive: true });
@@ -1400,11 +1235,14 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     });
   }
 
-  // Scan document for mention inputs and attach
+  /**
+   * Scan document for mention inputs and attach
+   */
   function scan() {
     document.querySelectorAll("textarea.js-mention-input, input.js-mention-input").forEach(attach);
   }
 
+  // Attach on focus (for dynamic content)
   document.addEventListener("focusin", (e) => {
     const el = e.target;
     if (el && (el.matches("textarea.js-mention-input") || el.matches("input.js-mention-input"))) {
@@ -1412,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     }
   });
 
+  // Close on outside click
   document.addEventListener("click", (e) => {
     const dd = document.getElementById(DROPDOWN_ID);
     if (!dd) return;
@@ -1424,6 +1263,7 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
 
   document.addEventListener("DOMContentLoaded", scan);
 })();
+
 
 // ============================================================================
 // SECTION 8: MESSAGE BADGE & SOUND ALERTS
@@ -1492,15 +1332,15 @@ function argonPlayMessageSound() {
   }
 
   argonMessageSound.currentTime = 0;
-
+  
   // ✅ Mobile-safe play with autoplay unlock fallback
   const playPromise = argonMessageSound.play();
-
+  
   if (playPromise !== undefined) {
     playPromise.catch((err) => {
       // Expected on mobile browsers - they block autoplay
       console.log('🔇 Audio autoplay blocked (mobile restriction):', err.name);
-
+      
       // ✅ UNLOCK STRATEGY: Wait for next user interaction
       const unlockAudio = () => {
         argonMessageSound.play()
@@ -1514,7 +1354,7 @@ function argonPlayMessageSound() {
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
       };
-
+      
       // Listen for user tap to unlock audio
       document.addEventListener('click', unlockAudio, { once: true });
       document.addEventListener('touchstart', unlockAudio, { once: true });
@@ -1545,28 +1385,37 @@ function argonUpdateMessageBadge() {
     })
     .then((data) => {
       const newCount = data.count || 0;
-      const newCount = data.count || 0;
+      const badgeEnabled = !!data.badge_enabled;
 
-      const navBadge = document.querySelector('.js-message-badge');
-      if (navBadge) {
-        if (newCount > 0) {
-          navBadge.textContent = newCount;
-          navBadge.style.display = 'inline-block';
-        } else {
-          navBadge.style.display = 'none';
+      if (badgeEnabled) {
+        // PWA app icon badge (Chrome/Edge on Android)
+        if ("setAppBadge" in navigator) {
+          if (newCount > 0) {
+            navigator.setAppBadge(newCount).catch(() => {});
+          } else {
+            navigator.clearAppBadge().catch(() => {});
+          }
         }
-      }
 
-      if (newCount > 0) {
-        document.title = `(${newCount}) Argon`;
+        // Browser title badge (universal fallback)
+        if (newCount > 0) {
+          document.title = `(${newCount}) Argon`;
+        } else {
+          document.title = "Argon";
+        }
       } else {
+        // Clear badges if user disabled
+        if ("clearAppBadge" in navigator) {
+          navigator.clearAppBadge().catch(() => {});
+        }
         document.title = "Argon";
       }
 
-      // ✅ Play sound on new messages (works when app is open)
+      // Play sound on new messages
       if (newCount > argonLastMessageCount) {
         argonPlayMessageSound();
       }
+
       argonLastMessageCount = newCount;
     })
     .catch((err) => {
@@ -1597,19 +1446,19 @@ function argonUpdateMessageBadge() {
 function argonShouldPoll() {
   // Don't poll if not authenticated
   if (window.userAuthenticated === false) return false;
-
+  
   // Don't poll if on message pages (user already sees messages)
   const path = window.location.pathname || '';
   if (path.includes('/messages/') || path.includes('/conversation/')) {
     return false;
   }
-
+  
   // Don't poll if user idle for >5 minutes
   const idleTime = Date.now() - argonLastActivity;
   if (idleTime > 300000) { // 5 minutes = 300,000ms
     return false;
   }
-
+  
   return true;
 }
 
@@ -1618,7 +1467,7 @@ function argonShouldPoll() {
  */
 function argonStartPolling() {
   if (argonPollingInterval) return; // Already polling
-
+  
   // Poll every 3 seconds (was 30)
   argonPollingInterval = setInterval(argonUpdateMessageBadge, 3000);
   console.log('Message polling started (3s interval)');
@@ -1629,7 +1478,7 @@ function argonStartPolling() {
  */
 function argonStopPolling() {
   if (!argonPollingInterval) return; // Already stopped
-
+  
   clearInterval(argonPollingInterval);
   argonPollingInterval = null;
   console.log('Message polling stopped');
@@ -1640,7 +1489,7 @@ function argonStopPolling() {
  */
 function argonUpdateActivity() {
   argonLastActivity = Date.now();
-
+  
   // If polling was stopped due to idle, restart it
   if (!argonPollingInterval && argonShouldPoll()) {
     argonStartPolling();
@@ -1692,7 +1541,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Initialize last activity timestamp
   argonLastActivity = Date.now();
-
+  
   // Start smart polling if conditions allow
   if (argonShouldPoll()) {
     argonStartPolling();
@@ -1748,8 +1597,8 @@ document.addEventListener("DOMContentLoaded", function() {
  * - Screen reader friendly alerts
  * 
  * @maintainers
- * Argon Admin
+ * Argon Development Team
  * 
  * @last_updated February 2026
  * ============================================================================
- */
+ */ 
