@@ -1,12 +1,37 @@
 from django import template
+from django.urls import reverse
 import re
 
 register = template.Library()
 
 @register.filter
 def parse_media(value):
+    """
+    Django template filter to parse media tags and mentions in text content.
+    
+    Supports:
+    - @mentions: Converts @username to clickable profile links
+    - [GIF:url]: Renders GIF images
+    - [STICKER:url]: Renders sticker images
+    - Line breaks: Converts \n to <br>
+    """
     if not value:
         return value
+    
+    # Convert @mentions to profile links
+    def replace_mention(match):
+        username = match.group(1)
+        try:
+            url = reverse('profile', args=[username])
+        except:
+            url = f'/profile/{username}/'
+        return f'<a href="{url}">@{username}</a>'
+    
+    value = re.sub(
+        r'(?<![<@\w])@(\w+)(?![^<]*>)',
+        replace_mention,
+        value
+    )
     
     # Find [GIF:url] and [STICKER:url]
     def replace_tag(match):
