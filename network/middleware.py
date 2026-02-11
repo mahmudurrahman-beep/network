@@ -1,6 +1,6 @@
 """
 ================================================================================
-ARGON SOCIAL NETWORK - CUSTOM MIDDLEWARE
+ARGON NETWORK - CUSTOM MIDDLEWARE
 ================================================================================
 
 @file        middleware.py
@@ -8,7 +8,7 @@ ARGON SOCIAL NETWORK - CUSTOM MIDDLEWARE
 @version     2.0.0
 @author      Argon Admin
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 MODULE PURPOSE
 ================================================================================
@@ -22,25 +22,6 @@ This module provides custom middleware classes for the Argon Social Network:
    - Updates user's last_seen timestamp for online status tracking
    - Uses caching to prevent excessive database writes
    - Powers "online now" indicators across the site
-
-MIDDLEWARE ORDER
-================================================================================
-Place in settings.MIDDLEWARE in this order:
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # ↓ Add custom middleware after Django's auth middleware
-    'network.middleware.TimezoneMiddleware',           # Timezone activation
-    'network.middleware.UpdateLastSeenMiddleware',     # Presence tracking
-]
-
-IMPORTANT: Place after AuthenticationMiddleware so request.user is available.
 
 PERFORMANCE IMPACT
 ================================================================================
@@ -203,7 +184,7 @@ class TimezoneMiddleware:
         """
 
         # ====================================================================
-        # STEP 1: TIMEZONE ACTIVATION
+        #       TIMEZONE ACTIVATION
         # ====================================================================
         # Activate timezone based on authentication status
 
@@ -224,7 +205,7 @@ class TimezoneMiddleware:
             timezone.activate(pytz.UTC)
 
         # ====================================================================
-        # STEP 2: PROCESS REQUEST
+        #         PROCESS REQUEST
         # ====================================================================
         # Continue to next middleware or view with activated timezone
 
@@ -332,7 +313,7 @@ class UpdateLastSeenMiddleware:
         """
 
         # ====================================================================
-        # STEP 1: AUTHENTICATION & INITIALIZATION
+        #       AUTHENTICATION & INITIALIZATION
         # ====================================================================
         # Early return for anonymous users to minimize overhead
 
@@ -340,7 +321,7 @@ class UpdateLastSeenMiddleware:
             now = timezone.now()  # Current UTC timestamp
 
             # ================================================================
-            # STEP 2: CACHE CHECK (WRITE THROTTLING)
+            #        CACHE CHECK (WRITE THROTTLING)
             # ================================================================
             # Check if we've updated recently (within last 30 seconds)
             # This prevents excessive database writes
@@ -352,7 +333,7 @@ class UpdateLastSeenMiddleware:
             if not last_update or (now - last_update) > timedelta(seconds=30):
 
                 # ============================================================
-                # STEP 3: DATABASE UPDATE
+                #       DATABASE UPDATE
                 # ============================================================
                 # Write new last_seen timestamp to database
 
@@ -363,7 +344,7 @@ class UpdateLastSeenMiddleware:
                     request.user.save(update_fields=['last_seen'])
 
                     # ========================================================
-                    # STEP 4: UPDATE WRITE THROTTLE CACHE
+                    #         UPDATE WRITE THROTTLE CACHE
                     # ========================================================
                     # Cache the update time to prevent another write for 30s
                     cache.set(cache_key, now, 30)  # 30 second TTL
@@ -379,7 +360,7 @@ class UpdateLastSeenMiddleware:
                     pass
 
                 # ============================================================
-                # STEP 5: UPDATE READ CACHE (OPTIONAL)
+                #         UPDATE READ CACHE (OPTIONAL)
                 # ============================================================
                 # Set a separate cache key for fast last_seen lookups
                 # Used by status check views or API endpoints
@@ -387,7 +368,7 @@ class UpdateLastSeenMiddleware:
                 cache.set(f"user_{request.user.id}_last_seen", now, 300)
 
         # ====================================================================
-        # STEP 6: CONTINUE REQUEST PROCESSING
+        #         CONTINUE REQUEST PROCESSING
         # ====================================================================
         # Process request normally and return response
 
@@ -398,37 +379,6 @@ class UpdateLastSeenMiddleware:
 ================================================================================
 END OF MIDDLEWARE
 ================================================================================
-
-DEPLOYMENT CHECKLIST
-================================================================================
-Before deploying middleware changes:
-
-1. Cache Backend Configured:
-   [ ] Redis/Memcached configured in settings.py
-   [ ] Cache keys won't conflict with other apps
-   [ ] Cache TTL values appropriate for your scale
-
-2. User Model Ready:
-   [ ] timezone field exists with pytz choices
-   [ ] last_seen field exists (DateTimeField, nullable)
-   [ ] is_online property implemented
-   [ ] Migration applied to production
-
-3. Middleware Order Correct:
-   [ ] Placed after AuthenticationMiddleware
-   [ ] TimezoneMiddleware before UpdateLastSeenMiddleware
-   [ ] No conflicts with third-party middleware
-
-4. Settings Configured:
-   [ ] USE_TZ = True
-   [ ] TIME_ZONE = 'UTC'
-   [ ] CACHES configured properly
-
-5. Testing Complete:
-   [ ] Timezone activation tested
-   [ ] last_seen updates verified
-   [ ] Cache strategy validated
-   [ ] Performance benchmarked
 
 MONITORING RECOMMENDATIONS
 ================================================================================
@@ -520,7 +470,5 @@ MAINTAINER
 Argon Admin
 Last updated: February 2026
 
-For questions about middleware or presence tracking,
-contact the Argon Admin.
 ================================================================================
 """
