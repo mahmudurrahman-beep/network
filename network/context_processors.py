@@ -1,6 +1,6 @@
 """
 ================================================================================
-ARGON SOCIAL NETWORK - CONTEXT PROCESSORS
+ARGON NETWORK - CONTEXT PROCESSORS
 ================================================================================
 
 @file        context_processors.py
@@ -8,7 +8,7 @@ ARGON SOCIAL NETWORK - CONTEXT PROCESSORS
 @version     2.0.0
 @author      Argon Admin
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 MODULE PURPOSE
 ================================================================================
@@ -150,7 +150,7 @@ def unread_counts(request):
     """
 
     # ========================================================================
-    # STEP 1: ANONYMOUS USER CHECK
+    #          ANONYMOUS USER CHECK
     # ========================================================================
     # Fast-path return for non-authenticated users
     # Avoids unnecessary database queries
@@ -162,7 +162,7 @@ def unread_counts(request):
         }
 
     # ========================================================================
-    # STEP 2: UNREAD NOTIFICATIONS
+    #         UNREAD NOTIFICATIONS
     # ========================================================================
     # Count notifications that:
     #   1. Belong to current user
@@ -180,7 +180,7 @@ def unread_counts(request):
     ).count()  # Use .count() for efficiency (no object loading)
 
     # ========================================================================
-    # STEP 3: LEGACY DM UNREAD COUNT
+    #       LEGACY DM UNREAD COUNT
     # ========================================================================
     # Count unread direct messages using the legacy recipient-based system.
     # This uses the Message.is_read field for simple DM conversations.
@@ -193,7 +193,7 @@ def unread_counts(request):
     ).count()
 
     # ========================================================================
-    # STEP 4: GROUP CONVERSATION UNREAD COUNT
+    #         GROUP CONVERSATION UNREAD COUNT
     # ========================================================================
     # Count unread messages in group conversations using the modern
     # conversation-based system with ConversationMember.last_read_at tracking.
@@ -247,7 +247,7 @@ def unread_counts(request):
         ).count()
 
     # ========================================================================
-    # STEP 5: RETURN CONTEXT DICTIONARY
+    #         RETURN CONTEXT DICTIONARY
     # ========================================================================
     # Combine DM and group unread counts for total messages
     # Return dictionary available in all templates
@@ -262,57 +262,6 @@ def unread_counts(request):
 ================================================================================
 END OF CONTEXT PROCESSORS
 ================================================================================
-
-TESTING RECOMMENDATIONS
-================================================================================
-Test the context processor:
-
-1. Anonymous User Test:
-   - Access any page without login
-   - Verify no database queries for unread counts
-   - Check that badges show 0 or are hidden
-
-2. Authenticated User Test:
-   - Login and verify correct unread counts
-   - Send test message and verify count increments
-   - Read message and verify count decrements
-   - Hide conversation and verify count updates
-
-3. Performance Test:
-   - Monitor query count (should be ~3-4 queries)
-   - Use Django Debug Toolbar to check query time
-   - Test with large number of conversations (100+)
-   - Verify acceptable page load times
-
-4. Edge Cases:
-   - User with no conversations
-   - User with only hidden conversations
-   - User with all messages read
-   - User blocked by message sender
-
-OPTIMIZATION TIPS
-================================================================================
-If unread counts become a performance bottleneck:
-
-1. Add Caching:
-   - Cache counts for 30-60 seconds per user
-   - Invalidate cache on new message/notification
-   - Use Redis for distributed caching
-
-2. Denormalize Counts:
-   - Add unread_count fields to User model
-   - Update via signals or async tasks
-   - Trade write complexity for read speed
-
-3. Use Database Views:
-   - Create materialized view for counts
-   - Refresh periodically
-   - Query view instead of live calculation
-
-4. Lazy Loading:
-   - Load counts via AJAX after page load
-   - Reduce initial page render time
-   - Update counts in real-time with WebSockets
 
 COMMON ISSUES & SOLUTIONS
 ================================================================================
@@ -340,10 +289,10 @@ Ensure these models are properly migrated and relationships are correct.
 
 MAINTAINER
 ================================================================================
-Argon Admin
+Argon Admin(Mahmudur Rahman)
 Last updated: February 2026
 
 For questions about context processors or to add new template-wide data,
-contact the Argon Admin team.
+contact the Argon Admin.
 ================================================================================
 """
