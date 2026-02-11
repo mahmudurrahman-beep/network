@@ -1,6 +1,6 @@
 <!--
 ================================================================================
-ARGON SOCIAL NETWORK - USER PROFILE PAGE
+ARGON NETWORK - USER PROFILE PAGE
 ================================================================================
 
 @file        profile.html
@@ -367,7 +367,7 @@ INCLUDES: network/partials/post_list.html
 </div>
 
 <script>
-/* BLOCK USER - WORKING */
+/* BLOCK USER */
 function handleBlock(username, button) {
     const csrf = document.querySelector('[name="csrfmiddlewaretoken"]').value;
     if (!confirm(button.textContent.trim() === 'Block' ? 'Block this user?' : 'Unblock this user?')) return;
@@ -380,7 +380,7 @@ function handleBlock(username, button) {
     .then(() => location.reload());
 }
 
-/* REPORT USER FUNCTIONS - FIXED WITH INLINE ONCLICK */
+/* REPORT USER FUNCTIONS WITH INLINE ONCLICK */
 let reportUsername = '';
 let reportUserId = 0;
 
