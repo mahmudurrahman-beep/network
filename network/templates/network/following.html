@@ -6,7 +6,7 @@
 
 <style>
 /* ===============================
-   Post Composer (Scoped & Safe)
+   Post Composer 
    =============================== */
 .post-composer .file-indicator{
   display:none;
@@ -79,7 +79,7 @@
         <form id="new-post-form" enctype="multipart/form-data">
           {% csrf_token %}
 
-          <!-- FIXED: Added js-mention-input class -->
+          <!-- @js-mention-input class -->
           <textarea name="content"
                     class="form-control mb-3 js-mention-input" data-mention-scope="global"
                     rows="3"
@@ -140,7 +140,7 @@
 
 <script>
 /* ===============================
-   File Indicator Logic (Safe)
+   File Indicator Logic 
    =============================== */
 (function () {
   const input = document.getElementById('media_files');
