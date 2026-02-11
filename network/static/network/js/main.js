@@ -1425,8 +1425,6 @@ document.addEventListener('DOMContentLoaded', updateNotificationBadge);
   document.addEventListener("DOMContentLoaded", scan);
 })();
 
-
-
 // ============================================================================
 // SECTION 8: MESSAGE BADGE & SOUND ALERTS
 // ============================================================================
