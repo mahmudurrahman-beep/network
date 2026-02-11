@@ -4,15 +4,15 @@ ARGON SOCIAL NETWORK - URL CONFIGURATION
 ================================================================================
 
 @file        urls.py
-@description Complete URL routing configuration for Argon Social Network
+@description Complete URL routing configuration for Argon Network
 @version     2.0.0
-@author      Argon Admin
+@author      Argon Admin(Mahmudur Rahman)
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 MODULE PURPOSE
 ================================================================================
-This module defines all URL patterns for the Argon Social Network application,
+This module defines all URL patterns for the Argon Network application,
 mapping URLs to their corresponding view functions. URLs are organized into
 logical sections for maintainability and clarity.
 
@@ -592,7 +592,7 @@ urlpatterns = [
 # SECTION 14: DEVELOPMENT MEDIA SERVING
 # ============================================================================
 # Serve user-uploaded media files during development
-# WARNING: Never use this in production! Configure web server instead.
+# WARNING: Not for production! 
 
 if settings.DEBUG:
     urlpatterns += static(
@@ -629,39 +629,11 @@ room_url = reverse('conversation_room', kwargs={'conversation_id': 5})
 search_url = reverse('users_search')  # '/users/search/'
 mentions_url = reverse('mention_user_suggestions')  # '/api/mentions/users/'
 
-MAINTENANCE NOTES
-================================================================================
-When adding new URLs:
-1. Place in appropriate section
-2. Add inline comment describing purpose
-3. Follow naming convention (underscore_case)
-4. Update TOTAL ENDPOINTS count above
-5. Add example to URL TESTING EXAMPLES if needed
-
-SECURITY CHECKLIST
-================================================================================
-Before deploying URL changes:
-- [ ] All state-changing views have CSRF protection
-- [ ] Authentication required where needed (@login_required)
-- [ ] Admin actions protected (group management)
-- [ ] Block relationships checked before interactions
-- [ ] User-owned resources verified (can't edit others' posts)
-- [ ] settings.DEBUG = False in production
-- [ ] Media serving handled by web server, not Django
-
-PERFORMANCE OPTIMIZATION
-================================================================================
-- URL patterns compiled at startup (no runtime overhead)
-- Use integer PKs where possible (faster than string slugs)
-- Consider URL caching for frequently accessed patterns
-- Monitor slow API endpoints and optimize view functions
 
 MAINTAINER
 ================================================================================
-Argon Admin
+Argon Admin(Mahmudur Rahman)
 Last updated: February 2026
 
-For questions about URL routing or to propose new endpoints,
-contact the Argon Admin.
 ================================================================================
 """
