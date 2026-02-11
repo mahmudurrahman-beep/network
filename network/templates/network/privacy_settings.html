@@ -1,31 +1,13 @@
 <!--
 ================================================================================
-ARGON SOCIAL NETWORK - PRIVACY & SAFETY SETTINGS
+ARGON SOCIAL NETWORK - PRIVACY & SAFETY SETTINGS (PATCHED VERSION)
 ================================================================================
 
 @file        privacy_settings.html
 @purpose     User privacy and safety configuration page
 @author      Argon Admin
 @date        February 2026
-@extends     network/layout.html
-@requires    Bootstrap 4, Font Awesome
-@context     request.user, privacy_form
-
-FEATURES:
-• Account privacy toggle (public/private)
-• Default post visibility settings
-• Tagging permissions control
-• Online status visibility toggle
-• Message notification preferences
-• Comment notification preferences
-
-SECURITY:
-• CSRF protection on forms
-• Authentication required
-• User-specific settings
-
-FILE LOCATION: templates/network/privacy_settings.html
-
+@version     PATCHED - Badge toggle removed
 ================================================================================
 -->
 
@@ -41,63 +23,19 @@ FILE LOCATION: templates/network/privacy_settings.html
       <div class="mb-3">
         <h2 class="h4 mb-1">Privacy &amp; Safety</h2>
         <p class="text-muted mb-0">
-          Control who sees your posts, who can interact with you, and how Argon alerts you about new messages.
+          Control who sees your posts and customize your message notifications.
         </p>
       </div>
 
-      <!-- Message alert settings -->
+      <!-- Message notification settings -->
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span><strong>Message alerts</strong></span>
+          <span><strong>Message notifications</strong></span>
           <small class="text-muted d-none d-md-inline">
-            Only affects your account
+            Sound alerts
           </small>
         </div>
         <div class="card-body">
-
-          <!-- Badge toggle -->
-          <div class="form-group mb-3">
-            <div class="custom-control custom-switch">
-              <input
-                type="checkbox"
-                class="custom-control-input"
-                id="msgBadgeToggle"
-                {% if user.message_badge_enabled %}checked{% endif %}
-              >
-              <label class="custom-control-label" for="msgBadgeToggle">
-                <span class="font-weight-semibold">Show unread message count</span>
-                <small class="d-block text-muted mt-1">
-                  Display unread message count on app icon or browser tab.
-                </small>
-              </label>
-            </div>
-            
-            <!-- ✅ NEW: Realistic badge behavior explanation -->
-            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.9rem;">
-              <strong>📱 How message badges work:</strong>
-              <ul class="mb-2 mt-2 pl-3">
-                <li><strong>Updates every 3 seconds</strong> when Argon app is open</li>
-                <li><strong>To check new messages:</strong> Open the Argon app</li>
-                <li><strong>Background updates</strong> require keeping app open or checking periodically</li>
-              </ul>
-              
-              <strong>Platform support:</strong>
-              <div class="mt-2">
-                <div class="mb-1">
-                  <strong>📱 Android:</strong> 
-                  <span class="text-muted">Badge on app icon (when app is open)</span>
-                </div>
-                <div class="mb-1">
-                  <strong>🍎 iOS/Safari:</strong> 
-                  <span class="text-muted">Count shows in browser tab only</span>
-                </div>
-                <div>
-                  <strong>💻 Desktop:</strong> 
-                  <span class="text-muted">Badge in taskbar/dock (when app is open)</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Sound toggle -->
           <div class="form-group mb-3">
@@ -111,7 +49,7 @@ FILE LOCATION: templates/network/privacy_settings.html
               <label class="custom-control-label" for="msgSoundToggle">
                 <span class="font-weight-semibold">Play sound for new messages</span>
                 <small class="d-block text-muted mt-1">
-                  Hear a notification sound when new messages arrive (while app is open).
+                  Hear a notification sound when new messages arrive while using Argon.
                 </small>
               </label>
             </div>
@@ -138,10 +76,18 @@ FILE LOCATION: templates/network/privacy_settings.html
               </option>
             </select>
             <small class="form-text text-muted">
-              Plays when a new message arrives and you're not viewing the messages page.
-              <br>
-              <em>Note: Sound plays only while Argon app is open and active.</em>
+              Sound plays when a new message arrives and you're not viewing the messages page.
             </small>
+          </div>
+
+          <!-- Info box about how message notifications work -->
+          <div class="alert alert-info mb-3" style="font-size: 0.9rem;">
+            <strong>💡 How message alerts work:</strong>
+            <ul class="mb-0 mt-2 pl-3">
+              <li><strong>Sound alerts:</strong> Play when app is open and active</li>
+              <li><strong>Unread count:</strong> Always visible in navigation bar (top right)</li>
+              <li><strong>Updates:</strong> Real-time when using Argon, or when you open the app</li>
+            </ul>
           </div>
 
           <div class="d-flex flex-column flex-sm-row justify-content-between">
@@ -149,7 +95,7 @@ FILE LOCATION: templates/network/privacy_settings.html
               🔊 Test sound
             </button>
             <button class="btn btn-primary btn-sm" id="msgSaveSettingsBtn">
-              💾 Save message alert settings
+              💾 Save notification settings
             </button>
           </div>
 
@@ -261,17 +207,16 @@ FILE LOCATION: templates/network/privacy_settings.html
   </div>
 </div>
 
-<!-- Inline JS for message alert settings -->
+<!-- Inline JS for message sound settings -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const badgeToggle = document.getElementById("msgBadgeToggle");
   const soundToggle = document.getElementById("msgSoundToggle");
   const soundChoice = document.getElementById("msgSoundChoice");
   const soundChoiceGroup = document.getElementById("msgSoundChoiceGroup");
   const testSoundBtn = document.getElementById("msgTestSoundBtn");
   const saveSettingsBtn = document.getElementById("msgSaveSettingsBtn");
 
-  if (!badgeToggle || !soundToggle) {
+  if (!soundToggle) {
     return;
   }
 
@@ -300,20 +245,20 @@ document.addEventListener("DOMContentLoaded", function () {
     audio.volume = 0.3;
     audio.play().catch(function (err) {
       console.log('Sound play blocked:', err);
-      alert('🔊 Sound test: Tap anywhere on the page first, then try again (browser security).');
+      alert('🔊 Tap anywhere on the page first to enable sound, then try again.');
     });
   });
 
-  // Save settings
+  // Save settings (PATCHED - removed message_badge_enabled)
   saveSettingsBtn.addEventListener("click", function () {
     const payload = {
-      message_badge_enabled: badgeToggle.checked,
       message_sound_enabled: soundToggle.checked,
       message_sound_choice: soundChoice.value
     };
 
     // Disable button during save
     saveSettingsBtn.disabled = true;
+    const originalText = saveSettingsBtn.textContent;
     saveSettingsBtn.textContent = "Saving...";
 
     fetch("/api/update-message-settings/", {
@@ -327,18 +272,18 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.status === "success") {
-          alert("✅ Message alert settings saved successfully!");
+          alert("✅ Notification settings saved!");
         } else {
           alert("❌ Error saving settings. Please try again.");
         }
       })
       .catch(function () {
-        alert("❌ Network error. Please check your connection and try again.");
+        alert("❌ Network error. Please check your connection.");
       })
       .finally(function () {
         // Re-enable button
         saveSettingsBtn.disabled = false;
-        saveSettingsBtn.textContent = "💾 Save message alert settings";
+        saveSettingsBtn.textContent = originalText;
       });
   });
 });
@@ -347,23 +292,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <!--
 ================================================================================
-END OF privacy_settings.html - Author: Argon Admin
+END OF privacy_settings.html 
 ================================================================================
 
-MAINTAINER: Argon Admin
-LAST UPDATED: February 2026
-
-CHANGES IN THIS VERSION:
-✅ Added realistic badge behavior explanation
-✅ Platform-specific guidance (Android, iOS, Desktop)
-✅ Honest about when badges/sounds work (app must be open)
-✅ Improved mobile responsiveness
-✅ Better error handling in save function
-✅ Enhanced sound test with user-friendly error message
-
-RELATED TEMPLATES:
-• profile.html - User profile
-• layout.html - Base template
+RELATED FILES:
+• main.js - Also needs patching (remove badge API code)
+• layout.html - No changes needed
+• views.py - No changes needed
 
 ================================================================================
 -->
