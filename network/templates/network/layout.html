@@ -110,7 +110,7 @@ BLOCKS: title, body (child templates override these)
   </nav>
 
 <main class="container my-4">
-{% if messages and request.resolver_match.url_name != 'conversation' and request.resolver_match.url_name != 'conversation_room' and request.resolver_match.url_name != 'register' %}
+{% if messages and request.resolver_match.url_name != 'conversation' and request.resolver_match.url_name != 'conversation_room' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'login' %}
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
       {{ message }}
