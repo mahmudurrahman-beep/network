@@ -1,6 +1,6 @@
 """
 ================================================================================
-ARGON SOCIAL NETWORK - MESSAGE INBOX FILTERS
+ARGON NETWORK - MESSAGE INBOX FILTERS
 ================================================================================
 
 @file        message_filters.py
@@ -18,7 +18,7 @@ message preview area.
 
 USAGE IN TEMPLATES
 ================================================================================
-Load the filter at the top of your template:
+Load the filter at the top of the template:
 
     {% load message_filters %}
 
