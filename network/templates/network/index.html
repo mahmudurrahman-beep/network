@@ -1,6 +1,6 @@
 <!--
 ================================================================================
-ARGON SOCIAL NETWORK - HOME FEED TEMPLATE
+ARGON NETWORK - HOME FEED TEMPLATE
 ================================================================================
 
 @file        index.html
@@ -8,7 +8,7 @@ ARGON SOCIAL NETWORK - HOME FEED TEMPLATE
 @version     2.0.0
 @author      Argon admin 
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 TEMPLATE PURPOSE
 ================================================================================
@@ -62,7 +62,7 @@ ACCESSIBILITY
 - Semantic post structure
 - ARIA labels for interactive elements
 - Keyboard navigation
-- Screen reader friendly
+- Screen reader friendly(Good UX)
 
 ================================================================================
 -->
@@ -185,7 +185,7 @@ ACCESSIBILITY
         </div>
       </div>
       
-      <!-- Quick Stats Card (Optional) -->
+      <!-- Quick Stats Card -->
       <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-4">
           <h4 class="card-title text-primary mb-3">
@@ -291,7 +291,6 @@ ACCESSIBILITY
 <!-- Auto-redirect for logged-in users to feed -->
 {% if user.is_authenticated %}
 <script>
-  // Optional: Uncomment if you want auto-redirect to all_posts for logged-in users
   /*
   setTimeout(function() {
     window.location.href = "{% url 'all_posts' %}";
