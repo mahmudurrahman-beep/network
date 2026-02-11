@@ -1,8 +1,8 @@
 """
 network/views.py
 
-Professional Django views for Argon Social Network application.
-This file contains all view functions organized by feature domain.
+Professional Django views for Argon Network application(Production ready app based on the foundation of Harvarx CS50W Project 4)
+This file contains all view functions organized nicely.
 
 Version: 2.0 (Production Ready)
 Last Updated: February 2026
@@ -2872,12 +2872,12 @@ def search_gifs(request):
         source = 'local_placeholder' if source != 'giphy_error' else 'giphy_error_fallback'
 
     payload = {
-        "items": items,           # <-- NEW: richer objects
-        "gifs": [x["preview_url"] for x in items],  # <-- compatibility: your JS already expects "gifs"
+        "items": items,           
+        "gifs": [x["preview_url"] for x in items], 
         "type": media_type,
         "count": len(items),
         "source": source
     }
 
-    cache.set(cache_key, payload, 60)  # 60s cache
+    cache.set(cache_key, payload, 60)  
     return JsonResponse(payload)
