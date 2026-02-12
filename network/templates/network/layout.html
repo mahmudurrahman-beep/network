@@ -223,7 +223,7 @@ BLOCKS: title, body (child templates override these)
 
     })();
   </script>
-<!-- Service Worker Registration for PWA -->
+<!-- Service Worker Registration for PWA and Global validation for all comment forms and posts -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -236,6 +236,24 @@ BLOCKS: title, body (child templates override these)
           });
       });
     }
+  // Global validation for ALL comment forms – root comments AND replies
+document.addEventListener('submit', function(e) {
+  const form = e.target;
+  if (!form.action || !form.action.includes('/add-comment/')) return;
+  
+  const text = form.querySelector('textarea[name="content"]');
+  const file = form.querySelector('input[name="media"]');
+  const url = form.querySelector('input[name="media_url"]');
+  
+  const hasText = text && text.value.trim().length > 0;
+  const hasFile = file && file.files.length > 0;
+  const hasUrl = url && url.value.trim().length > 0;
+  
+  if (!hasText && !hasFile && !hasUrl) {
+    e.preventDefault();
+    alert('Please add text or media.');
+  }
+});
   </script>
 </body>
 </html> 
