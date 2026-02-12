@@ -499,6 +499,14 @@ class Comment(models.Model):
         blank=True,
         help_text="External media URL (GIFs, stickers)"
     )
+    media = CloudinaryField(
+        'media',
+        resource_type='auto',   
+        folder='comment_media', 
+        blank=True,
+        null=True,
+        help_text="Optional media attachment"
+    )
     media_type = models.CharField(
         max_length=10, 
         choices=[
