@@ -1512,7 +1512,6 @@ function argonPlayMessageSound() {
  * @fires GET /api/message-badge/
  */
 function argonUpdateMessageBadge() {
-  // Skip if user not authenticated
   if (window.userAuthenticated === false) return;
 
   fetch("/api/message-badge/")
@@ -1524,8 +1523,17 @@ function argonUpdateMessageBadge() {
       const newCount = data.count || 0;
       const badgeEnabled = !!data.badge_enabled;
 
+      const navBadge = document.querySelector('.js-message-badge');
+      if (navBadge) {
+        if (newCount > 0) {
+          navBadge.textContent = newCount;
+          navBadge.style.display = 'inline-block';
+        } else {
+          navBadge.style.display = 'none';
+        }
+      }
+
       if (badgeEnabled) {
-        // PWA app icon badge (Chrome/Edge on Android) has limitation(realistic)
         if ("setAppBadge" in navigator) {
           if (newCount > 0) {
             navigator.setAppBadge(newCount).catch(() => {});
@@ -1533,22 +1541,18 @@ function argonUpdateMessageBadge() {
             navigator.clearAppBadge().catch(() => {});
           }
         }
-
-        // Browser title badge (universal fallback)
         if (newCount > 0) {
           document.title = `(${newCount}) Argon`;
         } else {
           document.title = "Argon";
         }
       } else {
-        // Clear badges if user disabled
         if ("clearAppBadge" in navigator) {
           navigator.clearAppBadge().catch(() => {});
         }
         document.title = "Argon";
       }
 
-      // Play sound on new messages
       if (newCount > argonLastMessageCount) {
         argonPlayMessageSound();
       }
