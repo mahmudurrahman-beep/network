@@ -1471,6 +1471,16 @@ def add_comment(request, post_id):
 
     # Attach uploaded file
     if media_file:
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+        if media_file.size > MAX_FILE_SIZE:
+            comment.delete()
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse(
+                    {"error": f"File too large. Maximum size is 10MB."},
+                    status=400
+                )
+            messages.error(request, "File too large. Maximum size is 10MB.")
+            return redirect("all_posts")
         comment.media = media_file
         comment.media_type = final_media_type
         comment.save(update_fields=["media", "media_type"])
