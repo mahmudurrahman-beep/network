@@ -487,12 +487,6 @@ class Comment(models.Model):
         auto_now_add=True,
         help_text="Creation timestamp"
     )
-    media = models.FileField(
-        upload_to='comment_media/', 
-        blank=True, 
-        null=True,
-        help_text="Optional media attachment"
-    )
     media_url = models.URLField(
         max_length=500, 
         null=True, 
@@ -825,12 +819,6 @@ class Message(models.Model):
     is_read = models.BooleanField(
         default=False,
         help_text="Read status (DM only, groups use last_read_at)"
-    )
-    media = models.FileField(
-        upload_to='message_media/', 
-        blank=True, 
-        null=True,
-        help_text="Uploaded media attachment"
     )
     media = CloudinaryField(
         'media',
