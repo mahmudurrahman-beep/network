@@ -1392,10 +1392,7 @@ def check_interaction(request, username):
 @csrf_exempt
 @login_required
 def add_comment(request, post_id):
-    """
-    Add comment to a post with media support and depth limiting.
-    Maximum reply depth is 1 (root + one reply level).
-    """
+    """Add comment to a post with media support and depth limiting."""
     post = get_object_or_404(Post, id=post_id)
 
     if request.method != "POST":
@@ -1403,40 +1400,28 @@ def add_comment(request, post_id):
 
     content = (request.POST.get("content") or "").strip()
     parent_id = request.POST.get("parent_id")
-
-    # Legacy media fields
     legacy_media_url = (request.POST.get("media_url") or "").strip()
     legacy_media_type = (request.POST.get("media_type") or "text").strip().lower()
-
-    # New file upload
     media_file = request.FILES.get("media")
 
-    # Validate content
     if not content and not media_file and not legacy_media_url:
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return JsonResponse({"error": "Comment cannot be empty"}, status=400)
         messages.error(request, "Comment cannot be empty.")
         return redirect("all_posts")
 
-    # Check parent and depth
     parent = None
     if parent_id:
         try:
             parent = Comment.objects.get(id=parent_id, post=post)
-
-            # Calculate depth
             depth = 0
             current = parent
             while current.parent:
                 depth += 1
                 current = current.parent
-
             if depth >= 1:
                 if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                    return JsonResponse(
-                        {"error": "Maximum reply depth reached"},
-                        status=400
-                    )
+                    return JsonResponse({"error": "Maximum reply depth reached"}, status=400)
                 messages.error(request, "Maximum reply depth reached.")
                 return redirect("all_posts")
         except Comment.DoesNotExist:
@@ -1445,13 +1430,38 @@ def add_comment(request, post_id):
             messages.error(request, "Invalid parent comment.")
             return redirect("all_posts")
 
-    # Handle media
     final_media_url = ""
     final_media_type = "text"
 
     if media_file:
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        if media_file.size > MAX_FILE_SIZE:
+            file_size_mb = media_file.size / (1024 * 1024)
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({
+                    "error": f"File '{media_file.name}' is {file_size_mb:.1f}MB. Maximum size is 10MB"
+                }, status=400)
+            messages.error(request, f"File too large ({file_size_mb:.1f}MB). Maximum 10MB allowed.")
+            return redirect("all_posts")
+        
         ctype = media_file.content_type or ""
-        final_media_type = 'video' if ctype.startswith("video/") else 'image'
+        if ctype.startswith('audio/'):
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"error": "Audio files are not supported"}, status=400)
+            messages.error(request, "Audio files are not supported.")
+            return redirect("all_posts")
+        
+        is_image = ctype.startswith('image/')
+        is_video = ctype.startswith('video/')
+        
+        if not is_image and not is_video:
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"error": "File type not supported. Use images or videos only"}, status=400)
+            messages.error(request, "File type not supported. Use images or videos only.")
+            return redirect("all_posts")
+        
+        final_media_type = 'video' if is_video else 'image'
+        
     elif legacy_media_url:
         final_media_url = legacy_media_url
         if legacy_media_type in ("image", "video", "gif", "sticker"):
@@ -1459,7 +1469,6 @@ def add_comment(request, post_id):
         else:
             final_media_type = "image"
 
-    # Create comment
     comment = Comment.objects.create(
         post=post,
         user=request.user,
@@ -1469,23 +1478,19 @@ def add_comment(request, post_id):
         media_type=final_media_type
     )
 
-    # Attach uploaded file
     if media_file:
-        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-        if media_file.size > MAX_FILE_SIZE:
+        try:
+            comment.media = media_file
+            comment.media_type = final_media_type
+            comment.save(update_fields=["media", "media_type"])
+        except Exception as e:
             comment.delete()
+            print(f"Comment media upload failed: {e}")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                return JsonResponse(
-                    {"error": f"File too large. Maximum size is 10MB."},
-                    status=400
-                )
-            messages.error(request, "File too large. Maximum size is 10MB.")
+                return JsonResponse({"error": "Failed to upload media. Please try again."}, status=500)
+            messages.error(request, "Failed to upload media.")
             return redirect("all_posts")
-        comment.media = media_file
-        comment.media_type = final_media_type
-        comment.save(update_fields=["media", "media_type"])
 
-    # Notifications
     _notify_mentions_in_post(request.user, post, content, "comment")
     if post.user != request.user:
         Notification.objects.create(
@@ -1495,7 +1500,6 @@ def add_comment(request, post_id):
             post=post
         )
 
-    # AJAX response
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({
             "status": "success",
@@ -1735,20 +1739,15 @@ def conversation(request, username):
 
 @login_required
 def conversation_room(request, conversation_id):
-    """
-    Conversation room for both DM and group chats.
-    Handles message sending, read receipts, and online status.
-    """
+    """Conversation room for both DM and group chats."""
     conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    # Check membership
     if not ConversationMember.objects.filter(
         conversation=conversation,
         user=request.user
     ).exists():
         return HttpResponseForbidden()
 
-    # Assign creator for legacy groups
     if conversation.is_group and conversation.created_by_id is None:
         first_member = (
             ConversationMember.objects
@@ -1761,7 +1760,6 @@ def conversation_room(request, conversation_id):
             conversation.created_by = first_member.user
             conversation.save(update_fields=["created_by"])
 
-    # Get members
     members_qs = User.objects.filter(
         conversation_memberships__conversation=conversation
     ).distinct()
@@ -1772,7 +1770,6 @@ def conversation_room(request, conversation_id):
 
     msgs = Message.objects.filter(conversation=conversation).order_by("timestamp")
 
-    # Online status
     other_user_is_online = False
     other_user_status = None
 
@@ -1780,7 +1777,6 @@ def conversation_room(request, conversation_id):
         other_user_is_online = other_user.is_online
         other_user_status = "Active now" if other_user_is_online else "Offline"
 
-    # Mark as read
     if conversation.is_group:
         ConversationMember.objects.filter(
             conversation=conversation,
@@ -1795,11 +1791,30 @@ def conversation_room(request, conversation_id):
                 is_read=False
             ).update(is_read=True)
 
-    # Handle message sending
     if request.method == "POST":
         content = request.POST.get("content", "").strip()
         media_file = request.FILES.get("media")
-
+        
+        if media_file:
+            MAX_FILE_SIZE = 10 * 1024 * 1024
+            
+            if media_file.size > MAX_FILE_SIZE:
+                file_size_mb = media_file.size / (1024 * 1024)
+                messages.error(request, f"File too large ({file_size_mb:.1f}MB). Maximum 10MB allowed.")
+                return redirect("conversation_room", conversation_id=conversation.id)
+            
+            content_type = media_file.content_type or ""
+            if content_type.startswith('audio/'):
+                messages.error(request, "Audio files are not supported.")
+                return redirect("conversation_room", conversation_id=conversation.id)
+            
+            is_image = content_type.startswith('image/')
+            is_video = content_type.startswith('video/')
+            
+            if not is_image and not is_video:
+                messages.error(request, "File type not supported. Use images or videos only.")
+                return redirect("conversation_room", conversation_id=conversation.id)
+        
         if content or media_file:
             msg = Message.objects.create(
                 conversation=conversation,
@@ -1808,51 +1823,52 @@ def conversation_room(request, conversation_id):
                 content=content or ""
             )
 
-            # Notify mentions in group
             if conversation.is_group and content:
                 _notify_mentions_in_group_message(request.user, conversation, content)
 
-            # Handle media
             if media_file:
-                content_type = media_file.content_type
-                if content_type == "image/gif":
-                    media_type = "gif"
-                elif content_type.startswith("image/"):
-                    media_type = "image"
-                elif content_type.startswith("video/"):
-                    media_type = "video"
-                else:
-                    ext = os.path.splitext(media_file.name)[1].lower()
-                    if ext == ".gif":
+                try:
+                    content_type = media_file.content_type
+                    if content_type == "image/gif":
                         media_type = "gif"
-                    elif ext in [".jpg", ".jpeg", ".png", ".bmp", ".webp"]:
+                    elif content_type.startswith("image/"):
                         media_type = "image"
-                    elif ext in [".mp4", ".mov", ".avi", ".mkv", ".webm"]:
+                    elif content_type.startswith("video/"):
                         media_type = "video"
                     else:
-                        media_type = "image"
+                        ext = os.path.splitext(media_file.name)[1].lower()
+                        if ext == ".gif":
+                            media_type = "gif"
+                        elif ext in [".jpg", ".jpeg", ".png", ".bmp", ".webp"]:
+                            media_type = "image"
+                        elif ext in [".mp4", ".mov", ".avi", ".mkv", ".webm"]:
+                            media_type = "video"
+                        else:
+                            media_type = "image"
 
-                msg.media = media_file
-                msg.media_type = media_type
-                msg.save()
+                    msg.media = media_file
+                    msg.media_type = media_type
+                    msg.save()
+                except Exception as e:
+                    msg.delete()
+                    print(f"Message media upload failed: {e}")
+                    messages.error(request, "Failed to upload media. Please try again.")
+                    return redirect("conversation_room", conversation_id=conversation.id)
 
-            # Unhide conversation
             conversation.hidden_by.remove(request.user)
             if other_user:
                 conversation.hidden_by.remove(other_user)
-                request.user.hidden_conversations.remove(other_user)
+                request.user.hidden_conversations.remove(request.user)
                 other_user.hidden_conversations.remove(request.user)
 
         return redirect("conversation_room", conversation_id=conversation.id)
 
-    # Get admin IDs and permissions
     admin_ids = set(_get_group_admin_ids(conversation))
     if conversation.created_by_id:
         admin_ids.add(conversation.created_by_id)
 
     can_manage_members = user_can_manage(conversation, request.user)
 
-    # Calculate read receipts for group messages
     if conversation.is_group:
         last_read_map = {
             uid: last_read_at
@@ -1877,7 +1893,6 @@ def conversation_room(request, conversation_id):
         for msg in msgs:
             msg.seen_by = []
 
-    # Get Django messages (for flash messages)
     from django.contrib.messages import get_messages as _get_messages
     messages_django = list(_get_messages(request))
 
