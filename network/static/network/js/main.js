@@ -330,6 +330,41 @@ document.querySelectorAll('.edit-post').forEach(btn => {
   });
 });
 
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.delete-post');
+  if (!btn) return;
+
+  e.stopPropagation();
+
+  if (!confirm('Are you sure you want to delete this post?')) return;
+
+  const postId = btn.dataset.post;
+  const postCard = btn.closest('.post-card');
+  if (!postCard) return;
+
+  fetch(`/delete-post/${postId}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrfToken() }
+  })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      if (data.message) {
+        postCard.style.transition = 'opacity 0.3s';
+        postCard.style.opacity = '0';
+        setTimeout(() => postCard.remove(), 300);
+      } else {
+        alert('Failed to delete post');
+      }
+    })
+    .catch(error => {
+      console.error('Delete failed:', error);
+      alert('Error deleting post.');
+    });
+});
+
 /**
  * Post Voting System (Thumbs Up/Down)
  * 
