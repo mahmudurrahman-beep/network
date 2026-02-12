@@ -832,6 +832,14 @@ class Message(models.Model):
         null=True,
         help_text="Uploaded media attachment"
     )
+    media = CloudinaryField(
+        'media',
+        resource_type='auto',
+        folder='message_media',   
+        blank=True,
+        null=True,
+        help_text="Uploaded media attachment"
+    )
     media_url = models.URLField(
         max_length=500, 
         null=True, 
