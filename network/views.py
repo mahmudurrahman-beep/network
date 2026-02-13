@@ -827,16 +827,34 @@ def edit_profile(request):
 
     return _render()
 
-
 @csrf_exempt
 @login_required
 def quick_upload_picture(request):
     """Quick profile picture upload endpoint."""
     if request.method == "POST" and 'profile_picture' in request.FILES:
-        request.user.profile_picture = request.FILES['profile_picture']
-        request.user.save()
+        profile_pic = request.FILES['profile_picture']
+        
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        
+        if profile_pic.size > MAX_FILE_SIZE:
+            file_size_mb = profile_pic.size / (1024 * 1024)
+            messages.error(request, f"Image too large ({file_size_mb:.1f}MB). Maximum 10MB allowed.")
+            return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+        
+        content_type = profile_pic.content_type or ""
+        if not content_type.startswith('image/'):
+            messages.error(request, "Only image files are allowed for profile pictures.")
+            return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+        
+        try:
+            request.user.profile_picture = profile_pic
+            request.user.save()
+            messages.success(request, "Profile picture updated!")
+        except Exception as e:
+            print(f"Profile picture upload failed: {e}")
+            messages.error(request, "Failed to upload profile picture. Please try again.")
+    
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
-
 
 @login_required
 def discover_users(request):
@@ -2350,26 +2368,38 @@ def update_group_name(request, conversation_id):
 def update_group_avatar(request, conversation_id):
     """Update group avatar (any member can upload)."""
     conv = get_object_or_404(Conversation, id=conversation_id)
-
     if not conv.is_group:
         return JsonResponse({"error": "Not a group"}, status=400)
-
-    # Check membership
+    
     if not ConversationMember.objects.filter(
         conversation=conv,
         user=request.user
     ).exists():
         return JsonResponse({"error": "No permission"}, status=403)
-
+    
     avatar = request.FILES.get("group_avatar")
     if not avatar:
         return JsonResponse({"error": "No file uploaded"}, status=400)
-
-    conv.group_avatar = avatar
-    conv.save(update_fields=["group_avatar"])
-
-    return JsonResponse({"ok": True, "url": conv.group_avatar.url})
-
+    
+    MAX_FILE_SIZE = 10 * 1024 * 1024
+    
+    if avatar.size > MAX_FILE_SIZE:
+        file_size_mb = avatar.size / (1024 * 1024)
+        return JsonResponse({
+            "error": f"Image too large ({file_size_mb:.1f}MB). Maximum 10MB allowed."
+        }, status=400)
+    
+    content_type = avatar.content_type or ""
+    if not content_type.startswith('image/'):
+        return JsonResponse({"error": "Only image files are allowed."}, status=400)
+    
+    try:
+        conv.group_avatar = avatar
+        conv.save(update_fields=["group_avatar"])
+        return JsonResponse({"ok": True, "url": conv.group_avatar.url})
+    except Exception as e:
+        print(f"Group avatar upload failed: {e}")
+        return JsonResponse({"error": "Failed to upload avatar. Please try again."}, status=500)
 
 @login_required
 @require_POST
