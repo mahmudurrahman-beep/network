@@ -196,11 +196,13 @@ class User(AbstractUser):
     """
 
     # --- Profile Information ---
-    profile_picture = models.ImageField(
-        upload_to='profile_pics/', 
-        null=True, 
-        blank=True,
-        help_text="User's profile avatar image"
+    profile_picture = CloudinaryField(
+       'profile_picture',
+       resource_type='image',
+       folder='profile_pics',
+       null=True, 
+       blank=True,
+       help_text="User's profile avatar image"
     )
     bio = models.TextField(
         max_length=500, 
@@ -662,11 +664,14 @@ class Conversation(models.Model):
         related_name='created_conversations',
         help_text="User who created this conversation"
     )
-    group_avatar = models.ImageField(
-        upload_to='group_avatars/', 
-        null=True, 
-        blank=True,
-        help_text="Group avatar image"
+    group_avatar = CloudinaryField(
+       'group_avatar',
+       resource_type='image',
+       folder='group_avatars',
+       null=True, 
+       blank=True,
+       help_text="Group avatar image"
+    )
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
