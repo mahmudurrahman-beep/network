@@ -672,7 +672,6 @@ class Conversation(models.Model):
        blank=True,
        help_text="Group avatar image"
     )
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Creation timestamp"
