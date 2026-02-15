@@ -1239,32 +1239,14 @@ ACCESSIBILITY
   background: rgba(255,255,255,.65);
 }
 
-.member-actions-dropdown {
-  position: relative;
+.member-action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
 
-.member-actions-dropdown .btn {
-  border: 1px solid #dee2e6;
-  background: white;
-  color: #6c757d;
-}
-
-.member-actions-dropdown .btn:hover,
-.member-actions-dropdown .btn:focus {
-  background: #f8f9fa;
-  color: #495057;
-  border-color: #dee2e6;
-}
-
-.member-actions-dropdown .btn::after {
-  display: none !important;
-}
-
-.member-actions-dropdown .dropdown-menu {
-  position: absolute;
-  z-index: 1060;
-  right: 0;
-  left: auto;
+.member-action-buttons .btn {
+  white-space: nowrap;
 }
 
 .list-group-item {
@@ -1285,54 +1267,19 @@ ACCESSIBILITY
     color: rgba(255,255,255,.78) !important;
   }
 
-  .member-actions-dropdown .btn-text {
-    display: none;
+  .member-action-buttons {
+    gap: 6px;
   }
   
-  .member-actions-dropdown .btn {
-    width: 44px !important;
-    height: 44px !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 1px solid #ced4da !important;
-    background: white !important;
-    color: #495057 !important;
-    font-size: 20px !important;
-    border-radius: 6px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .member-actions-dropdown .btn:active {
-    background: #e9ecef !important;
-    transform: scale(0.95);
-  }
-  
-  .member-actions-dropdown .btn::after {
-    display: none !important;
-  }
-  
-  .member-actions-dropdown .dropdown-menu {
-    font-size: 15px !important;
-    min-width: 180px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    border-radius: 8px !important;
-  }
-  
-  .member-actions-dropdown .dropdown-item {
-    padding: 12px 16px !important;
-    font-size: 15px !important;
-  }
-
-  .member-actions-dropdown .dropdown-item:active {
-    background-color: #007bff !important;
-    color: white !important;
+  .member-action-buttons .btn {
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    min-width: 36px;
   }
   
   .list-group-item {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
   
   .list-group-item .d-flex.align-items-center > div:first-child {
@@ -1725,38 +1672,25 @@ ACCESSIBILITY
                   <!-- Other user actions (only for creator/admin) -->
                   {% if can_manage_members %}
                     {% if conversation.created_by_id == user.id %}
-                      <div class="dropdown member-actions-dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
-                          {% if u.id not in admin_ids %}
-                            <button class="dropdown-item js-make-admin" data-user-id="{{ u.id }}">
-                              <i class="fas fa-user-shield mr-2"></i>Make Admin
-                            </button>
-                          {% else %}
-                            <button class="dropdown-item js-remove-admin" data-user-id="{{ u.id }}">
-                              <i class="fas fa-user mr-2"></i>Remove Admin
-                            </button>
-                          {% endif %}
-                          <div class="dropdown-divider"></div>
-                          <button class="dropdown-item text-danger js-remove-member" data-user-id="{{ u.id }}">
-                            <i class="fas fa-user-minus mr-2"></i>Remove from Group
+                      <div class="member-action-buttons">
+                        {% if u.id not in admin_ids %}
+                          <button class="btn btn-sm btn-outline-info js-make-admin" data-user-id="{{ u.id }}">
+                            <i class="fas fa-user-shield"></i><span class="d-none d-sm-inline ml-1">Make Admin</span>
                           </button>
-                        </div>
+                        {% else %}
+                          <button class="btn btn-sm btn-outline-secondary js-remove-admin" data-user-id="{{ u.id }}">
+                            <i class="fas fa-user"></i><span class="d-none d-sm-inline ml-1">Remove Admin</span>
+                          </button>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-danger js-remove-member ml-1" data-user-id="{{ u.id }}">
+                          <i class="fas fa-user-minus"></i><span class="d-none d-sm-inline ml-1">Remove</span>
+                        </button>
                       </div>
                     {% else %}
                       {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
-                        <div class="dropdown member-actions-dropdown">
-                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
-                          </button>
-                          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
-                            <button class="dropdown-item text-danger js-remove-member" data-user-id="{{ u.id }}">
-                              <i class="fas fa-user-minus mr-2"></i>Remove from Group
-                            </button>
-                          </div>
-                        </div>
+                        <button class="btn btn-sm btn-outline-danger js-remove-member" data-user-id="{{ u.id }}">
+                          <i class="fas fa-user-minus"></i><span class="d-none d-sm-inline ml-1">Remove</span>
+                        </button>
                       {% endif %}
                     {% endif %}
                   {% endif %}
