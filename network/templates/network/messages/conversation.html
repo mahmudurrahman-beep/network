@@ -1,6 +1,6 @@
 <!--
 ================================================================================
-ARGON SOCIAL NETWORK - CONVERSATION INTERFACE TEMPLATE
+ARGON NETWORK - CONVERSATION INTERFACE TEMPLATE
 ================================================================================
 
 @file        conversation.html
@@ -8,7 +8,7 @@ ARGON SOCIAL NETWORK - CONVERSATION INTERFACE TEMPLATE
 @version     2.0.0
 @author      Argon Admin
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Social Network
+@copyright   Copyright (c) 2026 Argon Network
 
 TEMPLATE PURPOSE
 ================================================================================
@@ -357,7 +357,7 @@ ACCESSIBILITY
     width: 66px;
     height: 66px;
     border-radius: 10px;
-    overflow: visible;          /* ✅ lets the close button show fully */
+    overflow: visible;          
     flex-shrink: 0;
 }
 
@@ -365,7 +365,7 @@ ACCESSIBILITY
     width: 100%;
     height: 100%;
     border-radius: 10px;
-    overflow: hidden;           /* ✅ clips only the image */
+    overflow: hidden;           
 }
 
 .media-preview-item img {
@@ -389,13 +389,13 @@ ACCESSIBILITY
 /* PERFECT CIRCLE RED CROSS - FIXED */
 .media-preview-item .remove-preview-item {
     position: absolute;
-    top: -9px;                  /* ✅ outside corner */
+    top: -9px;                  
     right: -9px;
     width: 24px;
     height: 24px;
-    border-radius: 999px;       /* ✅ perfect circle */
+    border-radius: 999px;       
     background: #dc2626;
-    border: 3px solid #ffffff;  /* ✅ clean ring so it pops */
+    border: 3px solid #ffffff;  
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1662,7 +1662,7 @@ ACCESSIBILITY
                 </button>
             </div>
 
-            <!-- EMOJI CONTAINER - PROPERLY INTEGRATED -->
+            <!-- EMOJI CONTAINER -->
             <div class="emoji-container">
                 <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT - FIXED FOR RIGHT-HANDED USERS -->
                 <div class="quick-emoji-bar" id="quick-emoji-bar">
@@ -1847,7 +1847,7 @@ ACCESSIBILITY
   </div>
 </div>
 
-<!-- ✅ ADDED: EXPOSE USERNAME FOR JS -->
+<!-- EXPOSE USERNAME FOR JS -->
 <script>
     window.ROOM_ID = "{{ conversation.id }}";
     window.IS_GROUP = {% if conversation.is_group %}true{% else %}false{% endif %};
@@ -1965,7 +1965,7 @@ function updateMediaPreviews() {
         return;
     }
 
-    // Create preview list for all items - WITH FIXED HTML STRUCTURE
+    // Create preview list for all items - WITH PROPER HTML STRUCTURE
     mediaItems.forEach((item, index) => {
         const previewItem = document.createElement('div');
         previewItem.className = 'media-preview-item';
@@ -2244,7 +2244,7 @@ document.addEventListener('keypress', function(e) {
     }
 });
 
-// ✅ CRITICAL FIX: Form submission - Convert media items to parseable tags WITHOUT showing URLs in textarea
+// Form submission - Convert media items to parseable tags WITHOUT showing URLs in textarea
 document.getElementById('chat-form').addEventListener('submit', function(e) {
     const mediaDataInput = document.getElementById('media-data-input');
     const textarea = document.getElementById('message-content');
@@ -2289,10 +2289,10 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('✅ Professional chat interface loaded successfully');
 </script>
 
-<!-- ✅ ADDED: LOAD TYPING JS -->
+<!-- LOAD TYPING JS -->
 <script src="{% static 'network/js/typing.js' %}"></script>
 
-<!-- ✅ ADDED: LOAD MAIN.JS FOR MENTION AUTOCOMPLETE -->
+<!-- LOAD MAIN.JS FOR MENTION AUTOCOMPLETE -->
 <script src="{% static 'network/js/main.js' %}"></script>
 
 <script>
@@ -2631,11 +2631,8 @@ console.log('✅ Professional chat interface loaded successfully');
     END OF CONVERSATION TEMPLATE
     ========================================================================
     
-    Template completed successfully.
     All sections properly documented and organized.
-    
-    For maintenance questions, contact: Argon Admin
-    Last updated: February 2026
+    Last updated: 15th February 2026
     ========================================================================
 -->
 
