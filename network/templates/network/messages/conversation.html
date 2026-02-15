@@ -1239,10 +1239,15 @@ ACCESSIBILITY
   background: rgba(255,255,255,.65);
 }
 
+.member-actions-dropdown {
+  position: relative;
+}
+
 .member-actions-dropdown .btn {
   border: 1px solid #dee2e6;
   background: white;
   color: #6c757d;
+  position: relative;
 }
 
 .member-actions-dropdown .btn:hover,
@@ -1253,7 +1258,31 @@ ACCESSIBILITY
 }
 
 .member-actions-dropdown .btn::after {
-  margin-left: 4px;
+  display: none !important;
+}
+
+.member-actions-dropdown .dropdown-menu {
+  z-index: 10000 !important;
+  position: absolute !important;
+}
+
+.members-list-container {
+  position: relative;
+}
+
+.members-list-container .list-group-item {
+  position: relative;
+  overflow: visible !important;
+}
+
+#manageGroupModal .modal-body {
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+.list-group-item {
+  position: relative;
+  overflow: visible !important;
 }
 
 @media (max-width: 576px){
@@ -1276,15 +1305,19 @@ ACCESSIBILITY
   
   .member-actions-dropdown .btn {
     min-width: 36px !important;
-    padding: 6px 10px !important;
+    padding: 8px 10px !important;
     border: none !important;
     background: transparent !important;
     color: #6c757d !important;
+    font-size: 16px !important;
   }
   
-  .member-actions-dropdown .btn:hover {
-    background: #f8f9fa !important;
+  .member-actions-dropdown .btn:hover,
+  .member-actions-dropdown .btn:active,
+  .member-actions-dropdown .btn:focus {
+    background: rgba(0,0,0,0.05) !important;
     color: #495057 !important;
+    box-shadow: none !important;
   }
   
   .member-actions-dropdown .btn::after {
@@ -1663,7 +1696,7 @@ ACCESSIBILITY
           {% endif %}
         </div>
 
-        <div class="list-group" style="max-height:220px;overflow:auto;">
+        <div class="list-group members-list-container" style="max-height:220px;overflow-y:auto;overflow-x:visible;">
           {% for u in members %}
             <div class="list-group-item py-2 d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center" style="gap:10px;">
@@ -1687,7 +1720,7 @@ ACCESSIBILITY
                   {% if can_manage_members %}
                     {% if conversation.created_by_id == user.id %}
                       <div class="dropdown member-actions-dropdown">
-                        <button class="btn btn-sm btn-outline-secondary" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                           <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
@@ -1709,7 +1742,7 @@ ACCESSIBILITY
                     {% else %}
                       {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
                         <div class="dropdown member-actions-dropdown">
-                          <button class="btn btn-sm btn-outline-secondary" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                           </button>
                           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
