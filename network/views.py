@@ -1176,7 +1176,6 @@ def new_post(request):
             
             # Notify mentions (don't fail post if this breaks)
             try:
-                from .utils import _notify_mentions_in_post
                 _notify_mentions_in_post(request.user, post, content, "post")
             except Exception as e:
                 print(f"Mention notification failed: {e}")
