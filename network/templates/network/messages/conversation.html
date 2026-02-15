@@ -1247,7 +1247,6 @@ ACCESSIBILITY
   border: 1px solid #dee2e6;
   background: white;
   color: #6c757d;
-  position: relative;
 }
 
 .member-actions-dropdown .btn:hover,
@@ -1262,36 +1261,14 @@ ACCESSIBILITY
 }
 
 .member-actions-dropdown .dropdown-menu {
-  position: fixed !important;
-  z-index: 10500 !important;
-  margin-top: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.members-list-container {
-  position: relative;
-}
-
-.members-list-container .list-group-item {
-  position: static !important;
-  overflow: visible !important;
-}
-
-#manageGroupModal .modal-body {
-  overflow: visible !important;
-}
-
-#manageGroupModal .modal-content {
-  overflow: visible !important;
-}
-
-#manageGroupModal .modal-dialog {
-  overflow: visible !important;
+  position: absolute;
+  z-index: 1060;
+  right: 0;
+  left: auto;
 }
 
 .list-group-item {
-  position: static !important;
-  overflow: visible !important;
+  position: relative;
 }
 
 @media (max-width: 576px){
@@ -1337,17 +1314,14 @@ ACCESSIBILITY
   }
   
   .member-actions-dropdown .dropdown-menu {
-    position: fixed !important;
     font-size: 15px !important;
-    min-width: 200px !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
+    min-width: 180px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    margin: 0 !important;
   }
   
   .member-actions-dropdown .dropdown-item {
-    padding: 14px 16px !important;
+    padding: 12px 16px !important;
     font-size: 15px !important;
   }
 
@@ -2493,44 +2467,6 @@ console.log('✅ Professional chat interface loaded successfully');
       submitBtn.disabled = false;
       submitBtn.textContent = "Add Members";
     }
-  });
-
-  // Fix dropdown positioning on mobile
-  $(document).on('shown.bs.dropdown', '.member-actions-dropdown', function() {
-    const $dropdown = $(this);
-    const $menu = $dropdown.find('.dropdown-menu');
-    const $btn = $dropdown.find('.btn');
-    
-    if ($menu.length && $btn.length) {
-      const btnRect = $btn[0].getBoundingClientRect();
-      $menu.css({
-        'top': (btnRect.bottom + 2) + 'px',
-        'left': (btnRect.right - $menu.outerWidth()) + 'px'
-      });
-    }
-  });
-
-  // Close dropdowns when scrolling in members list
-  $('.members-list-container').on('scroll', function() {
-    $('.member-actions-dropdown.show').removeClass('show');
-    $('.member-actions-dropdown .dropdown-menu.show').removeClass('show');
-  });
-
-  // Reposition dropdowns on window resize
-  $(window).on('resize', function() {
-    $('.member-actions-dropdown.show').each(function() {
-      const $dropdown = $(this);
-      const $menu = $dropdown.find('.dropdown-menu');
-      const $btn = $dropdown.find('.btn');
-      
-      if ($menu.length && $btn.length && $menu.hasClass('show')) {
-        const btnRect = $btn[0].getBoundingClientRect();
-        $menu.css({
-          'top': (btnRect.bottom + 2) + 'px',
-          'left': (btnRect.right - $menu.outerWidth()) + 'px'
-        });
-      }
-    });
   });
 
   // Make admin
