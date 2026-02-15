@@ -1,14 +1,14 @@
 <!--
 ================================================================================
-ARGON NETWORK - CONVERSATION INTERFACE TEMPLATE
+ARGON SOCIAL NETWORK - CONVERSATION INTERFACE TEMPLATE
 ================================================================================
 
 @file        conversation.html
 @description Real-time messaging interface for direct messages and group chats
 @version     2.0.0
-@author      Argon Admin(Mahmudur Rahman)
+@author      Argon Admin
 @date        February 2026
-@copyright   Copyright (c) 2026 Argon Network
+@copyright   Copyright (c) 2026 Argon Social Network
 
 TEMPLATE PURPOSE
 ================================================================================
@@ -147,8 +147,9 @@ ACCESSIBILITY
     overflow-y: auto;
     padding: 20px;
     background: #f8fafc;
+    /* REMOVED: flex-direction: column-reverse; - FIXED TYPING BUBBLE POSITION */
     display: flex;
-    flex-direction: column; 
+    flex-direction: column; /* Changed from column-reverse to column */
 }
 
 .chat-box::-webkit-scrollbar {
@@ -356,7 +357,7 @@ ACCESSIBILITY
     width: 66px;
     height: 66px;
     border-radius: 10px;
-    overflow: visible;          
+    overflow: visible;          /* ✅ lets the close button show fully */
     flex-shrink: 0;
 }
 
@@ -364,7 +365,7 @@ ACCESSIBILITY
     width: 100%;
     height: 100%;
     border-radius: 10px;
-    overflow: hidden;           
+    overflow: hidden;           /* ✅ clips only the image */
 }
 
 .media-preview-item img {
@@ -385,16 +386,16 @@ ACCESSIBILITY
     z-index: 1;
 }
 
-/* PERFECT CIRCLE RED CROSS */
+/* PERFECT CIRCLE RED CROSS - FIXED */
 .media-preview-item .remove-preview-item {
     position: absolute;
-    top: -9px;                  
+    top: -9px;                  /* ✅ outside corner */
     right: -9px;
     width: 24px;
     height: 24px;
-    border-radius: 999px;       
+    border-radius: 999px;       /* ✅ perfect circle */
     background: #dc2626;
-    border: 3px solid #ffffff;  
+    border: 3px solid #ffffff;  /* ✅ clean ring so it pops */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -415,7 +416,7 @@ ACCESSIBILITY
     box-shadow: 0 3px 8px rgba(220, 38, 38, 0.5);
 }
 
-/* CHAT INPUT CONTAINER */
+/* CHAT INPUT CONTAINER - IMPROVED DESIGN */
 .chat-input-container {
     display: flex;
     gap: 12px;
@@ -510,7 +511,7 @@ ACCESSIBILITY
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* EMOJI CONTAINER */
+/* EMOJI CONTAINER - INTEGRATED DESIGN */
 .emoji-container {
     display: flex;
     flex-direction: column;
@@ -518,7 +519,7 @@ ACCESSIBILITY
     margin-bottom: 12px;
 }
 
-/* EMOJI TOGGLE BUTTON */
+/* EMOJI TOGGLE BUTTON - IMPROVED DESIGN */
 .emoji-toggle-btn {
     background: white;
     border: 2px solid #3b82f6;
@@ -555,7 +556,7 @@ ACCESSIBILITY
     border-color: #3b82f6;
 }
 
-/* QUICK EMOJI BAR CONSIDERING THE RIGHT-HANDED USERS */
+/* QUICK EMOJI BAR - IMPROVED DESIGN - FIXED FOR RIGHT-HANDED USERS */
 .quick-emoji-bar {
     display: none;
     gap: 6px;
@@ -568,7 +569,7 @@ ACCESSIBILITY
     max-width: 100%;
     overflow-x: auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    justify-content: flex-end; 
+    justify-content: flex-end; /* ✅ Right-aligned for right-handed users */
 }
 
 .quick-emoji-bar.show {
@@ -611,7 +612,7 @@ ACCESSIBILITY
     background: #eff6ff;
 }
 
-/* ACTION BUTTONS CONTAINER */
+/* ACTION BUTTONS CONTAINER - IMPROVED */
 .action-buttons {
     display: flex;
     flex-direction: column;
@@ -726,7 +727,7 @@ ACCESSIBILITY
     transform: translateY(-1px);
 }
 
-/* INLINE MEDIA PICKER */
+/* INLINE MEDIA PICKER - IMPROVED */
 .chat-media-inline {
     display: flex;
     align-items: center;
@@ -915,42 +916,42 @@ ACCESSIBILITY
         height: 400px;
         padding: 12px;
     }
-    
+
     .chat-header {
         padding: 12px 16px;
     }
-    
+
     .user-message-bubble,
     .other-message-bubble {
         max-width: 85%;
         padding: 10px 14px;
     }
-    
+
     .user-message-bubble img,
     .other-message-bubble img {
         max-width: 100% !important;
         max-height: 150px !important;
     }
-    
+
     .message-meta {
         font-size: 10px;
     }
-    
+
     .delete-message {
         padding: 2px 6px;
         font-size: 9px;
     }
-    
+
     .chat-input-area {
         padding: 12px;
     }
-    
+
     .chat-input-container {
         flex-direction: column;
         gap: 8px;
         padding: 12px;
     }
-    
+
     .action-buttons {
         flex-direction: row;
         width: 100%;
@@ -958,7 +959,7 @@ ACCESSIBILITY
         min-width: auto;
         gap: 8px;
     }
-    
+
     .attach-btn,
     .send-btn {
         flex: 1;
@@ -966,29 +967,29 @@ ACCESSIBILITY
         font-size: 13px;
         padding: 10px 14px;
     }
-    
+
     .emoji-toggle-btn {
         width: 100%;
         margin-bottom: 8px;
         font-size: 13px;
         padding: 8px 12px;
     }
-    
+
     .message-textarea {
         min-height: 70px;
         font-size: 14px;
         padding: 12px;
     }
-    
+
     .input-preview-container {
         padding: 8px 12px;
     }
-    
+
     .media-preview-item {
         width: 56px;
         height: 56px;
     }
-    
+
     .media-preview-item .remove-preview-item {
         width: 22px !important;
         height: 22px !important;
@@ -997,20 +998,20 @@ ACCESSIBILITY
         border-width: 2px !important;
         font-size: 12px !important;
     }
-    
+
     .media-preview-item .remove-preview-item::before {
         font-size: 16px;
     }
-    
+
     .chat-media-inline {
         padding: 10px;
     }
-    
+
     .quick-emoji-bar.show {
         padding: 10px;
         gap: 4px;
     }
-    
+
     .emoji-btn {
         width: 40px;
         height: 40px;
@@ -1026,51 +1027,51 @@ ACCESSIBILITY
         box-shadow: none;
         max-width: 100%;
     }
-    
+
     .chat-header {
         padding: 10px 12px;
     }
-    
+
     .chat-box {
         height: 350px;
         padding: 10px;
     }
-    
+
     .user-message-bubble,
     .other-message-bubble {
         max-width: 90%;
         padding: 8px 12px;
         font-size: 14px;
     }
-    
+
     .chat-input-container {
         padding: 10px;
         gap: 6px;
     }
-    
+
     .message-textarea {
         min-height: 60px;
         font-size: 13px;
         padding: 10px;
     }
-    
+
     .attach-btn,
     .send-btn {
         height: 40px;
         font-size: 12px;
         padding: 8px 12px;
     }
-    
+
     .emoji-toggle-btn {
         padding: 6px 10px;
         font-size: 12px;
     }
-    
+
     .media-preview-item {
         width: 50px;
         height: 50px;
     }
-    
+
     .media-preview-item .remove-preview-item {
         width: 20px !important;
         height: 20px !important;
@@ -1078,30 +1079,30 @@ ACCESSIBILITY
         right: -5px;
         border-width: 2px !important;
     }
-    
+
     .media-preview-item .remove-preview-item::before {
         font-size: 14px;
     }
-    
+
     .input-preview-container {
         padding: 6px 10px;
         min-height: 36px;
     }
-    
+
     .preview-item-indicator {
         font-size: 11px;
         padding: 5px 10px;
     }
-    
+
     .chat-media-inline {
         padding: 8px;
     }
-    
+
     .quick-emoji-bar.show {
         padding: 8px;
         gap: 3px;
     }
-    
+
     .emoji-btn {
         width: 36px;
         height: 36px;
@@ -1110,25 +1111,25 @@ ACCESSIBILITY
     }
 }
 
-/* Desktop layout and RIGHT-HANDED EMOJI PANEL */
+/* Desktop layout - FIXED FOR RIGHT-HANDED EMOJI PANEL */
 @media (min-width: 769px) {
     .action-buttons {
         width: 110px;
     }
-    
+
     .emoji-container {
         position: relative;
     }
-    
+
     .quick-emoji-bar.show {
         position: absolute;
         bottom: 100%;
-        right: 0; 
+        right: 0; /* ✅ Changed from left: 0 to right: 0 for right-handed users */
         width: auto;
         min-width: 300px;
         margin-bottom: 8px;
         z-index: 10;
-        justify-content: flex-end; 
+        justify-content: flex-end; /* ✅ Ensure emojis are right-aligned */
     }
 }
 
@@ -1137,12 +1138,12 @@ ACCESSIBILITY
     .chat-input-container {
         flex-direction: column;
     }
-    
+
     .action-buttons {
         width: 100%;
         flex-direction: row;
     }
-    
+
     .message-input-wrapper {
         width: 100%;
     }
@@ -1241,14 +1242,40 @@ ACCESSIBILITY
   .chat-header-row{ gap: 10px; }
   .chat-header-left{ gap: 10px; }
   .chat-header-actions{ gap: 8px; }
+
   .chat-header .chat-action-btn{
     padding: 6px 10px;
     font-size: 13px;
   }
-  
-  /* Keeps member line readable on gradient */
+
   .chat-header .text-muted{
     color: rgba(255,255,255,.78) !important;
+  }
+
+  .member-actions-dropdown .btn-text {
+    display: none;
+  }
+  
+  .member-actions-dropdown {
+    min-width: 36px !important;
+    padding: 4px 8px !important;
+  }
+  
+  .list-group-item {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  .list-group-item .d-flex.align-items-center > div:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .list-group-item .font-weight-bold {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -1325,14 +1352,14 @@ ACCESSIBILITY
 
     <div class="chat-header-actions d-flex align-items-center flex-shrink-0">
       {% if conversation.is_group %}
-        <!-- For group chats: "Manage" button for admins/creator, "Add" button for non-admins -->
+        <!-- For group chats: Show "Manage" button for admins/creator, "Add" button for non-admins -->
         {% if can_manage_members %}
-          <!-- User is admin/creator: single "Manage" button -->
+          <!-- User is admin/creator: Show single "Manage" button -->
           <button type="button" class="chat-action-btn manage-btn" data-toggle="modal" data-target="#manageGroupModal" title="Manage group">
             <i class="fas fa-cog"></i><span class="d-none d-sm-inline ml-1">Manage</span>
           </button>
         {% else %}
-          <!-- User is not admin: Show only Show members -->
+          <!-- User is not admin: Show only "Add" button (if allowed to add members) -->
           <button type="button" class="chat-action-btn" data-toggle="modal" data-target="#manageGroupModal" title="Show members">
             <i class="fas fa-users"></i><span class="d-none d-sm-inline ml-1">Members</span>
           </button>
@@ -1383,7 +1410,7 @@ ACCESSIBILITY
                     <div class="message-content">
                         {{ msg.content|parse_media|safe|linebreaksbr }}
                     </div>
-                    
+
                     <!-- Media Display (uploaded files) -->
                     {% if msg.media %}
                         <div class="mt-2">
@@ -1397,7 +1424,7 @@ ACCESSIBILITY
                             {% endif %}
                         </div>
                     {% endif %}
-                    
+
                     <!-- Timestamp & Delete Button on same line -->
                     <div class="message-meta">
                         <div class="message-timestamp">
@@ -1415,7 +1442,7 @@ ACCESSIBILITY
                                 </span>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Delete Button - WHITE BACKGROUND WITH RED TEXT -->
                         {% if msg.sender == user %}
                             <div class="delete-message-container">
@@ -1428,8 +1455,8 @@ ACCESSIBILITY
                 </div>
             </div>
         {% endfor %}
-        
-        <!-- TYPING BUBBLE (inside chat-box, after messages) -->
+
+        <!-- ✅ FIXED: TYPING BUBBLE MOVED HERE (inside chat-box, after messages) -->
         <div id="typing-bubble" class="message-item justify-content-start" style="display:none;">
   <div class="other-message-bubble typing-bubble">
     <div id="typing-label" class="small text-muted mb-1"></div>
@@ -1461,7 +1488,7 @@ ACCESSIBILITY
     <!-- =================================================================== -->
         <form method="post" enctype="multipart/form-data" id="chat-form">
             {% csrf_token %}
-            
+
             <!-- MEDIA PREVIEWS -->
             <div class="media-previews-container">
                 <div class="media-previews-list" id="media-previews-list"></div>
@@ -1486,7 +1513,7 @@ ACCESSIBILITY
                 <button type="button" class="chat-search-btn">
                     <i class="fas fa-search"></i> {# Changed from bi to fas #}
                 </button>
-                
+
                 <!-- Results popup -->
                 <div class="chat-results-popup" data-results="chat-main"></div>
             </div>
@@ -1499,10 +1526,10 @@ ACCESSIBILITY
                     <i class="fas fa-times mr-1"></i> Remove {# Changed from bi to fas #}
                 </button>
             </div>
-            
-            <!-- EMOJI CONTAINER -->
+
+            <!-- EMOJI CONTAINER - PROPERLY INTEGRATED -->
             <div class="emoji-container">
-                <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT - (GOOD UX) RIGHT-HANDED USERS -->
+                <!-- QUICK EMOJI BAR - HIDDEN BY DEFAULT - FIXED FOR RIGHT-HANDED USERS -->
                 <div class="quick-emoji-bar" id="quick-emoji-bar">
                     <!-- Most used emojis -->
                     <button type="button" class="emoji-btn" onclick="addEmoji('😉')">😉</button>
@@ -1518,7 +1545,7 @@ ACCESSIBILITY
                     <button type="button" class="emoji-btn" onclick="addEmoji('😂')">😂</button>
                     <button type="button" class="emoji-btn" onclick="addEmoji('😊')">😊</button>
                 </div>
-                
+
                 <!-- CHAT INPUT CONTAINER -->
                 <div class="chat-input-container">
                     <div class="message-input-wrapper">
@@ -1526,25 +1553,25 @@ ACCESSIBILITY
                             <!-- Emoji preview will appear here -->
                         </div>
                         <textarea name="content" class="message-textarea form-control js-mention-input" rows="2" 
-                                  placeholder="Type your message..." id="message-content" 
+                                  placeholder="Type your message..." id="message-content" required 
                                   data-mention-scope="group" 
                                   data-room-id="{{ conversation.id }}"></textarea>
                     </div>
-                    
+
                     <div class="action-buttons">
                         <!-- EMOJI TOGGLE BUTTON -->
                         <button type="button" class="emoji-toggle-btn" id="emoji-toggle-btn">
                             <i class="far fa-smile"></i> {# Changed from bi to far #}
                             <span>Emojis</span>
                         </button>
-                        
+
                         <label class="attach-btn" for="message-media-input" title="Attach file">
                             <i class="fas fa-paperclip"></i> {# Changed from bi to fas #}
                             <span class="d-none d-sm-inline">Attach</span>
                         </label>
                         <input type="file" name="media" class="d-none" accept="image/*,video/*,.gif" 
                                id="message-media-input" onchange="showFilePreview(this)">
-                        
+
                         <button type="submit" class="send-btn">
                             <i class="fas fa-paper-plane"></i> {# Changed from bi to fas #}
                             <span>Send</span>
@@ -1552,7 +1579,7 @@ ACCESSIBILITY
                     </div>
                 </div>
             </div>
-            
+
             <!-- Hidden input for clean media data -->
             <input type="hidden" name="media_data" id="media-data-input" value="">
         </form>
@@ -1629,10 +1656,9 @@ ACCESSIBILITY
                   <!-- Other user actions (only for creator/admin) -->
                   {% if can_manage_members %}
                     {% if conversation.created_by_id == user.id %}
-                      <!-- Creator: can promote/demote admins and remove members -->
-                      <div class="dropdown">
+                      <div class="dropdown member-actions-dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Actions
+                          <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
                           {% if u.id not in admin_ids %}
@@ -1651,11 +1677,10 @@ ACCESSIBILITY
                         </div>
                       </div>
                     {% else %}
-                      <!-- Admin: can only remove regular members (not creator, not admins) -->
                       {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
-                        <div class="dropdown">
+                        <div class="dropdown member-actions-dropdown">
                           <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Actions
+                            <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                           </button>
                           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
                             <button class="dropdown-item text-danger js-remove-member" data-user-id="{{ u.id }}">
@@ -1698,7 +1723,7 @@ ACCESSIBILITY
   </div>
 </div>
 
-<!-- EXPOSE USERNAME FOR JS -->
+<!-- ✅ ADDED: EXPOSE USERNAME FOR JS -->
 <script>
     window.ROOM_ID = "{{ conversation.id }}";
     window.IS_GROUP = {% if conversation.is_group %}true{% else %}false{% endif %};
@@ -1721,7 +1746,7 @@ emojiToggleBtn.addEventListener('click', function() {
     emojiBarVisible = !emojiBarVisible;
     quickEmojiBar.classList.toggle('show', emojiBarVisible);
     emojiToggleBtn.classList.toggle('active', emojiBarVisible);
-    
+
     // Update button text and icon
     if (emojiBarVisible) {
         emojiToggleBtn.innerHTML = '<i class="fas fa-smile"></i> <span>Hide</span>'; {# Changed from bi to fas #}
@@ -1744,15 +1769,15 @@ document.addEventListener('click', function(e) {
 function showFilePreview(input) {
     const indicator = document.getElementById('file-indicator');
     const fileName = document.getElementById('file-name');
-    
+
     if (input.files && input.files[0]) {
         const file = input.files[0];
         const name = file.name;
         const size = (file.size / 1024).toFixed(1) + ' KB';
-        
+
         fileName.textContent = `${name} (${size})`;
         indicator.classList.add('show');
-        
+
         // Clear visual media if file is selected
         clearAllMedia();
     }
@@ -1761,7 +1786,7 @@ function showFilePreview(input) {
 function removeFile() {
     const input = document.getElementById('message-media-input');
     const indicator = document.getElementById('file-indicator');
-    
+
     input.value = '';
     indicator.classList.remove('show');
 }
@@ -1773,7 +1798,7 @@ function addMediaItem(url, type) {
         console.log('Media already added');
         return;
     }
-    
+
     const mediaItem = {
         url: url,
         type: type, // 'GIF' or 'STICKER'
@@ -1781,7 +1806,7 @@ function addMediaItem(url, type) {
         shortCode: type === 'GIF' ? 'GIF' : 'STICKER',
         id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
     };
-    
+
     mediaItems.push(mediaItem);
     updateMediaPreviews();
     updateInputPreview();
@@ -1807,15 +1832,15 @@ function clearAllMedia() {
 function updateMediaPreviews() {
     const previewsList = document.getElementById('media-previews-list');
     const statsContainer = document.getElementById('media-preview-stats');
-    
+
     // Clear all previews
     previewsList.innerHTML = '';
     statsContainer.innerHTML = '';
-    
+
     if (mediaItems.length === 0) {
         return;
     }
-    
+
     // Create preview list for all items - WITH FIXED HTML STRUCTURE
     mediaItems.forEach((item, index) => {
         const previewItem = document.createElement('div');
@@ -1830,32 +1855,32 @@ function updateMediaPreviews() {
         `;
         previewsList.appendChild(previewItem);
     });
-    
+
     // Update stats
     const gifCount = mediaItems.filter(item => item.type === 'GIF').length;
     const stickerCount = mediaItems.filter(item => item.type === 'STICKER').length;
-    
+
     if (gifCount > 0 || stickerCount > 0) {
         let statsHTML = '<div class="media-stats">';
-        
+
         if (gifCount > 0) {
             statsHTML += `<span style="background: #fef3c7; padding: 4px 8px; border-radius: 6px; border: 1px solid #fbbf24; font-weight: 600;">
                 🎞️ ${gifCount} GIF${gifCount > 1 ? 's' : ''}
             </span>`;
         }
-        
+
         if (stickerCount > 0) {
             statsHTML += `<span style="background: #e0e7ff; padding: 4px 8px; border-radius: 6px; border: 1px solid #818cf8; font-weight: 600;">
                 🏷️ ${stickerCount} Sticker${stickerCount > 1 ? 's' : ''}
             </span>`;
         }
-        
+
         if (mediaItems.length > 0) {
             statsHTML += `<button class="clear-media-btn" onclick="clearAllMedia()">
                 <i class="fas fa-times mr-1" style="font-size: 10px;"></i>Clear All {# Changed from bi to fas #}
             </button>`;
         }
-        
+
         statsHTML += `</div>`;
         statsContainer.innerHTML = statsHTML;
     }
@@ -1864,7 +1889,7 @@ function updateMediaPreviews() {
 function updateThumbPreview() {
     const thumb = document.querySelector('.chat-preview-thumb');
     const thumbImg = thumb.querySelector('img');
-    
+
     if (mediaItems.length > 0) {
         const latestItem = mediaItems[mediaItems.length - 1];
         thumbImg.src = latestItem.url;
@@ -1878,10 +1903,11 @@ function updateThumbPreview() {
 function removeThumbPreview() {
     const thumb = document.querySelector('.chat-preview-thumb');
     const thumbImg = thumb.querySelector('img');
-    
+
     thumb.classList.remove('show');
     thumbImg.src = '';
-    
+
+    // Also remove from media items
     if (mediaItems.length > 0) {
         mediaItems.pop();
         updateMediaPreviews();
@@ -1889,30 +1915,30 @@ function removeThumbPreview() {
     }
 }
 
-// input preview with emoji placeholders (NO URLS IN TEXTAREA - GOOD UX)
+// Update input preview with emoji placeholders (NO URLS IN TEXTAREA - GOOD UX)
 function updateInputPreview() {
     const inputPreview = document.getElementById('input-preview');
     const textarea = document.getElementById('message-content');
     const mediaDataInput = document.getElementById('media-data-input');
-    
+
     // Clear preview
     inputPreview.innerHTML = '';
-    
+
     if (mediaItems.length === 0) {
         textarea.placeholder = "Type your message...";
         inputPreview.classList.remove('has-items');
         mediaDataInput.value = '';
         return;
     }
-    
+
     // Update placeholder
     textarea.placeholder = "Add text (optional)...";
     inputPreview.classList.add('has-items');
-    
+
     // Create emoji indicators (NOT showing URLs in textarea)
     const gifs = mediaItems.filter(item => item.type === 'GIF');
     const stickers = mediaItems.filter(item => item.type === 'STICKER');
-    
+
     if (gifs.length > 0) {
         const badge = document.createElement('span');
         badge.className = 'preview-item-indicator';
@@ -1925,7 +1951,7 @@ function updateInputPreview() {
         `;
         inputPreview.appendChild(badge);
     }
-    
+
     if (stickers.length > 0) {
         const badge = document.createElement('span');
         badge.className = 'preview-item-indicator';
@@ -1938,17 +1964,17 @@ function updateInputPreview() {
         `;
         inputPreview.appendChild(badge);
     }
-    
+
     // DO NOT show URLs in textarea - GOOD UX
     // Keep user's typed text intact
     const currentText = textarea.value;
     const hasMediaTags = /\[(GIF|STICKER):[^\]]*\]/.test(currentText);
-    
+
     if (!hasMediaTags) {
         // User hasn't typed any media tags, keep their text as is
         // Don't modify textarea - let user type normally
     }
-    
+
     // Update hidden input with clean JSON data
     mediaDataInput.value = JSON.stringify(mediaItems.map(item => ({
         type: item.type,
@@ -1976,26 +2002,26 @@ document.addEventListener('click', function(e) {
         const picker = btn.closest('.chat-media-inline');
         const type = btn.dataset.type;
         const input = picker.querySelector('.chat-search-input');
-        
+
         picker.querySelectorAll('.chat-media-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
+
         input.classList.add('show');
         input.value = 'trending';
         input.focus();
-        
+
         currentMediaType = type;
     }
-    
+
     // Search button
     if (e.target.closest('.chat-search-btn')) {
         const picker = e.target.closest('.chat-media-inline');
         const input = picker.querySelector('.chat-search-input');
         const resultsPopup = picker.querySelector('.chat-results-popup');
-        
+
         searchChatMedia(input, resultsPopup, currentMediaType, picker);
     }
-    
+
     // Close results when clicking outside
     if (!e.target.closest('.chat-media-inline') && !e.target.closest('.chat-results-popup')) {
         document.querySelectorAll('.chat-results-popup').forEach(popup => {
@@ -2007,16 +2033,16 @@ document.addEventListener('click', function(e) {
 // Search chat media
 function searchChatMedia(input, resultsPopup, type, picker) {
     const query = input.value.trim() || 'trending';
-    
+
     resultsPopup.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div><p class="mt-2 text-muted">Searching...</p></div>';
     resultsPopup.classList.add('show');
-    
+
     fetch(`/search-gifs/?q=${encodeURIComponent(query)}&type=${type}`)
         .then(r => r.json())
         .then(data => {
             resultsPopup.innerHTML = '';
             const items = data.gifs || [];
-            
+
             if (items.length > 0) {
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
@@ -2027,13 +2053,13 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                     input.value = '';
                 };
                 resultsPopup.appendChild(closeBtn);
-                
+
                 const grid = document.createElement('div');
                 grid.className = 'media-grid';
                 grid.style.display = 'grid';
                 grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
                 grid.style.gap = '8px';
-                
+
                 items.slice(0, 12).forEach(url => {
                     const img = document.createElement('img');
                     img.src = url;
@@ -2044,7 +2070,7 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                     img.style.cursor = 'pointer';
                     img.style.border = '2px solid transparent';
                     img.style.transition = 'all 0.2s';
-                    
+
                     img.onmouseover = function() {
                         this.style.borderColor = '#3b82f6';
                         this.style.transform = 'scale(1.05)';
@@ -2055,22 +2081,22 @@ function searchChatMedia(input, resultsPopup, type, picker) {
                         this.style.transform = 'scale(1)';
                         this.style.boxShadow = 'none';
                     };
-                    
+
                     img.onerror = function() {
                         this.style.opacity = '0.3';
                         this.style.pointerEvents = 'none';
                         this.style.border = '2px dashed #e5e7eb';
                     };
-                    
+
                     img.onclick = () => {
                         const tag = type === 'gifs' ? 'GIF' : 'STICKER';
                         addMediaItem(url, tag);
-                        
+
                         resultsPopup.classList.remove('show');
                         input.value = '';
                         input.classList.remove('show');
                     };
-                    
+
                     grid.appendChild(img);
                 });
                 resultsPopup.appendChild(grid);
@@ -2094,24 +2120,24 @@ document.addEventListener('keypress', function(e) {
     }
 });
 
-// Form submission - Convert media items to parseable tags WITHOUT showing URLs in textarea
+// ✅ CRITICAL FIX: Form submission - Convert media items to parseable tags WITHOUT showing URLs in textarea
 document.getElementById('chat-form').addEventListener('submit', function(e) {
     const mediaDataInput = document.getElementById('media-data-input');
     const textarea = document.getElementById('message-content');
-    
+
     // Get user's typed text
     const userText = textarea.value.trim();
-    
+
     // Build tags for parse_media
     const tags = mediaItems.map(item => {
         const t = item.type === 'GIF' ? 'GIF' : 'STICKER';
         return `[${t}:${item.url}]`;
     }).join(' ');
-    
+
     // Append tags at the end (or use only tags if no text)
     // This happens ONLY on submit, not while typing (GOOD UX)
     textarea.value = tags ? (userText ? `${userText}\n${tags}` : tags) : userText;
-    
+
     // Keep JSON updated (optional, for backward compatibility)
     mediaDataInput.value = JSON.stringify(mediaItems.map(item => ({
         type: item.type,
@@ -2129,7 +2155,7 @@ setTimeout(() => {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     updateInputPreview();
-    
+
     // Hide emoji bar by default
     quickEmojiBar.classList.remove('show');
     emojiBarVisible = false;
@@ -2139,8 +2165,11 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('✅ Professional chat interface loaded successfully');
 </script>
 
-<!-- LOAD TYPING JS -->
+<!-- ✅ ADDED: LOAD TYPING JS -->
 <script src="{% static 'network/js/typing.js' %}"></script>
+
+<!-- ✅ ADDED: LOAD MAIN.JS FOR MENTION AUTOCOMPLETE -->
+<script src="{% static 'network/js/main.js' %}"></script>
 
 <script>
 (function() {
@@ -2444,12 +2473,12 @@ console.log('✅ Professional chat interface loaded successfully');
   // Update group name (creator only)
   const updateNameBtn = document.getElementById("updateGroupName");
   const groupNameInput = document.getElementById("groupNameInput");
-  
+
   if (updateNameBtn && groupNameInput) {
     updateNameBtn.addEventListener("click", async () => {
       const newName = groupNameInput.value.trim();
       if (!newName) return alert("Please enter a group name");
-      
+
       const r = await fetch(`/conversation/${window.ROOM_ID}/update-name/`, {
         method: "POST",
         headers: {
@@ -2460,10 +2489,10 @@ console.log('✅ Professional chat interface loaded successfully');
         body: JSON.stringify({ name: newName }),
         credentials: "same-origin"
       });
-      
+
       const d = await r.json().catch(() => ({}));
       if (!r.ok) return alert(d.error || "Failed to update group name");
-      
+
       alert("Group name updated successfully!");
       window.location.reload();
     });
@@ -2477,10 +2506,11 @@ console.log('✅ Professional chat interface loaded successfully');
     ========================================================================
     END OF CONVERSATION TEMPLATE
     ========================================================================
-
+    
+    Template completed successfully.
     All sections properly documented and organized.
     
-    For maintenance questions, contact: Argon Admin(Mahmudur Rahman)
+    For maintenance questions, contact: Argon Admin
     Last updated: February 2026
     ========================================================================
 -->
