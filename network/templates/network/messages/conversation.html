@@ -1238,6 +1238,24 @@ ACCESSIBILITY
 .presence-pill.is-offline .dot{
   background: rgba(255,255,255,.65);
 }
+
+.member-actions-dropdown .btn {
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #6c757d;
+}
+
+.member-actions-dropdown .btn:hover,
+.member-actions-dropdown .btn:focus {
+  background: #f8f9fa;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.member-actions-dropdown .btn::after {
+  margin-left: 4px;
+}
+
 @media (max-width: 576px){
   .chat-header-row{ gap: 10px; }
   .chat-header-left{ gap: 10px; }
@@ -1256,9 +1274,21 @@ ACCESSIBILITY
     display: none;
   }
   
-  .member-actions-dropdown {
+  .member-actions-dropdown .btn {
     min-width: 36px !important;
-    padding: 4px 8px !important;
+    padding: 6px 10px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #6c757d !important;
+  }
+  
+  .member-actions-dropdown .btn:hover {
+    background: #f8f9fa !important;
+    color: #495057 !important;
+  }
+  
+  .member-actions-dropdown .btn::after {
+    display: none !important;
   }
   
   .list-group-item {
@@ -1657,7 +1687,7 @@ ACCESSIBILITY
                   {% if can_manage_members %}
                     {% if conversation.created_by_id == user.id %}
                       <div class="dropdown member-actions-dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                           <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
@@ -1679,7 +1709,7 @@ ACCESSIBILITY
                     {% else %}
                       {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
                         <div class="dropdown member-actions-dropdown">
-                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <button class="btn btn-sm btn-outline-secondary" type="button" id="memberActions{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-ellipsis-v"></i><span class="btn-text ml-1 d-none d-sm-inline">Actions</span>
                           </button>
                           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="memberActions{{ u.id }}">
