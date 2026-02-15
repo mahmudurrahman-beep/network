@@ -1249,6 +1249,80 @@ ACCESSIBILITY
   white-space: nowrap;
 }
 
+.member-list-item {
+  padding: 12px !important;
+}
+
+.member-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.member-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.member-name-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.member-badges .badge {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.member-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.member-actions .btn {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.member-actions .btn i {
+  font-size: 14px;
+}
+
+.member-actions .btn-label {
+  display: inline;
+}
+
 .list-group-item {
   position: relative;
 }
@@ -1267,19 +1341,49 @@ ACCESSIBILITY
     color: rgba(255,255,255,.78) !important;
   }
 
-  .member-action-buttons {
-    gap: 6px;
+  .member-list-item {
+    padding: 10px 8px !important;
   }
-  
-  .member-action-buttons .btn {
-    padding: 6px 10px !important;
-    font-size: 13px !important;
-    min-width: 36px;
+
+  .member-info-row {
+    gap: 8px;
   }
-  
-  .list-group-item {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+
+  .member-avatar-name {
+    gap: 10px;
+  }
+
+  .member-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .member-name {
+    font-size: 14px;
+  }
+
+  .member-badges .badge {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+
+  .member-actions {
+    gap: 4px;
+  }
+
+  .member-actions .btn {
+    padding: 8px 10px !important;
+    min-width: 40px;
+    font-size: 16px !important;
+  }
+
+  .member-actions .btn-label {
+    display: none !important;
+  }
+
+  .member-actions .btn i {
+    font-size: 16px;
+    margin: 0 !important;
   }
   
   .list-group-item .d-flex.align-items-center > div:first-child {
@@ -1292,6 +1396,21 @@ ACCESSIBILITY
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .member-list-item {
+    padding: 10px !important;
+  }
+
+  .member-actions .btn {
+    padding: 6px 12px !important;
+    font-size: 13px;
+  }
+
+  .member-actions .btn i {
+    font-size: 14px;
   }
 }
 
@@ -1651,50 +1770,52 @@ ACCESSIBILITY
 
         <div class="list-group members-list-container" style="max-height:220px;overflow-y:auto;overflow-x:visible;">
           {% for u in members %}
-            <div class="list-group-item py-2 d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center" style="gap:10px;">
-                <img src="{% if u.profile_picture %}{{ u.profile_picture.url }}{% else %}{% static 'network/images/default-avatar.png' %}{% endif %}" onerror="this.onerror=null;this.src='{% static 'network/images/default-avatar.png' %}'"
-                     class="rounded-circle" style="width:32px;height:32px;object-fit:cover;" alt="Avatar">
-                <div class="small">
-                  <div class="font-weight-bold">{% if u == user %}You{% else %}{{ u.username }}{% endif %}</div>
-                  {% if conversation.created_by_id == u.id %}<div class="text-primary">Creator</div>{% endif %}
-                  {% if u.id in admin_ids and conversation.created_by_id != u.id %}<div class="text-info">Admin</div>{% endif %}
+            <div class="list-group-item member-list-item py-2">
+              <div class="member-info-row">
+                <div class="member-avatar-name">
+                  <img src="{% if u.profile_picture %}{{ u.profile_picture.url }}{% else %}{% static 'network/images/default-avatar.png' %}{% endif %}" onerror="this.onerror=null;this.src='{% static 'network/images/default-avatar.png' %}'"
+                       class="rounded-circle member-avatar" alt="Avatar">
+                  <div class="member-name-details">
+                    <div class="member-name">{% if u == user %}You{% else %}{{ u.username }}{% endif %}</div>
+                    <div class="member-badges">
+                      {% if conversation.created_by_id == u.id %}<span class="badge badge-primary badge-sm">Creator</span>{% endif %}
+                      {% if u.id in admin_ids and conversation.created_by_id != u.id %}<span class="badge badge-info badge-sm">Admin</span>{% endif %}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="chat-header-actions d-flex align-items-center flex-shrink-0">
-                {% if u == user %}
-                  <!-- Current user actions -->
-                  {% if conversation.created_by_id != u.id %}
-                    <button type="button" class="btn btn-sm btn-outline-danger js-leave-group">Leave</button>
-                  {% endif %}
-                {% else %}
-                  <!-- Other user actions (only for creator/admin) -->
-                  {% if can_manage_members %}
-                    {% if conversation.created_by_id == user.id %}
-                      <div class="member-action-buttons">
+                <div class="member-actions">
+                  {% if u == user %}
+                    {% if conversation.created_by_id != u.id %}
+                      <button type="button" class="btn btn-sm btn-outline-danger js-leave-group">
+                        <i class="fas fa-sign-out-alt"></i><span class="btn-label">Leave</span>
+                      </button>
+                    {% endif %}
+                  {% else %}
+                    {% if can_manage_members %}
+                      {% if conversation.created_by_id == user.id %}
                         {% if u.id not in admin_ids %}
                           <button class="btn btn-sm btn-outline-info js-make-admin" data-user-id="{{ u.id }}">
-                            <i class="fas fa-user-shield"></i><span class="d-none d-sm-inline ml-1">Make Admin</span>
+                            <i class="fas fa-user-shield"></i><span class="btn-label">Make Admin</span>
                           </button>
                         {% else %}
                           <button class="btn btn-sm btn-outline-secondary js-remove-admin" data-user-id="{{ u.id }}">
-                            <i class="fas fa-user"></i><span class="d-none d-sm-inline ml-1">Remove Admin</span>
+                            <i class="fas fa-user"></i><span class="btn-label">Remove Admin</span>
                           </button>
                         {% endif %}
-                        <button class="btn btn-sm btn-outline-danger js-remove-member ml-1" data-user-id="{{ u.id }}">
-                          <i class="fas fa-user-minus"></i><span class="d-none d-sm-inline ml-1">Remove</span>
-                        </button>
-                      </div>
-                    {% else %}
-                      {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
                         <button class="btn btn-sm btn-outline-danger js-remove-member" data-user-id="{{ u.id }}">
-                          <i class="fas fa-user-minus"></i><span class="d-none d-sm-inline ml-1">Remove</span>
+                          <i class="fas fa-user-minus"></i><span class="btn-label">Remove</span>
                         </button>
+                      {% else %}
+                        {% if u.id not in admin_ids and conversation.created_by_id != u.id %}
+                          <button class="btn btn-sm btn-outline-danger js-remove-member" data-user-id="{{ u.id }}">
+                            <i class="fas fa-user-minus"></i><span class="btn-label">Remove</span>
+                          </button>
+                        {% endif %}
                       {% endif %}
                     {% endif %}
                   {% endif %}
-                {% endif %}
+                </div>
               </div>
             </div>
           {% endfor %}
